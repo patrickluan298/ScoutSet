@@ -136,7 +136,7 @@ class _ToolbarChip extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
           color: isSelected
-              ? Theme.of(context).colorScheme.secondary.withOpacity(0.16)
+              ? Theme.of(context).colorScheme.secondary.withValues(alpha: 0.16)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(

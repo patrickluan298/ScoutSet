@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:scoutset/features/strategies/models/movement.dart';
 import 'package:scoutset/features/strategies/models/player_position.dart';

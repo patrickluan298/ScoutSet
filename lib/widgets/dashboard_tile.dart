@@ -29,7 +29,7 @@ class DashboardTile extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: 24,
-              backgroundColor: theme.colorScheme.secondary.withOpacity(0.12),
+              backgroundColor: theme.colorScheme.secondary.withValues(alpha: 0.12),
               child: Icon(icon, color: theme.colorScheme.secondary),
             ),
             const Spacer(),

@@ -601,7 +601,7 @@ class _StrategyEditorScreenState extends State<StrategyEditorScreen> {
           const SizedBox(height: 8),
           DropdownButtonFormField<String>(
             key: const Key('sub-out-dropdown'),
-            value: _selectedOutgoingPlayerId,
+            initialValue: _selectedOutgoingPlayerId,
             decoration: const InputDecoration(labelText: 'Jogador que sai'),
             items: _players
                 .map(
@@ -620,7 +620,7 @@ class _StrategyEditorScreenState extends State<StrategyEditorScreen> {
           const SizedBox(height: 12),
           DropdownButtonFormField<String>(
             key: const Key('sub-in-dropdown'),
-            value: eligibleBenchPlayers.any((item) => item.playerId == _selectedIncomingPlayerId)
+            initialValue: eligibleBenchPlayers.any((item) => item.playerId == _selectedIncomingPlayerId)
                 ? _selectedIncomingPlayerId
                 : null,
             decoration: const InputDecoration(labelText: 'Jogador que entra'),
@@ -684,7 +684,7 @@ class _StatPill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.45),
+        color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.45),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(

@@ -79,7 +79,7 @@ class AppTheme {
           ),
         ),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: whiteColor,
         elevation: 0,
         margin: EdgeInsets.zero,

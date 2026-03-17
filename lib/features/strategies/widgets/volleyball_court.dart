@@ -134,12 +134,12 @@ class _VolleyballCourtPainter extends CustomPainter {
     canvas.drawRect(Offset.zero & size, background);
 
     final opponentPaint = Paint()
-      ..color = const Color(0xFFF3C46A).withOpacity(0.55)
+      ..color = const Color(0xFFF3C46A).withValues(alpha: 0.55)
       ..style = PaintingStyle.fill;
     canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height / 2), opponentPaint);
 
     final teamPaint = Paint()
-      ..color = AppTheme.whiteColor.withOpacity(0.08)
+      ..color = AppTheme.whiteColor.withValues(alpha: 0.08)
       ..style = PaintingStyle.fill;
     canvas.drawRect(Rect.fromLTWH(0, size.height / 2, size.width, size.height / 2), teamPaint);
 
@@ -175,7 +175,7 @@ class _VolleyballCourtPainter extends CustomPainter {
     canvas.drawLine(Offset(0, netY), Offset(size.width, netY), netPaint);
 
     final dashedPaint = Paint()
-      ..color = const Color(0xFF495057).withOpacity(0.45)
+      ..color = const Color(0xFF495057).withValues(alpha: 0.45)
       ..strokeWidth = 1;
     for (var x = 0.0; x < size.width; x += 10) {
       canvas.drawLine(Offset(x, netY - 6), Offset(x + 5, netY - 6), dashedPaint);
@@ -218,7 +218,7 @@ class _CourtLegend extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.16),
+        color: Colors.black.withValues(alpha: 0.16),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Padding(

@@ -52,7 +52,7 @@ class _MovementArrowPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final color = _colorForType(type);
     final paint = Paint()
-      ..color = isHighlighted ? color.withOpacity(1) : color
+      ..color = color
       ..strokeWidth = isHighlighted ? 4 : 3
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;

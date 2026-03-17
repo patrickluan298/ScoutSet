@@ -278,7 +278,7 @@ class _MetaPill extends StatelessWidget {
         color: Theme.of(context)
             .colorScheme
             .surfaceContainerHighest
-            .withOpacity(0.45),
+            .withValues(alpha: 0.45),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
