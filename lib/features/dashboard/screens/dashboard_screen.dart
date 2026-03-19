@@ -56,10 +56,25 @@ class DashboardScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 16),
-                CircleAvatar(
-                  radius: 28,
-                  backgroundColor: theme.colorScheme.secondary,
-                  child: const Icon(Icons.sports_volleyball, color: Colors.white),
+                Container(
+                  width: 68,
+                  height: 68,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    gradient: const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Color(0xFFF5BE00),
+                        Color(0xFFFFD84D),
+                      ],
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.sports_volleyball,
+                    color: Color(0xFF081426),
+                    size: 32,
+                  ),
                 ),
               ],
             ),

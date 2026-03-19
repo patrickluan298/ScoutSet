@@ -3,11 +3,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:scoutset/core/theme/app_theme.dart';
 import 'package:scoutset/features/strategies/models/player_position.dart';
 import 'package:scoutset/features/strategies/models/strategy.dart';
+import 'package:scoutset/features/strategies/models/substitution.dart';
 import 'package:scoutset/features/strategies/screens/strategies_screen.dart';
 import 'package:scoutset/features/strategies/screens/strategy_detail_screen.dart';
 import 'package:scoutset/features/strategies/services/strategy_service.dart';
 import 'package:scoutset/features/strategies/widgets/player_marker.dart';
-import 'package:scoutset/features/strategies/models/substitution.dart';
 
 void main() {
   late StrategyService service;
@@ -24,6 +24,12 @@ void main() {
     );
   }
 
+  Future<void> tapVisible(WidgetTester tester, Finder finder) async {
+    await tester.ensureVisible(finder);
+    await tester.tap(finder);
+    await tester.pumpAndSettle();
+  }
+
   testWidgets('strategies screen shows empty state and saves a new strategy', (tester) async {
     await tester.pumpWidget(
       buildTestable(const StrategiesScreen()),
@@ -31,12 +37,10 @@ void main() {
 
     expect(find.text('Criar primeira estrategia'), findsOneWidget);
 
-    await tester.tap(find.text('Criar primeira estrategia'));
-    await tester.pumpAndSettle();
+    await tapVisible(tester, find.text('Criar primeira estrategia'));
 
     await tester.enterText(find.byKey(const Key('strategy-name-field')), 'Recepcao 3x1');
-    await tester.tap(find.text('Salvar estrategia'));
-    await tester.pumpAndSettle();
+    await tapVisible(tester, find.text('Salvar estrategia'));
 
     expect(find.text('Recepcao 3x1'), findsOneWidget);
     expect(find.text('6 jogadores'), findsOneWidget);
@@ -47,13 +51,11 @@ void main() {
       buildTestable(const StrategiesScreen()),
     );
 
-    await tester.tap(find.text('Criar primeira estrategia'));
-    await tester.pumpAndSettle();
+    await tapVisible(tester, find.text('Criar primeira estrategia'));
 
     expect(find.byType(PlayerMarker), findsNWidgets(6));
 
-    await tester.tap(find.text('Praia'));
-    await tester.pumpAndSettle();
+    await tapVisible(tester, find.text('Praia'));
 
     expect(find.byType(PlayerMarker), findsNWidgets(2));
   });
@@ -63,11 +65,8 @@ void main() {
       buildTestable(const StrategiesScreen()),
     );
 
-    await tester.tap(find.text('Criar primeira estrategia'));
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.text('Praia'));
-    await tester.pumpAndSettle();
+    await tapVisible(tester, find.text('Criar primeira estrategia'));
+    await tapVisible(tester, find.text('Praia'));
 
     expect(
       find.text('No volei de praia nao sao permitidas substituicoes durante o set.'),
@@ -80,21 +79,15 @@ void main() {
       buildTestable(const StrategiesScreen()),
     );
 
-    await tester.tap(find.text('Criar primeira estrategia'));
-    await tester.pumpAndSettle();
+    await tapVisible(tester, find.text('Criar primeira estrategia'));
 
-    await tester.tap(find.byKey(const Key('sub-out-dropdown')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('1 - P1').last);
-    await tester.pumpAndSettle();
+    await tapVisible(tester, find.byKey(const Key('sub-out-dropdown')));
+    await tapVisible(tester, find.text('1 - P1').last);
 
-    await tester.tap(find.byKey(const Key('sub-in-dropdown')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('7 - B7').last);
-    await tester.pumpAndSettle();
+    await tapVisible(tester, find.byKey(const Key('sub-in-dropdown')));
+    await tapVisible(tester, find.text('7 - B7').last);
 
-    await tester.tap(find.text('Aplicar substituicao'));
-    await tester.pumpAndSettle();
+    await tapVisible(tester, find.text('Aplicar substituicao'));
 
     expect(find.text('P1 -> B7'), findsOneWidget);
     expect(find.text('1/6'), findsOneWidget);

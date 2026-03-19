@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
-  static const Color primaryColor = Color(0xFF0D1B2A);
-  static const Color accentColor = Color(0xFFFF7A00);
+  static const Color primaryColor = Color(0xFF081426);
+  static const Color accentColor = Color(0xFFF5BE00);
+  static const Color secondaryBlueColor = Color(0xFF0F58B5);
   static const Color whiteColor = Color(0xFFFFFFFF);
-  static const Color lightGrayColor = Color(0xFFF4F6F8);
+  static const Color lightGrayColor = Color(0xFFF2F5FA);
   static const Color mediumGrayColor = Color(0xFF8D99AE);
   static const Color textColor = Color(0xFF1F2933);
 
@@ -18,7 +19,6 @@ class AppTheme {
         surface: whiteColor,
       ),
       scaffoldBackgroundColor: lightGrayColor,
-      fontFamily: 'Roboto',
     );
 
     return base.copyWith(
@@ -31,12 +31,12 @@ class AppTheme {
       textTheme: base.textTheme.copyWith(
         headlineMedium: const TextStyle(
           fontSize: 28,
-          fontWeight: FontWeight.w700,
+          fontWeight: FontWeight.w800,
           color: textColor,
         ),
         titleLarge: const TextStyle(
           fontSize: 22,
-          fontWeight: FontWeight.w700,
+          fontWeight: FontWeight.w800,
           color: textColor,
         ),
         titleMedium: const TextStyle(
@@ -58,7 +58,7 @@ class AppTheme {
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: accentColor,
-          foregroundColor: whiteColor,
+          foregroundColor: primaryColor,
           minimumSize: const Size.fromHeight(52),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
@@ -85,7 +85,7 @@ class AppTheme {
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
-          side: const BorderSide(color: Color(0xFFE5E7EB)),
+          side: const BorderSide(color: Color(0xFFD9E2EC)),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
@@ -110,7 +110,7 @@ class AppTheme {
       ),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: whiteColor,
-        selectedItemColor: accentColor,
+        selectedItemColor: secondaryBlueColor,
         unselectedItemColor: mediumGrayColor,
         type: BottomNavigationBarType.fixed,
         showUnselectedLabels: true,
