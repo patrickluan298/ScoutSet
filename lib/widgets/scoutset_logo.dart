@@ -16,7 +16,7 @@ class ScoutSetLogo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final imageHeight = compact ? 36.0 : 112.0;
+    final imageHeight = compact ? 36.0 : 126.0;
     final taglineStyle = Theme.of(context).textTheme.bodyMedium?.copyWith(
       color: Colors.white.withValues(alpha: 0.82),
       fontWeight: FontWeight.w500,

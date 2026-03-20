@@ -9,7 +9,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  crypto: ^3.0.6
   cupertino_icons: ^1.0.8
+  shared_preferences: ^2.5.3
 
 dev_dependencies:
   flutter_test:
@@ -29,3 +31,5 @@ flutter_launcher_icons:
   min_sdk_android: 21
   remove_alpha_ios: true
   background_color_ios: "#081426"
+  adaptive_icon_background: "#081426"
+  adaptive_icon_foreground: assets/images/logo_scoutset.png
