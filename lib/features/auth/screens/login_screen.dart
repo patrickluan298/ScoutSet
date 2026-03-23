@@ -52,6 +52,12 @@ class _LoginScreenState extends State<LoginScreen> {
     return null;
   }
 
+  void _resetFormState() {
+    _emailController.clear();
+    _passwordController.clear();
+    _formKey.currentState?.reset();
+  }
+
   Future<void> _handleLogin() async {
     final isValid = _formKey.currentState?.validate() ?? false;
     if (!isValid) {
@@ -94,6 +100,9 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!mounted || result != true) {
       return;
     }
+
+    FocusScope.of(context).unfocus();
+    _resetFormState();
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(

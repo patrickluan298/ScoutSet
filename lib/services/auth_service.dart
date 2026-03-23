@@ -71,7 +71,8 @@ class AuthService {
           (account) =>
               account != null &&
               account.email.toLowerCase() == trimmedEmail &&
-              account.passwordHash == _hashPassword(trimmedPassword, account.passwordSalt),
+              account.passwordHash ==
+                  _hashPassword(trimmedPassword, account.passwordSalt),
           orElse: () => null,
         );
 
@@ -179,9 +180,26 @@ class AuthService {
     }
 
     final decoded = jsonDecode(raw) as List<dynamic>;
-    return decoded
-        .map((item) => _StoredAuthUser.fromJson(item as Map<String, dynamic>))
-        .toList();
+    var migrated = false;
+    final accounts = <_StoredAuthUser>[];
+
+    for (final item in decoded) {
+      try {
+        final account = _StoredAuthUser.fromJson(item as Map<String, dynamic>);
+        if (account.wasMigrated) {
+          migrated = true;
+        }
+        accounts.add(account);
+      } catch (_) {
+        migrated = true;
+      }
+    }
+
+    if (migrated) {
+      await _saveAccounts(accounts);
+    }
+
+    return accounts;
   }
 
   Future<void> _saveAccounts(List<_StoredAuthUser> accounts) async {
@@ -205,6 +223,7 @@ class _StoredAuthUser {
     required this.passwordHash,
     required this.passwordSalt,
     required this.teamId,
+    this.wasMigrated = false,
   });
 
   final String id;
@@ -213,6 +232,7 @@ class _StoredAuthUser {
   final String passwordHash;
   final String passwordSalt;
   final String teamId;
+  final bool wasMigrated;
 
   User toUser() {
     return User(
@@ -235,13 +255,49 @@ class _StoredAuthUser {
   }
 
   factory _StoredAuthUser.fromJson(Map<String, dynamic> json) {
-    return _StoredAuthUser(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      email: json['email'] as String,
-      passwordHash: json['passwordHash'] as String,
-      passwordSalt: json['passwordSalt'] as String,
-      teamId: json['teamId'] as String,
-    );
+    final rawId = json['id'];
+    final rawName = json['name'];
+    final rawEmail = json['email'];
+    final rawTeamId = json['teamId'];
+    final rawPasswordHash = json['passwordHash'];
+    final rawPasswordSalt = json['passwordSalt'];
+    final rawLegacyPassword = json['password'];
+
+    if (rawId is! String || rawName is! String || rawEmail is! String) {
+      throw const FormatException('Usuario salvo em formato invalido.');
+    }
+
+    final teamId = rawTeamId is String && rawTeamId.isNotEmpty ? rawTeamId : 'team-1';
+    final hasSecurePassword =
+        rawPasswordHash is String &&
+        rawPasswordHash.isNotEmpty &&
+        rawPasswordSalt is String &&
+        rawPasswordSalt.isNotEmpty;
+
+    if (hasSecurePassword) {
+      return _StoredAuthUser(
+        id: rawId,
+        name: rawName,
+        email: rawEmail,
+        passwordHash: rawPasswordHash,
+        passwordSalt: rawPasswordSalt,
+        teamId: teamId,
+      );
+    }
+
+    if (rawLegacyPassword is String && rawLegacyPassword.isNotEmpty) {
+      final salt = AuthService.instance._generateSalt();
+      return _StoredAuthUser(
+        id: rawId,
+        name: rawName,
+        email: rawEmail,
+        passwordHash: AuthService.instance._hashPassword(rawLegacyPassword, salt),
+        passwordSalt: salt,
+        teamId: teamId,
+        wasMigrated: true,
+      );
+    }
+
+    throw const FormatException('Usuario salvo sem credenciais validas.');
   }
 }
