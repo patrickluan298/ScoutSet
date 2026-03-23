@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 
 import 'config/app_routes.dart';
 import 'core/theme/app_theme.dart';
+import 'services/auth_service.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await AuthService.instance.initialize();
   runApp(const ScoutSetApp());
 }
 
@@ -16,9 +19,9 @@ class ScoutSetApp extends StatelessWidget {
       title: 'ScoutSet',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.theme,
-      initialRoute: AppRoutes.login,
-      routes: AppRoutes.routes,
+      initialRoute: AppRoutes.initialRoute,
+      onGenerateRoute: AppRoutes.onGenerateRoute,
+      onUnknownRoute: AppRoutes.onUnknownRoute,
     );
   }
 }
-
