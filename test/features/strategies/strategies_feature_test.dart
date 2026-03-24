@@ -35,14 +35,14 @@ void main() {
       buildTestable(const StrategiesScreen()),
     );
 
-    expect(find.text('Criar primeira estrategia'), findsOneWidget);
+    expect(find.text('Criar primeira estratégia'), findsOneWidget);
 
-    await tapVisible(tester, find.text('Criar primeira estrategia'));
+    await tapVisible(tester, find.text('Criar primeira estratégia'));
 
-    await tester.enterText(find.byKey(const Key('strategy-name-field')), 'Recepcao 3x1');
-    await tapVisible(tester, find.text('Salvar estrategia'));
+    await tester.enterText(find.byKey(const Key('strategy-name-field')), 'Recepção 3x1');
+    await tapVisible(tester, find.text('Salvar estratégia'));
 
-    expect(find.text('Recepcao 3x1'), findsOneWidget);
+    expect(find.text('Recepção 3x1'), findsOneWidget);
     expect(find.text('6 jogadores'), findsOneWidget);
   });
 
@@ -51,7 +51,7 @@ void main() {
       buildTestable(const StrategiesScreen()),
     );
 
-    await tapVisible(tester, find.text('Criar primeira estrategia'));
+    await tapVisible(tester, find.text('Criar primeira estratégia'));
 
     expect(find.byType(PlayerMarker), findsNWidgets(6));
 
@@ -65,11 +65,11 @@ void main() {
       buildTestable(const StrategiesScreen()),
     );
 
-    await tapVisible(tester, find.text('Criar primeira estrategia'));
+    await tapVisible(tester, find.text('Criar primeira estratégia'));
     await tapVisible(tester, find.text('Praia'));
 
     expect(
-      find.text('No volei de praia nao sao permitidas substituicoes durante o set.'),
+      find.text('No vôlei de praia não são permitidas substituições durante o set.'),
       findsOneWidget,
     );
   });
@@ -79,7 +79,7 @@ void main() {
       buildTestable(const StrategiesScreen()),
     );
 
-    await tapVisible(tester, find.text('Criar primeira estrategia'));
+    await tapVisible(tester, find.text('Criar primeira estratégia'));
 
     await tapVisible(tester, find.byKey(const Key('sub-out-dropdown')));
     await tapVisible(tester, find.text('1 - P1').last);
@@ -87,7 +87,7 @@ void main() {
     await tapVisible(tester, find.byKey(const Key('sub-in-dropdown')));
     await tapVisible(tester, find.text('7 - B7').last);
 
-    await tapVisible(tester, find.text('Aplicar substituicao'));
+    await tapVisible(tester, find.text('Aplicar substituição'));
 
     expect(find.text('P1 -> B7'), findsOneWidget);
     expect(find.text('1/6'), findsOneWidget);
@@ -120,8 +120,8 @@ void main() {
     );
 
     expect(find.text('Bloqueio duplo'), findsWidgets);
-    expect(find.text('Visualizacao'), findsOneWidget);
+    expect(find.text('Visualização'), findsOneWidget);
     expect(find.byType(PlayerMarker), findsNWidgets(6));
-    expect(find.text('Substituicoes regulamentares: 1/6'), findsOneWidget);
+    expect(find.text('Substituições regulamentares: 1/6'), findsOneWidget);
   });
 }

@@ -33,8 +33,8 @@ class _AppShellScreenState extends State<AppShellScreen> {
   static const List<String> _titles = [
     'ScoutSet',
     'Placar',
-    'Estrategias',
-    'Relatorios',
+    'Estratégias',
+    'Relatórios',
     'Perfil',
   ];
 
@@ -85,12 +85,12 @@ class _AppShellScreenState extends State<AppShellScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.schema),
             activeIcon: Icon(Icons.schema),
-            label: 'Estrategias',
+            label: 'Estratégias',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.bar_chart),
             activeIcon: Icon(Icons.bar_chart),
-            label: 'Relatorios',
+            label: 'Relatórios',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person_outline),

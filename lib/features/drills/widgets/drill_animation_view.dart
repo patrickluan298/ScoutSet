@@ -317,7 +317,7 @@ class _DrillAnimationViewState extends State<DrillAnimationView> {
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Text(
-                'Este drill ainda nao possui frames de animacao suficientes para exibicao visual.',
+                'Este drill ainda não possui frames de animação suficientes para exibição visual.',
                 style: Theme.of(context).textTheme.bodyLarge,
               ),
             ),

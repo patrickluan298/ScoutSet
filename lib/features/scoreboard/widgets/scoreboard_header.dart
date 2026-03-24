@@ -63,7 +63,7 @@ class ScoreboardHeader extends StatelessWidget {
                   onPressed: onHistoryTap,
                   icon: const Icon(Icons.history),
                   color: AppTheme.whiteColor,
-                  tooltip: 'Historico',
+                  tooltip: 'Histórico',
                 ),
             ],
           ),

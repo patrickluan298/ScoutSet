@@ -13,7 +13,7 @@ void main() {
     await AuthService.instance.reset();
   });
 
-  testWidgets('login vazio nao navega para dashboard', (tester) async {
+  testWidgets('login vazio não navega para dashboard', (tester) async {
     await tester.pumpWidget(const ScoutSetApp());
 
     await tester.ensureVisible(find.widgetWithText(ElevatedButton, 'Entrar'));
@@ -25,9 +25,9 @@ void main() {
     expect(find.text('Dashboard'), findsNothing);
   });
 
-  testWidgets('login so navega para dashboard quando o usuario existe na base local', (tester) async {
+  testWidgets('login só navega para dashboard quando o usuário existe na base local', (tester) async {
     await AuthService.instance.register(
-      name: 'Usuario Teste',
+      name: 'Usuário Teste',
       email: 'usuario@scoutset.app',
       password: strongPassword,
     );
@@ -51,7 +51,7 @@ void main() {
     expect(find.text('Placar'), findsWidgets);
   });
 
-  testWidgets('login com usuario inexistente mostra erro e nao navega', (tester) async {
+  testWidgets('login com usuário inexistente mostra erro e não navega', (tester) async {
     await tester.pumpWidget(const ScoutSetApp());
 
     await tester.enterText(find.byType(TextFormField).at(0), 'naoexiste@scoutset.app');
@@ -62,7 +62,7 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 600));
 
-    expect(find.text('Usuario nao encontrado ou senha incorreta.'), findsOneWidget);
+    expect(find.text('Usuário não encontrado ou senha incorreta.'), findsOneWidget);
     expect(find.text('Dashboard'), findsNothing);
   });
 }

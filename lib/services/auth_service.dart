@@ -61,7 +61,7 @@ class AuthService {
       password: trimmedPassword,
     );
     if (trimmedEmail.isEmpty || trimmedPassword.isEmpty) {
-      throw ArgumentError('E-mail e senha sao obrigatorios.');
+      throw ArgumentError('E-mail e senha são obrigatórios.');
     }
 
     await Future<void>.delayed(const Duration(milliseconds: 350));
@@ -77,7 +77,7 @@ class AuthService {
         );
 
     if (matchingAccount == null) {
-      throw ArgumentError('Usuario nao encontrado ou senha incorreta.');
+      throw ArgumentError('Usuário não encontrado ou senha incorreta.');
     }
 
     authState.value = matchingAccount.toUser();
@@ -101,11 +101,11 @@ class AuthService {
       password: trimmedPassword,
     );
     if (trimmedName.isEmpty || trimmedEmail.isEmpty || trimmedPassword.isEmpty) {
-      throw ArgumentError('Nome, e-mail e senha sao obrigatorios.');
+      throw ArgumentError('Nome, e-mail e senha são obrigatórios.');
     }
     if (!_isStrongPassword(trimmedPassword)) {
       throw ArgumentError(
-        'A senha deve ter ao menos 8 caracteres, com numero, letra maiuscula e caractere especial.',
+        'A senha deve ter ao menos 8 caracteres, com número, letra maiúscula e caractere especial.',
       );
     }
 
@@ -116,7 +116,7 @@ class AuthService {
       (account) => account.email.toLowerCase() == trimmedEmail,
     );
     if (emailAlreadyExists) {
-      throw ArgumentError('Ja existe um usuario cadastrado com esse e-mail.');
+      throw ArgumentError('Já existe um usuário cadastrado com esse e-mail.');
     }
 
     final salt = _generateSalt();
@@ -264,7 +264,7 @@ class _StoredAuthUser {
     final rawLegacyPassword = json['password'];
 
     if (rawId is! String || rawName is! String || rawEmail is! String) {
-      throw const FormatException('Usuario salvo em formato invalido.');
+      throw const FormatException('Usuário salvo em formato inválido.');
     }
 
     final teamId = rawTeamId is String && rawTeamId.isNotEmpty ? rawTeamId : 'team-1';
@@ -298,6 +298,6 @@ class _StoredAuthUser {
       );
     }
 
-    throw const FormatException('Usuario salvo sem credenciais validas.');
+    throw const FormatException('Usuário salvo sem credenciais válidas.');
   }
 }

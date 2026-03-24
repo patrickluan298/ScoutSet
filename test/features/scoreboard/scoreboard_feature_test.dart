@@ -49,14 +49,12 @@ void main() {
     service.startMatch(teamAName: 'A', teamBName: 'B');
     service.addPointToTeamA();
     service.addPointToTeamB();
-    service.toggleServingTeam();
 
     await pumpScoreboard(tester);
 
     expect(find.text('A'), findsWidgets);
     expect(find.text('B'), findsWidgets);
     expect(find.text('1'), findsWidgets);
-    expect(find.text('Alternar saque'), findsOneWidget);
   });
 
   testWidgets('blocks scoring controls after the match ends', (tester) async {
@@ -87,7 +85,7 @@ void main() {
     await tester.tap(find.byIcon(Icons.history).first);
     await tester.pumpAndSettle();
 
-    expect(find.text('Historico de partidas'), findsOneWidget);
+    expect(find.text('Histórico de partidas'), findsOneWidget);
     expect(find.text('A x B'), findsOneWidget);
 
     await tester.tap(find.text('A x B').first);

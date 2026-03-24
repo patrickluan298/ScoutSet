@@ -62,7 +62,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return 'Informe seu e-mail.';
     }
     if (!email.contains('@') || !email.contains('.')) {
-      return 'Digite um e-mail valido.';
+      return 'Digite um e-mail válido.';
     }
     return null;
   }
@@ -183,8 +183,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SectionTitle(
-                        title: 'Cadastro de usuario',
-                        subtitle: 'Crie sua conta. Depois do cadastro, voce retorna ao login para entrar no app.',
+                        title: 'Cadastro de usuário',
+                        subtitle: 'Crie sua conta. Depois do cadastro, você retorna ao login para entrar no app.',
                       ),
                       AppSpacing.gapLarge,
                       AppTextField(

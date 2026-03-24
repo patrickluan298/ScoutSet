@@ -69,7 +69,7 @@ class _StrategiesScreenState extends State<StrategiesScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Excluir estrategia'),
+          title: const Text('Excluir estratégia'),
           content: Text('Deseja remover "${strategy.name}" da lista?'),
           actions: [
             TextButton(
@@ -92,7 +92,7 @@ class _StrategiesScreenState extends State<StrategiesScreen> {
     _strategyService.deleteStrategy(strategy.id);
     setState(_loadStrategies);
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Estrategia "${strategy.name}" removida.')),
+      SnackBar(content: Text('Estratégia "${strategy.name}" removida.')),
     );
   }
 
@@ -108,15 +108,15 @@ class _StrategiesScreenState extends State<StrategiesScreen> {
             children: [
               const Expanded(
                 child: SectionTitle(
-                  title: 'Estrategias',
-                  subtitle: 'Monte formacoes, desenhe jogadas e organize cenarios taticos para quadra e praia.',
+                  title: 'Estratégias',
+                  subtitle: 'Monte formações, desenhe jogadas e organize cenários táticos para quadra e praia.',
                 ),
               ),
               const SizedBox(width: 12),
               SizedBox(
                 width: 170,
                 child: AppButton(
-                  label: 'Nova estrategia',
+                  label: 'Nova estratégia',
                   icon: Icons.add,
                   onPressed: () => _openEditor(),
                 ),
@@ -130,17 +130,17 @@ class _StrategiesScreenState extends State<StrategiesScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Sua area tatica esta pronta para comecar.',
+                    'Sua área tática está pronta para começar.',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Crie a primeira estrategia para posicionar atletas, desenhar movimentacoes e salvar modelos de jogo.',
+                    'Crie a primeira estratégia para posicionar atletas, desenhar movimentações e salvar modelos de jogo.',
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   const SizedBox(height: 20),
                   AppButton(
-                    label: 'Criar primeira estrategia',
+                    label: 'Criar primeira estratégia',
                     icon: Icons.sports_volleyball,
                     onPressed: () => _openEditor(),
                   ),
@@ -158,7 +158,7 @@ class _StrategiesScreenState extends State<StrategiesScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Estrategias')),
+      appBar: AppBar(title: const Text('Estratégias')),
       body: content,
     );
   }
@@ -183,7 +183,7 @@ class _StrategiesScreenState extends State<StrategiesScreen> {
                       const SizedBox(height: 8),
                       Text(
                         strategy.description.isEmpty
-                            ? 'Sem descricao adicional.'
+                            ? 'Sem descrição adicional.'
                             : strategy.description,
                         style: theme.textTheme.bodyMedium,
                       ),
@@ -245,7 +245,7 @@ class _StrategiesScreenState extends State<StrategiesScreen> {
                 IconButton(
                   onPressed: () => _deleteStrategy(strategy),
                   icon: const Icon(Icons.delete_outline),
-                  tooltip: 'Excluir estrategia',
+                  tooltip: 'Excluir estratégia',
                 ),
               ],
             ),

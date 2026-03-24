@@ -22,10 +22,10 @@ const _teamDark = 0xFF081426;
 const List<Drill> _drills = [
   Drill(
     id: 'reception-triangle',
-    name: 'Recepcao em Triangulo com Transicao',
-    category: 'Recepcao',
-    objective: 'Melhorar leitura do saque, estabilidade de manchete e transicao para levantamento.',
-    difficulty: 'Intermediario',
+    name: 'Recepção em Triângulo com Transição',
+    category: 'Recepção',
+    objective: 'Melhorar leitura do saque, estabilidade de manchete e transição para levantamento.',
+    difficulty: 'Intermediário',
     duration: '12 min',
     isFavorite: true,
     players: [
@@ -35,24 +35,24 @@ const List<Drill> _drills = [
     ],
     steps: [
       'Jogadora A se prepara na base para receber o saque.',
-      'A bola e direcionada para a levantadora B na zona central.',
-      'B faz o levantamento e C ajusta a aproximacao para atacar.',
-      'C finaliza o lance e o grupo retorna para a posicao inicial.',
+      'A bola é direcionada para a levantadora B na zona central.',
+      'B faz o levantamento e C ajusta a aproximação para atacar.',
+      'C finaliza o lance e o grupo retorna para a posição inicial.',
     ],
     tips: [
       'Mantenha a base baixa antes do contato com a bola.',
       'Direcione a manchete para a frente da testa da levantadora.',
-      'A atacante deve iniciar a passada no momento da saida da bola.',
+      'A atacante deve iniciar a passada no momento da saída da bola.',
     ],
     commonErrors: [
       'Receber com ombros desequilibrados e mandar a bola para fora da zona de levantamento.',
       'Iniciar a corrida de ataque cedo demais.',
-      'Levantar com os pes desalinhados em relacao ao alvo.',
+      'Levantar com os pés desalinhados em relação ao alvo.',
     ],
     variations: [
       'Alternar o alvo do ataque entre diagonal e paralela.',
-      'Adicionar saque flutuante curto para exigir ajuste rapido.',
-      'Trocar a recebedora a cada tres repeticoes.',
+      'Adicionar saque flutuante curto para exigir ajuste rápido.',
+      'Trocar a recebedora a cada três repetições.',
     ],
     animationFrames: [
       AnimationFrame(
@@ -62,7 +62,7 @@ const List<Drill> _drills = [
         instructionText: 'Prepare a base',
         ballPosition: BallPosition(x: 50, y: 10),
         highlightedZones: [
-          CourtZoneHighlight(x: 40, y: 63, width: 18, height: 18, label: 'Zona de recepcao'),
+          CourtZoneHighlight(x: 40, y: 63, width: 18, height: 18, label: 'Zona de recepção'),
         ],
         playersPositions: [
           PlayerPosition(playerId: 'a', x: 48, y: 72),
@@ -130,10 +130,10 @@ const List<Drill> _drills = [
   ),
   Drill(
     id: 'attack-timing',
-    name: 'Ataque com Tempo de Aproximacao',
+    name: 'Ataque com Tempo de Aproximação',
     category: 'Ataque',
-    objective: 'Treinar a coordenacao entre chamada, passada de aproximacao, salto e finalizacao.',
-    difficulty: 'Avancado',
+    objective: 'Treinar a coordenação entre chamada, passada de aproximação, salto e finalização.',
+    difficulty: 'Avançado',
     duration: '15 min',
     isFavorite: false,
     players: [
@@ -142,32 +142,32 @@ const List<Drill> _drills = [
       DrillPlayer(id: 'block', label: 'B', role: 'Bloqueio', colorHex: _teamDark),
     ],
     steps: [
-      'A levantadora se posiciona na zona de distribuicao.',
-      'A atacante inicia a aproximacao sincronizada com a saida do levantamento.',
+      'A levantadora se posiciona na zona de distribuição.',
+      'A atacante inicia a aproximação sincronizada com a saída do levantamento.',
       'A bola sobe na frente do ombro de ataque.',
       'A atacante salta, ataca e faz retorno controlado ao solo.',
     ],
     tips: [
       'Use a chamada verbal antes da corrida.',
-      'Mantenha o ultimo passo mais explosivo.',
+      'Mantenha o último passo mais explosivo.',
       'Ataque com o cotovelo alto e tronco alinhado.',
     ],
     commonErrors: [
-      'Aproximacao reta demais, sem ajuste para a bola.',
-      'Salto atrasado em relacao ao levantamento.',
-      'Ataque com contato atras da cabeca.',
+      'Aproximação reta demais, sem ajuste para a bola.',
+      'Salto atrasado em relação ao levantamento.',
+      'Ataque com contato atrás da cabeça.',
     ],
     variations: [
       'Mudar a origem do levantamento para treinar ajuste lateral.',
-      'Adicionar bloqueio passivo para leitura de direcao.',
-      'Alternar bolas rapidas e bolas altas.',
+      'Adicionar bloqueio passivo para leitura de direção.',
+      'Alternar bolas rápidas e bolas altas.',
     ],
     animationFrames: [
       AnimationFrame(
         timestamp: 0,
         stepIndex: 0,
         highlightPlayerId: 'setter',
-        instructionText: 'Organize o ponto de distribuicao',
+        instructionText: 'Organize o ponto de distribuição',
         ballPosition: BallPosition(x: 48, y: 55),
         playersPositions: [
           PlayerPosition(playerId: 'setter', x: 46, y: 54),
@@ -235,7 +235,7 @@ const List<Drill> _drills = [
     id: 'serve-targets',
     name: 'Saque com Alvos por Zona',
     category: 'Saque',
-    objective: 'Melhorar precisao, repeticao tecnica e tomada de decisao no direcionamento do saque.',
+    objective: 'Melhorar precisão, repetição técnica e tomada de decisão no direcionamento do saque.',
     difficulty: 'Iniciante',
     duration: '10 min',
     isFavorite: true,
@@ -246,24 +246,24 @@ const List<Drill> _drills = [
     ],
     steps: [
       'A sacadora alinha corpo e alvo antes do toss.',
-      'O saque e direcionado para a zona 1.',
-      'Na repeticao seguinte, o alvo muda para a zona 5.',
-      'A atleta reinicia a rotina mantendo o mesmo gesto tecnico.',
+      'O saque é direcionado para a zona 1.',
+      'Na repetição seguinte, o alvo muda para a zona 5.',
+      'A atleta reinicia a rotina mantendo o mesmo gesto técnico.',
     ],
     tips: [
-      'Repita a mesma rotina de respiracao antes do saque.',
-      'Observe o contato da mao com a parte posterior da bola.',
+      'Repita a mesma rotina de respiração antes do saque.',
+      'Observe o contato da mão com a parte posterior da bola.',
       'Finalize o gesto apontando para a zona alvo.',
     ],
     commonErrors: [
-      'Lancamento da bola muito a frente do corpo.',
-      'Mudanca no gesto tecnico ao trocar o alvo.',
+      'Lançamento da bola muito à frente do corpo.',
+      'Mudança no gesto técnico ao trocar o alvo.',
       'Contato na lateral da bola gerando saque sem controle.',
     ],
     variations: [
-      'Reduzir a area do alvo com cones.',
+      'Reduzir a área do alvo com cones.',
       'Alternar saque curto e profundo.',
-      'Somar pontuacao por acerto consecutivo.',
+      'Somar pontuação por acerto consecutivo.',
     ],
     animationFrames: [
       AnimationFrame(
@@ -303,7 +303,7 @@ const List<Drill> _drills = [
         timestamp: 3200,
         stepIndex: 2,
         highlightPlayerId: 'server',
-        instructionText: 'Troque o alvo sem mudar a tecnica',
+        instructionText: 'Troque o alvo sem mudar a técnica',
         ballPosition: BallPosition(x: 34, y: 40),
         highlightedZones: [
           CourtZoneHighlight(x: 14, y: 16, width: 16, height: 16, label: 'Zona 5'),
@@ -321,7 +321,7 @@ const List<Drill> _drills = [
         timestamp: 4800,
         stepIndex: 3,
         highlightPlayerId: 'server',
-        instructionText: 'Reinicie e mantenha consistencia',
+        instructionText: 'Reinicie e mantenha consistência',
         ballPosition: BallPosition(x: 50, y: 88),
         playersPositions: [
           PlayerPosition(playerId: 'server', x: 50, y: 92),

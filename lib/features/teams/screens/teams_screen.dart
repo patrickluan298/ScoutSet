@@ -9,7 +9,7 @@ class TeamsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return const ModulePlaceholderScreen(
       title: 'Equipes',
-      description: 'Espaco reservado para cadastro de equipes, atletas, papeis e composicoes de elenco.',
+      description: 'Espaço reservado para cadastro de equipes, atletas, papéis e composições de elenco.',
     );
   }
 }

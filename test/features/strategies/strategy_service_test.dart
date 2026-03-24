@@ -17,7 +17,7 @@ void main() {
     final createdAt = DateTime(2026, 3, 16);
     final strategy = Strategy(
       id: '',
-      name: 'Saida rapida',
+      name: 'Saída rápida',
       description: 'Ataque pela ponta com cobertura.',
       playersPositions: service.defaultPlayersForMode(StrategyGameMode.indoor),
       benchPlayers: service.defaultBenchPlayersForMode(StrategyGameMode.indoor),
@@ -41,7 +41,7 @@ void main() {
 
     final updated = service.updateStrategy(
       created.copyWith(
-        name: 'Saida rapida ajustada',
+        name: 'Saída rápida ajustada',
         description: 'Ataque pela ponta com ajuste no bloqueio.',
         movements: [
           const Movement(
@@ -64,7 +64,7 @@ void main() {
     );
 
     expect(updated.createdAt, createdAt);
-    expect(updated.name, 'Saida rapida ajustada');
+    expect(updated.name, 'Saída rápida ajustada');
     expect(updated.movements.single.movementType, MovementType.block);
     expect(updated.regulationSubstitutionsCount, 1);
 

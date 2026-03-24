@@ -25,20 +25,20 @@ class DashboardScreen extends StatelessWidget {
 
   static const _tiles = [
     _DashboardItem('Placar', 'Controle o jogo em tempo real', Icons.sports_volleyball, AppRoutes.scoreboard),
-    _DashboardItem('Estrategias', 'Monte cenarios e simulacoes', Icons.schema, AppRoutes.strategies),
-    _DashboardItem('Drills', 'Organize treinos e exercicios', Icons.fitness_center, AppRoutes.drills),
-    _DashboardItem('Regras', 'Consulte regras e observacoes', Icons.gavel, AppRoutes.rules),
-    _DashboardItem('Videos', 'Central de analise de video', Icons.videocam_outlined, AppRoutes.videos),
-    _DashboardItem('Relatorios', 'Acompanhe dados e metricas', Icons.bar_chart, AppRoutes.reports),
+    _DashboardItem('Estratégias', 'Monte cenários e simulações', Icons.schema, AppRoutes.strategies),
+    _DashboardItem('Drills', 'Organize treinos e exercícios', Icons.fitness_center, AppRoutes.drills),
+    _DashboardItem('Regras', 'Consulte regras e observações', Icons.gavel, AppRoutes.rules),
+    _DashboardItem('Vídeos', 'Central de análise de vídeo', Icons.videocam_outlined, AppRoutes.videos),
+    _DashboardItem('Relatórios', 'Acompanhe dados e métricas', Icons.bar_chart, AppRoutes.reports),
     _DashboardItem('Equipes', 'Gerencie times e atletas', Icons.groups_outlined, AppRoutes.teams),
-    _DashboardItem('Perfil', 'Preferencias e conta', Icons.person_outline, AppRoutes.profile),
+    _DashboardItem('Perfil', 'Preferências e conta', Icons.person_outline, AppRoutes.profile),
   ];
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final user = AuthService.instance.currentUser;
-    final userName = (user?.name.trim().isNotEmpty ?? false) ? user!.name.trim() : 'Usuario';
+    final userName = (user?.name.trim().isNotEmpty ?? false) ? user!.name.trim() : 'Usuário';
 
     final content = SingleChildScrollView(
       padding: AppSpacing.screen,

@@ -70,7 +70,7 @@ class _DrillDetailScreenState extends State<DrillDetailScreen> {
                     children: [
                       _MetaPill(label: 'Dificuldade', value: _drill.difficulty),
                       _MetaPill(label: 'Jogadores', value: '${_drill.playersCount}'),
-                      _MetaPill(label: 'Duracao', value: _drill.duration),
+                      _MetaPill(label: 'Duração', value: _drill.duration),
                       _MetaPill(label: 'Categoria', value: _drill.category),
                     ],
                   ),
@@ -98,7 +98,7 @@ class _DrillDetailScreenState extends State<DrillDetailScreen> {
                 children: [
                   const SectionTitle(
                     title: 'Passo a passo',
-                    subtitle: 'Toque em qualquer etapa para sincronizar a animacao com o momento desejado.',
+                    subtitle: 'Toque em qualquer etapa para sincronizar a animação com o momento desejado.',
                   ),
                   const SizedBox(height: 16),
                   for (var index = 0; index < _drill.steps.length; index++)
@@ -114,7 +114,7 @@ class _DrillDetailScreenState extends State<DrillDetailScreen> {
             AppSpacing.gapMedium,
             _InfoListCard(
               title: 'Dicas',
-              subtitle: 'Boas praticas para melhorar a execucao do drill.',
+              subtitle: 'Boas práticas para melhorar a execução do drill.',
               items: _drill.tips,
               accentColor: AppTheme.secondaryBlueColor,
               icon: Icons.tips_and_updates_outlined,
@@ -122,15 +122,15 @@ class _DrillDetailScreenState extends State<DrillDetailScreen> {
             AppSpacing.gapMedium,
             _InfoListCard(
               title: 'Erros comuns',
-              subtitle: 'Pontos de atencao para evitar vicios tecnicos.',
+              subtitle: 'Pontos de atenção para evitar vícios técnicos.',
               items: _drill.commonErrors,
               accentColor: const Color(0xFFD14343),
               icon: Icons.warning_amber_rounded,
             ),
             AppSpacing.gapMedium,
             _InfoListCard(
-              title: 'Variacoes',
-              subtitle: 'Formas de evoluir a tarefa sem perder o objetivo tecnico.',
+              title: 'Variações',
+              subtitle: 'Formas de evoluir a tarefa sem perder o objetivo técnico.',
               items: _drill.variations,
               accentColor: AppTheme.accentColor,
               icon: Icons.alt_route_rounded,

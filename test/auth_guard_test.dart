@@ -11,7 +11,7 @@ void main() {
     await AuthService.instance.reset();
   });
 
-  testWidgets('usuario nao autenticado e redirecionado ao login ao acessar rota protegida', (tester) async {
+  testWidgets('usuário não autenticado é redirecionado ao login ao acessar rota protegida', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
         theme: AppTheme.theme,
@@ -23,7 +23,7 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    expect(find.text('Acesso do usuario'), findsOneWidget);
+    expect(find.text('Acesso do usuário'), findsOneWidget);
     expect(find.text('Dashboard'), findsNothing);
   });
 }

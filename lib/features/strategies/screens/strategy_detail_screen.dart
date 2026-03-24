@@ -23,9 +23,9 @@ class StrategyDetailScreen extends StatelessWidget {
 
     if (strategy == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Estrategia')),
+        appBar: AppBar(title: const Text('Estratégia')),
         body: const Center(
-          child: Text('Estrategia nao encontrada.'),
+          child: Text('Estratégia não encontrada.'),
         ),
       );
     }
@@ -40,7 +40,7 @@ class StrategyDetailScreen extends StatelessWidget {
             SectionTitle(
               title: strategy.name,
               subtitle: strategy.description.isEmpty
-                  ? 'Visualizacao apenas leitura da estrategia salva.'
+                  ? 'Visualização apenas de leitura da estratégia salva.'
                   : strategy.description,
             ),
             AppSpacing.gapMedium,
@@ -49,7 +49,7 @@ class StrategyDetailScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Quadra tatica',
+                    'Quadra tática',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: 16),
@@ -90,9 +90,9 @@ class StrategyDetailScreen extends StatelessWidget {
                   const SizedBox(height: 8),
                   Text('Movimentos desenhados: ${strategy.movements.length}'),
                   const SizedBox(height: 8),
-                  Text('Substituicoes regulamentares: ${strategy.regulationSubstitutionsCount}/6'),
+                  Text('Substituições regulamentares: ${strategy.regulationSubstitutionsCount}/6'),
                   const SizedBox(height: 8),
-                  Text('Trocas de libero: ${strategy.liberoExchangesCount}'),
+                  Text('Trocas de líbero: ${strategy.liberoExchangesCount}'),
                 ],
               ),
             ),

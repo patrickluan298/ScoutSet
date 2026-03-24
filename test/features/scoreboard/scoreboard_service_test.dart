@@ -151,13 +151,6 @@ void main() {
     expect(state.statusMessage, 'Set 1 em andamento');
   });
 
-  test('toggle serving swaps between teams', () {
-    service.startMatch(teamAName: 'A', teamBName: 'B');
-    expect(service.getState().activeMatch?.servingTeam, TeamSide.teamA);
-
-    service.toggleServingTeam();
-    expect(service.getState().activeMatch?.servingTeam, TeamSide.teamB);
-  });
 
   test('manual finish archives the current match in history', () {
     service.startMatch(teamAName: 'A', teamBName: 'B');

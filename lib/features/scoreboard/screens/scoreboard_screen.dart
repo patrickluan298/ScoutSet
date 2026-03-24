@@ -63,7 +63,7 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
     } on ArgumentError catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(error.message?.toString() ?? 'Nao foi possivel iniciar a partida.'),
+          content: Text(error.message?.toString() ?? 'Não foi possível iniciar a partida.'),
         ),
       );
     }
@@ -105,8 +105,8 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         ScoreboardHeader(
-          title: 'Placar Eletronico de Volei',
-          subtitle: 'Monte a partida, acompanhe os sets e salve o historico em tempo real.',
+          title: 'Placar Eletrônico de Vôlei',
+          subtitle: 'Monte a partida, acompanhe os sets e salve o histórico em tempo real.',
           statusLabel: state.statusMessage,
           onHistoryTap: state.history.isEmpty ? null : _openHistory,
         ),
@@ -168,17 +168,17 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Historico recente', style: Theme.of(context).textTheme.titleMedium),
+                Text('Histórico recente', style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 8),
                 Text(
-                  'Voce ja tem ${state.history.length} partida(s) registrada(s) nesta sessao.',
+                  'Você já tem ${state.history.length} partida(s) registrada(s) nesta sessão.',
                   style: Theme.of(context).textTheme.bodyLarge,
                 ),
                 const SizedBox(height: 16),
                 OutlinedButton.icon(
                   onPressed: _openHistory,
                   icon: const Icon(Icons.history),
-                  label: const Text('Abrir historico'),
+                  label: const Text('Abrir histórico'),
                 ),
               ],
             ),
@@ -261,7 +261,6 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
                 onPointTeamA: _service.addPointToTeamA,
                 onPointTeamB: _service.addPointToTeamB,
                 onUndo: _service.undoLastPoint,
-                onToggleServe: _service.toggleServingTeam,
                 onReset: _service.resetCurrentMatch,
                 onFinish: _service.finishCurrentMatch,
                 onNewMatch: () => _prepareNewMatch(state),

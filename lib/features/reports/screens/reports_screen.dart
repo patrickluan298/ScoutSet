@@ -13,8 +13,8 @@ class ReportsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ModulePlaceholderScreen(
-      title: 'Relatorios',
-      description: 'Espaco reservado para dashboards de desempenho, metricas historicas e analises avancadas.',
+      title: 'Relatórios',
+      description: 'Espaço reservado para dashboards de desempenho, métricas históricas e análises avançadas.',
       showScaffold: showScaffold,
     );
   }

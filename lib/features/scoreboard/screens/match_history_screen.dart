@@ -14,7 +14,7 @@ class MatchHistoryScreen extends StatelessWidget {
     final service = ScoreboardService.instance;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Historico de partidas')),
+      appBar: AppBar(title: const Text('Histórico de partidas')),
       body: ValueListenableBuilder(
         valueListenable: service.stateNotifier,
         builder: (context, state, _) {
@@ -25,7 +25,7 @@ class MatchHistoryScreen extends StatelessWidget {
               children: [
                 AppCard(
                   child: Text(
-                    'Nenhuma partida registrada ainda. Inicie um jogo no placar para salvar o historico.',
+                    'Nenhuma partida registrada ainda. Inicie um jogo no placar para salvar o histórico.',
                     style: Theme.of(context).textTheme.bodyLarge,
                   ),
                 ),

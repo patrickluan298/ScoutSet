@@ -39,7 +39,7 @@ class _LoginScreenState extends State<LoginScreen> {
       return 'Informe seu e-mail.';
     }
     if (!email.contains('@') || !email.contains('.')) {
-      return 'Digite um e-mail valido.';
+      return 'Digite um e-mail válido.';
     }
     return null;
   }
@@ -106,7 +106,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Conta criada com sucesso. Agora faca login.'),
+        content: Text('Conta criada com sucesso. Agora faça login.'),
       ),
     );
   }
@@ -148,7 +148,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Acesso do usuario',
+                            'Acesso do usuário',
                             style: theme.textTheme.titleLarge,
                           ),
                           const SizedBox(height: 8),
@@ -212,7 +212,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               borderRadius: BorderRadius.circular(14),
                             ),
                             child: Text(
-                              'Todas as areas do app exigem autenticacao antes do acesso.',
+                              'Todas as áreas do app exigem autenticação antes do acesso.',
                               style: theme.textTheme.bodyMedium?.copyWith(
                                 fontWeight: FontWeight.w600,
                               ),

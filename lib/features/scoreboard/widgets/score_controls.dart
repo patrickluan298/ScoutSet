@@ -9,7 +9,6 @@ class ScoreControls extends StatelessWidget {
     required this.onPointTeamA,
     required this.onPointTeamB,
     required this.onUndo,
-    required this.onToggleServe,
     required this.onReset,
     required this.onFinish,
     required this.onNewMatch,
@@ -24,7 +23,6 @@ class ScoreControls extends StatelessWidget {
   final VoidCallback? onPointTeamA;
   final VoidCallback? onPointTeamB;
   final VoidCallback? onUndo;
-  final VoidCallback? onToggleServe;
   final VoidCallback? onReset;
   final VoidCallback? onFinish;
   final VoidCallback onNewMatch;
@@ -61,12 +59,6 @@ class ScoreControls extends StatelessWidget {
           label: 'Desfazer ultimo ponto',
           icon: Icons.undo,
           onTap: canUndo ? onUndo : null,
-        ),
-        const SizedBox(height: 12),
-        _ActionButton(
-          label: 'Alternar saque',
-          icon: Icons.swap_horiz,
-          onTap: canScore ? onToggleServe : null,
         ),
         const SizedBox(height: 12),
         _ActionButton(

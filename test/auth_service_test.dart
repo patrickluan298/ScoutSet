@@ -11,13 +11,13 @@ void main() {
     await AuthService.instance.reset();
   });
 
-  test('inicializacao migra usuarios antigos sem derrubar o app', () async {
+  test('inicialização migra usuários antigos sem derrubar o app', () async {
     await StorageService.instance.save(
       key: 'auth_users',
       value: jsonEncode([
         {
           'id': 'legacy-1',
-          'name': 'Usuario Legado',
+          'name': 'Usuário Legado',
           'email': 'legado@scoutset.app',
           'password': 'Senha@123',
           'teamId': 'team-1',

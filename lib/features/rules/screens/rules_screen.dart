@@ -9,7 +9,7 @@ class RulesScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return const ModulePlaceholderScreen(
       title: 'Regras',
-      description: 'Espaco reservado para referencia rapida de regras, interpretacoes e observacoes do jogo.',
+      description: 'Espaço reservado para referência rápida de regras, interpretações e observações do jogo.',
     );
   }
 }

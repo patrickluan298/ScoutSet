@@ -84,22 +84,6 @@ class ScoreboardService {
     return stateNotifier.value;
   }
 
-  ScoreboardState toggleServingTeam() {
-    final state = stateNotifier.value;
-    final match = state.activeMatch;
-    if (match == null || match.isFinished) {
-      return state;
-    }
-
-    final nextServingTeam =
-        match.servingTeam == TeamSide.teamA ? TeamSide.teamB : TeamSide.teamA;
-    _setState(
-      state.copyWith(
-        activeMatch: match.copyWith(servingTeam: nextServingTeam),
-      ),
-    );
-    return stateNotifier.value;
-  }
 
   ScoreboardState resetCurrentMatch() {
     final state = stateNotifier.value;

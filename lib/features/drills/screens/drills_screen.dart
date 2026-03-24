@@ -32,7 +32,7 @@ class _DrillsScreenState extends State<DrillsScreen> {
       case _DrillFilter.all:
         return drills;
       case _DrillFilter.recepcao:
-        return drills.where((drill) => drill.category == 'Recepcao').toList();
+        return drills.where((drill) => drill.category == 'Recepção').toList();
       case _DrillFilter.ataque:
         return drills.where((drill) => drill.category == 'Ataque').toList();
       case _DrillFilter.saque:
@@ -57,7 +57,7 @@ class _DrillsScreenState extends State<DrillsScreen> {
               children: [
                 const SectionTitle(
                   title: 'Biblioteca de drills',
-                  subtitle: 'Visualize, entenda e execute exercicios com animacao 2D, passos guiados e dicas praticas.',
+                  subtitle: 'Visualize, entenda e execute exercícios com animação 2D, passos guiados e dicas práticas.',
                 ),
                 const SizedBox(height: 16),
                 Wrap(
@@ -70,7 +70,7 @@ class _DrillsScreenState extends State<DrillsScreen> {
                       onTap: () => setState(() => _activeFilter = _DrillFilter.all),
                     ),
                     _FilterChipLabel(
-                      label: 'Recepcao',
+                      label: 'Recepção',
                       isSelected: _activeFilter == _DrillFilter.recepcao,
                       onTap: () => setState(() => _activeFilter = _DrillFilter.recepcao),
                     ),
