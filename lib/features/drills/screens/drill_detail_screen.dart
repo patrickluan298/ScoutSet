@@ -203,7 +203,7 @@ class _StepTile extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: isActive ? AppTheme.secondaryBlueColor.withOpacity(0.08) : Colors.white,
+          color: isActive ? AppTheme.secondaryBlueColor.withValues(alpha: 0.08) : Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isActive ? AppTheme.secondaryBlueColor : const Color(0xFFD9E2EC),
@@ -278,7 +278,7 @@ class _InfoListCard extends StatelessWidget {
                     width: 28,
                     height: 28,
                     decoration: BoxDecoration(
-                      color: accentColor.withOpacity(0.12),
+                      color: accentColor.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(999),
                     ),
                     child: Icon(icon, size: 16, color: accentColor),

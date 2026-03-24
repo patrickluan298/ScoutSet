@@ -5,7 +5,6 @@ import '../../../services/auth_service.dart';
 import '../../../utils/app_spacing.dart';
 import '../../../widgets/app_card.dart';
 import '../../../widgets/dashboard_tile.dart';
-import '../../../widgets/section_title.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({

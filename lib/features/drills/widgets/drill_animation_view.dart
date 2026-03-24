@@ -33,7 +33,6 @@ class _DrillAnimationViewState extends State<DrillAnimationView> {
   static const List<double> _speedOptions = [0.75, 1.0, 1.5];
   static const Duration _tick = Duration(milliseconds: 40);
   static const Duration _overlayDuration = Duration(milliseconds: 1200);
-  static const int _teamBlue = 0xFF0F58B5;
   static const int _teamOrange = 0xFFF5BE00;
 
   Timer? _timer;
@@ -405,7 +404,7 @@ class _DrillAnimationViewState extends State<DrillAnimationView> {
                             vertical: 10,
                           ),
                           decoration: BoxDecoration(
-                            color: AppTheme.primaryColor.withOpacity(0.9),
+                            color: AppTheme.primaryColor.withValues(alpha: 0.9),
                             borderRadius: BorderRadius.circular(14),
                           ),
                           child: Text(
@@ -538,7 +537,7 @@ class _AnimatedPlayerMarker extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.92),
+              color: Colors.white.withValues(alpha: 0.92),
               borderRadius: BorderRadius.circular(999),
             ),
             child: Text(
@@ -661,7 +660,7 @@ class _CourtPainter extends CustomPainter {
 
   void _drawArrow(Canvas canvas, Offset start, Offset end, Color color) {
     final paint = Paint()
-      ..color = color.withOpacity(0.9)
+      ..color = color.withValues(alpha: 0.9)
       ..strokeWidth = 3
       ..style = PaintingStyle.stroke;
 

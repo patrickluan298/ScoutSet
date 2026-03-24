@@ -146,7 +146,7 @@ class _FilterChipLabel extends StatelessWidget {
         decoration: BoxDecoration(
           color: isSelected
               ? AppTheme.secondaryBlueColor
-              : AppTheme.secondaryBlueColor.withOpacity(0.1),
+              : AppTheme.secondaryBlueColor.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(999),
         ),
         child: Text(
@@ -196,7 +196,7 @@ class _DrillLibraryCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
-                    color: AppTheme.accentColor.withOpacity(0.16),
+                    color: AppTheme.accentColor.withValues(alpha: 0.16),
                     borderRadius: BorderRadius.circular(999),
                   ),
                   child: Text(
