@@ -1,0 +1,172 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:scoutset/features/scoreboard/models/match_score.dart';
+import 'package:scoutset/features/scoreboard/services/scoreboard_service.dart';
+
+void main() {
+  late ScoreboardService service;
+
+  setUp(() {
+    service = ScoreboardService.instance;
+    service.clearAll();
+  });
+
+  void addPoints({required int teamA, required int teamB}) {
+    final sharedPoints = teamA < teamB ? teamA : teamB;
+
+    for (var i = 0; i < sharedPoints; i++) {
+      service.addPointToTeamA();
+      service.addPointToTeamB();
+    }
+
+    for (var i = sharedPoints; i < teamA; i++) {
+      service.addPointToTeamA();
+    }
+
+    for (var i = sharedPoints; i < teamB; i++) {
+      service.addPointToTeamB();
+    }
+  }
+
+  test('starts a match with default serving team A', () {
+    final match = service.startMatch(teamAName: 'ScoutSet', teamBName: 'Rivais');
+
+    final state = service.getState();
+    expect(match.teamAName, 'ScoutSet');
+    expect(match.servingTeam, TeamSide.teamA);
+    expect(state.activeMatch?.currentSet, 1);
+    expect(state.currentTeamAScore, 0);
+    expect(state.currentTeamBScore, 0);
+  });
+
+  test('set closes at 25 with two-point lead', () {
+    service.startMatch(teamAName: 'A', teamBName: 'B');
+    addPoints(teamA: 25, teamB: 20);
+
+    final state = service.getState();
+    expect(state.activeMatch?.sets, hasLength(1));
+    expect(state.activeMatch?.teamASetsWon, 1);
+    expect(state.activeMatch?.currentSet, 2);
+    expect(state.currentTeamAScore, 0);
+    expect(state.currentTeamBScore, 0);
+  });
+
+  test('set extends after 24x24 until two-point lead', () {
+    service.startMatch(teamAName: 'A', teamBName: 'B');
+    addPoints(teamA: 24, teamB: 24);
+    service.addPointToTeamA();
+    expect(service.getState().activeMatch?.sets, isEmpty);
+
+    service.addPointToTeamA();
+    final finishedSet = service.getState().activeMatch?.sets.single;
+    expect(finishedSet?.teamAScore, 26);
+    expect(finishedSet?.teamBScore, 24);
+  });
+
+  test('third set extends after 14x14 until two-point lead', () {
+    service.startMatch(teamAName: 'A', teamBName: 'B');
+    addPoints(teamA: 25, teamB: 0);
+    addPoints(teamA: 0, teamB: 25);
+    addPoints(teamA: 14, teamB: 14);
+    service.addPointToTeamB();
+    expect(service.getState().activeMatch?.matchStatus, MatchStatus.inProgress);
+
+    service.addPointToTeamB();
+    final match = service.getState().activeMatch;
+    expect(match?.matchStatus, MatchStatus.finished);
+    expect(match?.sets.last.teamAScore, 14);
+    expect(match?.sets.last.teamBScore, 16);
+  });
+
+  test('automatically finishes match 2x0 when same team wins first two sets', () {
+    service.startMatch(teamAName: 'A', teamBName: 'B');
+    addPoints(teamA: 25, teamB: 10);
+    addPoints(teamA: 25, teamB: 18);
+
+    final match = service.getState().activeMatch;
+    expect(match?.matchStatus, MatchStatus.finished);
+    expect(match?.teamASetsWon, 2);
+    expect(match?.teamBSetsWon, 0);
+    expect(service.listHistory(), hasLength(1));
+  });
+
+  test('only opens third set when the match is tied 1x1', () {
+    service.startMatch(teamAName: 'A', teamBName: 'B');
+    addPoints(teamA: 25, teamB: 23);
+    expect(service.getState().activeMatch?.currentSet, 2);
+    addPoints(teamA: 19, teamB: 25);
+
+    final match = service.getState().activeMatch;
+    expect(match?.currentSet, 3);
+    expect(match?.teamASetsWon, 1);
+    expect(match?.teamBSetsWon, 1);
+    expect(match?.matchStatus, MatchStatus.inProgress);
+  });
+
+  test('finishes match 2x1 in deciding set', () {
+    service.startMatch(teamAName: 'A', teamBName: 'B');
+    addPoints(teamA: 25, teamB: 10);
+    addPoints(teamA: 22, teamB: 25);
+    addPoints(teamA: 15, teamB: 12);
+
+    final match = service.getState().activeMatch;
+    expect(match?.matchStatus, MatchStatus.finished);
+    expect(match?.teamASetsWon, 2);
+    expect(match?.teamBSetsWon, 1);
+  });
+
+  test('blocks scoring after match has finished', () {
+    service.startMatch(teamAName: 'A', teamBName: 'B');
+    addPoints(teamA: 25, teamB: 10);
+    addPoints(teamA: 25, teamB: 10);
+    final before = service.getState();
+
+    service.addPointToTeamB();
+    final after = service.getState();
+    expect(after.currentTeamAScore, before.currentTeamAScore);
+    expect(after.currentTeamBScore, before.currentTeamBScore);
+  });
+
+  test('undo never makes score negative and only affects current set', () {
+    service.startMatch(teamAName: 'A', teamBName: 'B');
+    service.undoLastPoint();
+    expect(service.getState().currentTeamAScore, 0);
+    expect(service.getState().currentTeamBScore, 0);
+
+    service.addPointToTeamA();
+    service.undoLastPoint();
+    expect(service.getState().currentTeamAScore, 0);
+    expect(service.getState().canUndo, isFalse);
+  });
+
+  test('reset clears sets current score and status for active match', () {
+    service.startMatch(teamAName: 'A', teamBName: 'B');
+    addPoints(teamA: 10, teamB: 5);
+    service.resetCurrentMatch();
+
+    final state = service.getState();
+    expect(state.activeMatch?.currentSet, 1);
+    expect(state.activeMatch?.sets, isEmpty);
+    expect(state.currentTeamAScore, 0);
+    expect(state.currentTeamBScore, 0);
+    expect(state.statusMessage, 'Set 1 em andamento');
+  });
+
+  test('toggle serving swaps between teams', () {
+    service.startMatch(teamAName: 'A', teamBName: 'B');
+    expect(service.getState().activeMatch?.servingTeam, TeamSide.teamA);
+
+    service.toggleServingTeam();
+    expect(service.getState().activeMatch?.servingTeam, TeamSide.teamB);
+  });
+
+  test('manual finish archives the current match in history', () {
+    service.startMatch(teamAName: 'A', teamBName: 'B');
+    addPoints(teamA: 12, teamB: 9);
+    service.finishCurrentMatch();
+
+    final history = service.listHistory();
+    expect(history, hasLength(1));
+    expect(history.single.matchStatus, MatchStatus.finished);
+    expect(service.getMatchById(history.single.id), isNotNull);
+  });
+}
