@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../config/app_routes.dart';
+import '../../../services/auth_service.dart';
 import '../../../utils/app_spacing.dart';
 import '../../../widgets/app_card.dart';
 import '../../../widgets/dashboard_tile.dart';
@@ -13,6 +14,14 @@ class DashboardScreen extends StatelessWidget {
   });
 
   final bool showScaffold;
+
+  static const _shellRoutes = {
+    AppRoutes.dashboard,
+    AppRoutes.scoreboard,
+    AppRoutes.strategies,
+    AppRoutes.reports,
+    AppRoutes.profile,
+  };
 
   static const _tiles = [
     _DashboardItem('Placar', 'Controle o jogo em tempo real', Icons.sports_volleyball, AppRoutes.scoreboard),
@@ -28,16 +37,14 @@ class DashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final user = AuthService.instance.currentUser;
+    final userName = (user?.name.trim().isNotEmpty ?? false) ? user!.name.trim() : 'Usuario';
 
     final content = SingleChildScrollView(
       padding: AppSpacing.screen,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SectionTitle(
-            title: 'Dashboard',
-            subtitle: 'Bem-vindo, Coach Patrick. Escolha um modulo para continuar.',
-          ),
           AppSpacing.gapMedium,
           AppCard(
             child: Row(
@@ -46,10 +53,10 @@ class DashboardScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Base pronta para crescer', style: theme.textTheme.titleMedium),
+                      Text('Vamos começar os treinos?', style: theme.textTheme.titleMedium),
                       const SizedBox(height: 8),
                       Text(
-                        'Arquitetura modular preparada para backend em Python, analise de video com IA e dashboards avancados.',
+                        'Bem-vindo, $userName. Escolha um módulo para continuar.',
                         style: theme.textTheme.bodyMedium,
                       ),
                     ],
@@ -97,7 +104,14 @@ class DashboardScreen extends StatelessWidget {
                 title: item.title,
                 subtitle: item.subtitle,
                 icon: item.icon,
-                onTap: () => Navigator.pushNamed(context, item.route),
+                onTap: () {
+                  if (_shellRoutes.contains(item.route)) {
+                    Navigator.pushReplacementNamed(context, item.route);
+                    return;
+                  }
+
+                  Navigator.pushNamed(context, item.route);
+                },
               );
             },
           ),
