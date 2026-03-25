@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 
+import '../../../data/local/database/app_services.dart';
+import '../../../data/local/repositories/matches_repository.dart';
 import '../models/match_score.dart';
 import '../models/scoreboard_state.dart';
 import '../models/set_score.dart';
@@ -14,6 +16,31 @@ class ScoreboardService {
   );
 
   int _idCounter = 0;
+  bool _initialized = false;
+
+  MatchesRepository get _repository => AppServices.matchesRepository;
+
+  Future<void> initialize() async {
+    if (_initialized) {
+      return;
+    }
+
+    await AppServices.initialize();
+    final history = await _repository.listHistory();
+    _syncCounterFromHistory(history);
+    _setState(
+      ScoreboardState(
+        activeMatch: stateNotifier.value.activeMatch,
+        history: history,
+        statusMessage: stateNotifier.value.statusMessage,
+        canUndo: stateNotifier.value.canUndo,
+        currentTeamAScore: stateNotifier.value.currentTeamAScore,
+        currentTeamBScore: stateNotifier.value.currentTeamBScore,
+        lastSnapshot: stateNotifier.value.lastSnapshot,
+      ),
+    );
+    _initialized = true;
+  }
 
   ScoreboardState getState() => stateNotifier.value;
 
@@ -63,9 +90,9 @@ class ScoreboardService {
     return match;
   }
 
-  ScoreboardState addPointToTeamA() => _addPoint(TeamSide.teamA);
+  Future<ScoreboardState> addPointToTeamA() => _addPoint(TeamSide.teamA);
 
-  ScoreboardState addPointToTeamB() => _addPoint(TeamSide.teamB);
+  Future<ScoreboardState> addPointToTeamB() => _addPoint(TeamSide.teamB);
 
   ScoreboardState undoLastPoint() {
     final state = stateNotifier.value;
@@ -88,7 +115,6 @@ class ScoreboardService {
 
     return stateNotifier.value;
   }
-
 
   ScoreboardState resetCurrentMatch() {
     final state = stateNotifier.value;
@@ -120,7 +146,7 @@ class ScoreboardService {
     return stateNotifier.value;
   }
 
-  ScoreboardState finishCurrentMatch() {
+  Future<ScoreboardState> finishCurrentMatch() async {
     final state = stateNotifier.value;
     final match = state.activeMatch;
     if (match == null || match.isFinished) {
@@ -150,7 +176,7 @@ class ScoreboardService {
     }
 
     final finished = _finishMatch(updatedMatch);
-    _publishFinishedMatch(
+    await _publishFinishedMatch(
       finished,
       currentTeamAScore: displayTeamAScore,
       currentTeamBScore: displayTeamBScore,
@@ -186,12 +212,15 @@ class ScoreboardService {
   }
 
   @visibleForTesting
-  void clearAll() {
+  Future<void> clearAll() async {
     _idCounter = 0;
+    _initialized = false;
+    await AppServices.initialize();
+    await _repository.clearAll();
     _setState(const ScoreboardState.initial());
   }
 
-  ScoreboardState _addPoint(TeamSide team) {
+  Future<ScoreboardState> _addPoint(TeamSide team) async {
     final state = stateNotifier.value;
     final match = state.activeMatch;
     if (match == null || match.isFinished) {
@@ -237,7 +266,7 @@ class ScoreboardService {
 
     if (progressedMatch.teamASetsWon == 2 || progressedMatch.teamBSetsWon == 2) {
       final finished = _finishMatch(progressedMatch);
-      _publishFinishedMatch(
+      await _publishFinishedMatch(
         finished,
         currentTeamAScore: completedSet.teamAScore,
         currentTeamBScore: completedSet.teamBScore,
@@ -302,12 +331,12 @@ class ScoreboardService {
     );
   }
 
-  void _publishFinishedMatch(
+  Future<void> _publishFinishedMatch(
     MatchScore match, {
     required int currentTeamAScore,
     required int currentTeamBScore,
     required String statusMessage,
-  }) {
+  }) async {
     final currentHistory = stateNotifier.value.history.where((item) => item.id != match.id).toList();
     final updatedHistory = [match, ...currentHistory]
       ..sort((a, b) {
@@ -327,6 +356,9 @@ class ScoreboardService {
         lastSnapshot: null,
       ),
     );
+
+    await AppServices.initialize();
+    await _repository.saveFinishedMatch(match);
   }
 
   int _targetPointsForSet(int setNumber) => setNumber == 3 ? 15 : 25;
@@ -339,6 +371,15 @@ class ScoreboardService {
   String _nextId() {
     _idCounter += 1;
     return 'scoreboard-match-$_idCounter';
+  }
+
+  void _syncCounterFromHistory(List<MatchScore> matches) {
+    for (final match in matches) {
+      final parsed = int.tryParse(match.id.split('-').last);
+      if (parsed != null && parsed > _idCounter) {
+        _idCounter = parsed;
+      }
+    }
   }
 
   void _setState(ScoreboardState state) {

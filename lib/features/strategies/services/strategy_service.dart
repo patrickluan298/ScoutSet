@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../data/local/database/app_services.dart';
+import '../../../data/local/repositories/strategies_repository.dart';
 import '../models/movement.dart';
 import '../models/player_position.dart';
 import '../models/strategy.dart';
@@ -10,26 +12,29 @@ class StrategyService {
 
   static final StrategyService instance = StrategyService._();
 
-  final List<Strategy> _strategies = [];
   int _idCounter = 0;
+  StrategiesRepository get _repository => AppServices.strategiesRepository;
 
-  List<Strategy> listStrategies() {
-    final items = [..._strategies];
+  Future<void> initialize() async {
+    await AppServices.initialize();
+    final strategies = await _repository.listStrategies();
+    _syncCounterFromStrategies(strategies);
+  }
+
+  Future<List<Strategy>> listStrategies() async {
+    await initialize();
+    final items = await _repository.listStrategies();
     items.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     return items;
   }
 
-  Strategy? getStrategyById(String id) {
-    for (final strategy in _strategies) {
-      if (strategy.id == id) {
-        return strategy;
-      }
-    }
-
-    return null;
+  Future<Strategy?> getStrategyById(String id) async {
+    await initialize();
+    return _repository.getStrategyById(id);
   }
 
-  Strategy createStrategy(Strategy strategy) {
+  Future<Strategy> createStrategy(Strategy strategy) async {
+    await initialize();
     final created = strategy.copyWith(
       id: strategy.id.isEmpty ? _nextId('strategy') : strategy.id,
       playersPositions: _clonePlayers(strategy.playersPositions),
@@ -37,33 +42,29 @@ class StrategyService {
       movements: _cloneMovements(strategy.movements),
       substitutions: _cloneSubstitutions(strategy.substitutions),
     );
-    _strategies.add(created);
-    return created;
+    return _repository.upsertStrategy(created);
   }
 
-  Strategy updateStrategy(Strategy strategy) {
-    final index = _strategies.indexWhere((item) => item.id == strategy.id);
-    if (index == -1) {
-      return createStrategy(strategy);
-    }
-
+  Future<Strategy> updateStrategy(Strategy strategy) async {
+    await initialize();
     final updated = strategy.copyWith(
       playersPositions: _clonePlayers(strategy.playersPositions),
       benchPlayers: _clonePlayers(strategy.benchPlayers),
       movements: _cloneMovements(strategy.movements),
       substitutions: _cloneSubstitutions(strategy.substitutions),
     );
-    _strategies[index] = updated;
-    return updated;
+    return _repository.upsertStrategy(updated);
   }
 
-  void deleteStrategy(String id) {
-    _strategies.removeWhere((item) => item.id == id);
+  Future<void> deleteStrategy(String id) async {
+    await initialize();
+    await _repository.deleteStrategy(id);
   }
 
-  void clearAll() {
-    _strategies.clear();
+  Future<void> clearAll() async {
     _idCounter = 0;
+    await AppServices.initialize();
+    await _repository.clearAll();
   }
 
   String nextMovementId() => _nextId('movement');
@@ -131,6 +132,31 @@ class StrategyService {
   String _nextId(String prefix) {
     _idCounter += 1;
     return '$prefix-$_idCounter';
+  }
+
+  void _syncCounterFromStrategies(List<Strategy> strategies) {
+    var highest = _idCounter;
+
+    for (final strategy in strategies) {
+      highest = _maxCounterValue(strategy.id, highest);
+      for (final movement in strategy.movements) {
+        highest = _maxCounterValue(movement.id, highest);
+      }
+      for (final substitution in strategy.substitutions) {
+        highest = _maxCounterValue(substitution.id, highest);
+      }
+    }
+
+    _idCounter = highest;
+  }
+
+  int _maxCounterValue(String id, int current) {
+    final lastPart = id.split('-').last;
+    final parsed = int.tryParse(lastPart);
+    if (parsed == null || parsed <= current) {
+      return current;
+    }
+    return parsed;
   }
 
   static const List<PlayerPosition> _indoorDefaults = [

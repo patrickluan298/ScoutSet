@@ -1,12 +1,12 @@
 # ScoutSet
 
-ScoutSet é um aplicativo Flutter focado em vôlei para apoiar treinadores, atletas e equipes em rotinas de jogo, treino e organização tático-operacional. O projeto combina módulos funcionais já implementados com uma base pronta para evoluir para persistência local real, backend e futuras integrações com análise e scout.
+ScoutSet é um aplicativo Flutter focado em vôlei para apoiar treinadores, atletas e equipes em rotinas de jogo, treino e organização tático-operacional. O projeto já opera com persistência local offline-first usando SQLite com Drift e está estruturado para evoluir para relatórios, gestão de elenco e futuras integrações com backend.
 
 ## Estado atual do projeto
 
 Hoje o app já entrega:
 
-- autenticação local com cadastro, login, sessão e migração de usuários legados
+- autenticação local com cadastro, login, sessão persistida e validação de senha forte
 - dashboard com navegação por shell e atalhos para os módulos principais
 - módulo completo de placar eletrônico de vôlei em melhor de 3 sets
 - simulador de estratégias de vôlei de quadra e praia
@@ -20,18 +20,46 @@ Ainda estão como placeholders visuais preparados para evolução:
 - relatórios
 - equipes
 
+## Persistência local
+
+O app usa SQLite com Drift como base local principal.
+
+Hoje já persistem em banco:
+
+- usuários
+- sessão ativa
+- estratégias
+- histórico de partidas finalizadas
+- catálogo de drills
+- estrutura base para equipes e atletas
+
+Decisões atuais:
+
+- o seed inicial dos drills é aplicado na criação do banco
+- a partida ativa do placar continua em memória durante a execução
+- o histórico finalizado do placar é salvo no SQLite
+- a UI não acessa o Drift diretamente; os serviços continuam como fachada da aplicação
+
+Arquivos centrais:
+
+- `lib/data/local/database/app_database.dart`
+- `lib/data/local/database/app_services.dart`
+- `lib/data/local/repositories/`
+- `lib/data/local/seed/drills_seed.dart`
+- `lib/data/local/seed/drills_seed_data.dart`
+
 ## Principais features
 
 ### Autenticação local
 
-A autenticação fica em `lib/services/auth_service.dart` e usa `shared_preferences` via `StorageService`.
+A autenticação fica em `lib/services/auth_service.dart` e usa SQLite via repository.
 
 Recursos atuais:
 
 - cadastro com validação de senha forte
 - login com sessão persistida localmente
 - proteção de rotas autenticadas
-- migração automática de usuários antigos salvos com senha em formato legado
+- logout com limpeza da sessão ativa
 
 Telas:
 
@@ -54,8 +82,8 @@ Recursos atuais:
 - desfazer do último ponto do set atual
 - reinício da partida atual
 - finalização manual da partida
-- nova partida sem perder o histórico da sessão
-- histórico em memória com tela de lista e detalhe
+- nova partida sem perder o histórico salvo
+- histórico persistido localmente com tela de lista e detalhe
 
 Arquivos principais:
 
@@ -69,16 +97,16 @@ Arquivos principais:
 
 Observações:
 
-- o histórico do placar é mantido em memória durante a execução atual do app
-- a estrutura foi separada em modelos, serviço, telas e widgets para facilitar futura persistência local ou backend
+- a partida em andamento é mantida em memória
+- ao finalizar, a partida é persistida no SQLite
 
 ### Simulador de estratégias de vôlei
 
-A feature `lib/features/strategies/` oferece um simulador tático já bem avançado.
+A feature `lib/features/strategies/` oferece um simulador tático com persistência local.
 
 Recursos atuais:
 
-- lista de estratégias salvas em memória
+- lista de estratégias persistidas no SQLite
 - criação e edição de estratégias
 - visualização em modo leitura
 - suporte a vôlei de quadra e praia
@@ -108,11 +136,11 @@ Arquivos principais:
 
 ### Drills
 
-A feature `lib/features/drills/` já possui experiência funcional de catálogo.
+A feature `lib/features/drills/` já possui experiência funcional de catálogo e persistência local.
 
 Recursos atuais:
 
-- listagem de drills mockados
+- listagem de drills carregados do SQLite
 - filtros por categoria e favoritos
 - cards com metadados de dificuldade, duração e número de jogadores
 - tela de detalhe com suporte a animação 2D
@@ -121,7 +149,7 @@ Arquivos principais:
 
 - `lib/features/drills/screens/drills_screen.dart`
 - `lib/features/drills/screens/drill_detail_screen.dart`
-- `lib/features/drills/services/drill_mock_service.dart`
+- `lib/features/drills/services/drills_service.dart`
 
 ## Estrutura principal
 
@@ -129,6 +157,11 @@ Arquivos principais:
 lib/
   config/
   core/
+  data/
+    local/
+      database/
+      repositories/
+      seed/
   features/
     auth/
     dashboard/
@@ -168,7 +201,10 @@ Padrões compartilhados:
 ## Dependências principais
 
 - `flutter`
-- `shared_preferences`
+- `drift`
+- `sqlite3_flutter_libs`
+- `path`
+- `path_provider`
 - `crypto`
 
 ## Como executar
@@ -178,6 +214,14 @@ Com Flutter instalado no ambiente:
 ```bash
 flutter pub get
 flutter run
+```
+
+## Codegen
+
+Sempre que houver mudança no schema do Drift, rode:
+
+```bash
+flutter pub run build_runner build --delete-conflicting-outputs
 ```
 
 ## Como testar
@@ -211,12 +255,12 @@ flutter test test/features/strategies/strategy_service_test.dart test/features/s
 Cobertura atual inclui:
 
 - autenticação e proteção de rotas
-- migração de usuários legados
 - regras e fluxos do placar eletrônico
 - histórico e navegação do módulo de placar
-- CRUD e regras de estratégias
+- persistência e CRUD de estratégias
 - modos quadra e praia
 - comportamento de substituições
+- drills e navegação básica
 - smoke tests do app e do login
 
 Arquivos de teste atuais:
@@ -229,24 +273,12 @@ Arquivos de teste atuais:
 - `test/features/strategies/strategy_service_test.dart`
 - `test/features/strategies/strategies_feature_test.dart`
 
-## Persistência atual
-
-O projeto hoje mistura dois cenários:
-
-- autenticação com persistência local em `shared_preferences`
-- features de domínio como placar e estratégias ainda salvas em memória durante a sessão
-
-Isso significa:
-
-- usuários e sessão sobrevivem ao fechamento do app
-- histórico do placar e estratégias não sobrevivem ao fechamento do app
-- a arquitetura atual já facilita trocar serviços em memória por persistência local real no futuro
-
 ## Próximos passos naturais
 
-- persistir histórico do placar e estratégias em armazenamento local
-- evoluir os módulos placeholder para features funcionais
-- conectar equipes cadastradas ao placar e às estratégias
+- implementar os módulos placeholder como features funcionais
+- conectar equipes e atletas às estratégias e ao placar
+- persistir também partidas em andamento, se desejado
 - adicionar eventos de rally, timeout e scout ao placar
+- construir relatórios a partir das tabelas locais
 - integrar backend e sincronização entre dispositivos
 - expandir relatórios e análises assistidas por IA

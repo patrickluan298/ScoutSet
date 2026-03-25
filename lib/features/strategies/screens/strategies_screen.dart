@@ -24,7 +24,8 @@ class StrategiesScreen extends StatefulWidget {
 
 class _StrategiesScreenState extends State<StrategiesScreen> {
   final StrategyService _strategyService = StrategyService.instance;
-  late List<Strategy> _strategies;
+  List<Strategy> _strategies = const [];
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -32,8 +33,15 @@ class _StrategiesScreenState extends State<StrategiesScreen> {
     _loadStrategies();
   }
 
-  void _loadStrategies() {
-    _strategies = _strategyService.listStrategies();
+  Future<void> _loadStrategies() async {
+    final strategies = await _strategyService.listStrategies();
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _strategies = strategies;
+      _isLoading = false;
+    });
   }
 
   Future<void> _openEditor([Strategy? strategy]) async {
@@ -47,7 +55,7 @@ class _StrategiesScreenState extends State<StrategiesScreen> {
       return;
     }
 
-    setState(_loadStrategies);
+    await _loadStrategies();
   }
 
   Future<void> _openDetail(Strategy strategy) async {
@@ -61,7 +69,7 @@ class _StrategiesScreenState extends State<StrategiesScreen> {
       return;
     }
 
-    setState(_loadStrategies);
+    await _loadStrategies();
   }
 
   Future<void> _deleteStrategy(Strategy strategy) async {
@@ -89,8 +97,11 @@ class _StrategiesScreenState extends State<StrategiesScreen> {
       return;
     }
 
-    _strategyService.deleteStrategy(strategy.id);
-    setState(_loadStrategies);
+    await _strategyService.deleteStrategy(strategy.id);
+    await _loadStrategies();
+    if (!mounted) {
+      return;
+    }
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Estratégia "${strategy.name}" removida.')),
     );
@@ -99,7 +110,7 @@ class _StrategiesScreenState extends State<StrategiesScreen> {
   @override
   Widget build(BuildContext context) {
     final content = RefreshIndicator(
-      onRefresh: () async => setState(_loadStrategies),
+      onRefresh: _loadStrategies,
       child: ListView(
         padding: AppSpacing.screen,
         children: [
@@ -124,6 +135,14 @@ class _StrategiesScreenState extends State<StrategiesScreen> {
             ],
           ),
           AppSpacing.gapMedium,
+          if (_isLoading)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 32),
+                child: CircularProgressIndicator(),
+              ),
+            )
+          else
           if (_strategies.isEmpty)
             AppCard(
               child: Column(

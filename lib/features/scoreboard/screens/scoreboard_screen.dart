@@ -34,6 +34,7 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
   final _teamAController = TextEditingController();
   final _teamBController = TextEditingController();
   final ScoreboardService _service = ScoreboardService.instance;
+  bool _isSavingPoint = false;
 
   @override
   void dispose() {
@@ -48,6 +49,34 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
         builder: (_) => const MatchHistoryScreen(),
       ),
     );
+  }
+
+  Future<void> _handlePointTeamA() async {
+    if (_isSavingPoint) {
+      return;
+    }
+    setState(() => _isSavingPoint = true);
+    try {
+      await _service.addPointToTeamA();
+    } finally {
+      if (mounted) {
+        setState(() => _isSavingPoint = false);
+      }
+    }
+  }
+
+  Future<void> _handlePointTeamB() async {
+    if (_isSavingPoint) {
+      return;
+    }
+    setState(() => _isSavingPoint = true);
+    try {
+      await _service.addPointToTeamB();
+    } finally {
+      if (mounted) {
+        setState(() => _isSavingPoint = false);
+      }
+    }
   }
 
   bool _hasDuplicatedTeamNames() {
@@ -190,7 +219,7 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Histórico recente', style: Theme.of(context).textTheme.titleMedium),
+                Text('Histórico Recente', style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 8),
                 Text(
                   'Você já tem ${state.history.length} partida(s) registrada(s) nesta sessão.',
@@ -281,13 +310,17 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
               ScoreControls(
                 teamAName: match.teamAName,
                 teamBName: match.teamBName,
-                onPointTeamA: _service.addPointToTeamA,
-                onPointTeamB: _service.addPointToTeamB,
+                onPointTeamA: () {
+                  _handlePointTeamA();
+                },
+                onPointTeamB: () {
+                  _handlePointTeamB();
+                },
                 onUndo: _service.undoLastPoint,
                 onReset: _service.resetCurrentMatch,
-                onFinish: _service.finishCurrentMatch,
+                onFinish: () => _service.finishCurrentMatch(),
                 onNewMatch: _prepareNewMatch,
-                canScore: !isFinished,
+                canScore: !isFinished && !_isSavingPoint,
                 canUndo: state.canUndo,
                 canReset: !isFinished,
               ),

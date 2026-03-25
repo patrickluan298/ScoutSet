@@ -366,7 +366,7 @@ class _StrategyEditorScreenState extends State<StrategyEditorScreen> {
     return _benchPlayers.where((player) => !player.isLibero).toList();
   }
 
-  void _handleSave() {
+  Future<void> _handleSave() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
@@ -384,11 +384,14 @@ class _StrategyEditorScreenState extends State<StrategyEditorScreen> {
     );
 
     if (_isEditing) {
-      _strategyService.updateStrategy(baseStrategy);
+      await _strategyService.updateStrategy(baseStrategy);
     } else {
-      _strategyService.createStrategy(baseStrategy);
+      await _strategyService.createStrategy(baseStrategy);
     }
 
+    if (!mounted) {
+      return;
+    }
     Navigator.of(context).pop();
   }
 

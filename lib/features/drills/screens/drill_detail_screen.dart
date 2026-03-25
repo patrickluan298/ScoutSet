@@ -5,7 +5,7 @@ import '../../../utils/app_spacing.dart';
 import '../../../widgets/app_card.dart';
 import '../../../widgets/section_title.dart';
 import '../models/drill.dart';
-import '../services/drill_mock_service.dart';
+import '../services/drills_service.dart';
 import '../widgets/drill_animation_view.dart';
 
 class DrillDetailScreen extends StatefulWidget {
@@ -21,15 +21,26 @@ class DrillDetailScreen extends StatefulWidget {
 }
 
 class _DrillDetailScreenState extends State<DrillDetailScreen> {
-  late final Drill _drill;
-  late final DrillAnimationController _animationController;
+  final DrillAnimationController _animationController = DrillAnimationController();
+  Drill? _drill;
   int _activeStepIndex = 0;
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _drill = DrillMockService.instance.getById(widget.drillId);
-    _animationController = DrillAnimationController();
+    _loadDrill();
+  }
+
+  Future<void> _loadDrill() async {
+    final drill = await DrillsService.instance.getById(widget.drillId);
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _drill = drill;
+      _isLoading = false;
+    });
   }
 
   void _handleStepTap(int index) {
@@ -41,8 +52,24 @@ class _DrillDetailScreenState extends State<DrillDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    final drill = _drill;
+    if (drill == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Drill')),
+        body: const Center(
+          child: Text('Drill não encontrado.'),
+        ),
+      );
+    }
+
     return Scaffold(
-      appBar: AppBar(title: Text(_drill.name)),
+      appBar: AppBar(title: Text(drill.name)),
       body: SingleChildScrollView(
         padding: AppSpacing.screen,
         child: Column(
@@ -53,25 +80,25 @@ class _DrillDetailScreenState extends State<DrillDetailScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    _drill.category.toUpperCase(),
+                    drill.category.toUpperCase(),
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: AppTheme.secondaryBlueColor,
                           fontWeight: FontWeight.w700,
                         ),
                   ),
                   const SizedBox(height: 8),
-                  Text(_drill.name, style: Theme.of(context).textTheme.headlineMedium),
+                  Text(drill.name, style: Theme.of(context).textTheme.headlineMedium),
                   const SizedBox(height: 12),
-                  Text(_drill.objective, style: Theme.of(context).textTheme.bodyLarge),
+                  Text(drill.objective, style: Theme.of(context).textTheme.bodyLarge),
                   const SizedBox(height: 16),
                   Wrap(
                     spacing: 10,
                     runSpacing: 10,
                     children: [
-                      _MetaPill(label: 'Dificuldade', value: _drill.difficulty),
-                      _MetaPill(label: 'Jogadores', value: '${_drill.playersCount}'),
-                      _MetaPill(label: 'Duração', value: _drill.duration),
-                      _MetaPill(label: 'Categoria', value: _drill.category),
+                      _MetaPill(label: 'Dificuldade', value: drill.difficulty),
+                      _MetaPill(label: 'Jogadores', value: '${drill.playersCount}'),
+                      _MetaPill(label: 'Duração', value: drill.duration),
+                      _MetaPill(label: 'Categoria', value: drill.category),
                     ],
                   ),
                 ],
@@ -79,7 +106,7 @@ class _DrillDetailScreenState extends State<DrillDetailScreen> {
             ),
             AppSpacing.gapMedium,
             DrillAnimationView(
-              drill: _drill,
+              drill: drill,
               controller: _animationController,
               onStepChanged: (stepIndex) {
                 if (_activeStepIndex == stepIndex) {
@@ -101,10 +128,10 @@ class _DrillDetailScreenState extends State<DrillDetailScreen> {
                     subtitle: 'Toque em qualquer etapa para sincronizar a animação com o momento desejado.',
                   ),
                   const SizedBox(height: 16),
-                  for (var index = 0; index < _drill.steps.length; index++)
+                  for (var index = 0; index < drill.steps.length; index++)
                     _StepTile(
                       index: index,
-                      text: _drill.steps[index],
+                      text: drill.steps[index],
                       isActive: index == _activeStepIndex,
                       onTap: () => _handleStepTap(index),
                     ),
@@ -115,7 +142,7 @@ class _DrillDetailScreenState extends State<DrillDetailScreen> {
             _InfoListCard(
               title: 'Dicas',
               subtitle: 'Boas práticas para melhorar a execução do drill.',
-              items: _drill.tips,
+              items: drill.tips,
               accentColor: AppTheme.secondaryBlueColor,
               icon: Icons.tips_and_updates_outlined,
             ),
@@ -123,7 +150,7 @@ class _DrillDetailScreenState extends State<DrillDetailScreen> {
             _InfoListCard(
               title: 'Erros comuns',
               subtitle: 'Pontos de atenção para evitar vícios técnicos.',
-              items: _drill.commonErrors,
+              items: drill.commonErrors,
               accentColor: const Color(0xFFD14343),
               icon: Icons.warning_amber_rounded,
             ),
@@ -131,7 +158,7 @@ class _DrillDetailScreenState extends State<DrillDetailScreen> {
             _InfoListCard(
               title: 'Variações',
               subtitle: 'Formas de evoluir a tarefa sem perder o objetivo técnico.',
-              items: _drill.variations,
+              items: drill.variations,
               accentColor: AppTheme.accentColor,
               icon: Icons.alt_route_rounded,
             ),

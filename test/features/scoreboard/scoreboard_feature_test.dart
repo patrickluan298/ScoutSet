@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:scoutset/core/theme/app_theme.dart';
+import 'package:scoutset/data/local/database/app_services.dart';
 import 'package:scoutset/features/scoreboard/screens/scoreboard_screen.dart';
 import 'package:scoutset/features/scoreboard/services/scoreboard_service.dart';
 
 void main() {
   late ScoreboardService service;
 
-  setUp(() {
+  setUp(() async {
+    await AppServices.useInMemoryDatabaseForTesting();
     service = ScoreboardService.instance;
-    service.clearAll();
+    await service.clearAll();
   });
 
   Widget buildTestable(Widget child) {
@@ -59,7 +61,7 @@ void main() {
 
   testWidgets('clears team fields when preparing a new match', (tester) async {
     service.startMatch(teamAName: 'Azul', teamBName: 'Ouro');
-    service.finishCurrentMatch();
+    await service.finishCurrentMatch();
 
     await pumpScoreboard(tester);
     final newMatchButton = find.widgetWithText(ElevatedButton, 'Nova Partida');
@@ -93,8 +95,8 @@ void main() {
 
   testWidgets('renders banner and scores during the match', (tester) async {
     service.startMatch(teamAName: 'A', teamBName: 'B');
-    service.addPointToTeamA();
-    service.addPointToTeamB();
+    await service.addPointToTeamA();
+    await service.addPointToTeamB();
 
     await pumpScoreboard(tester);
 
@@ -106,10 +108,10 @@ void main() {
   testWidgets('blocks scoring controls after the match ends', (tester) async {
     service.startMatch(teamAName: 'A', teamBName: 'B');
     for (var i = 0; i < 25; i++) {
-      service.addPointToTeamA();
+      await service.addPointToTeamA();
     }
     for (var i = 0; i < 25; i++) {
-      service.addPointToTeamA();
+      await service.addPointToTeamA();
     }
 
     await pumpScoreboard(tester);
@@ -123,9 +125,9 @@ void main() {
   testWidgets('navigates to history and detail screens', (tester) async {
     service.startMatch(teamAName: 'A', teamBName: 'B');
     for (var i = 0; i < 12; i++) {
-      service.addPointToTeamA();
+      await service.addPointToTeamA();
     }
-    service.finishCurrentMatch();
+    await service.finishCurrentMatch();
 
     await pumpScoreboard(tester);
     await tester.tap(find.widgetWithText(OutlinedButton, 'Histórico de Partidas'));

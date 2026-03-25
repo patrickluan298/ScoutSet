@@ -70,7 +70,7 @@ class MatchDetailScreen extends StatelessWidget {
                 Align(
                   alignment: Alignment.center,
                   child: Text(
-                    'Resumo da partida',
+                    'Resumo da Partida',
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.titleMedium,
                   ),

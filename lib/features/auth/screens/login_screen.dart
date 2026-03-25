@@ -144,18 +144,16 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     AppSpacing.gapLarge,
                     AppCard(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Acesso do usuário',
-                            style: theme.textTheme.titleLarge,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Use seu e-mail e senha para entrar na sua conta.',
-                            style: theme.textTheme.bodyMedium,
-                          ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Center(
+                              child: Text(
+                                'Login',
+                                textAlign: TextAlign.center,
+                                style: theme.textTheme.titleLarge,
+                              ),
+                            ),
                           AppSpacing.gapLarge,
                           AppTextField(
                             label: 'E-mail',
@@ -201,21 +199,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             child: OutlinedButton(
                               onPressed: _openRegister,
                               child: const Text('Criar conta'),
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(14),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF2F5FA),
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                            child: Text(
-                              'Todas as áreas do app exigem autenticação antes do acesso.',
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
-                              ),
                             ),
                           ),
                         ],

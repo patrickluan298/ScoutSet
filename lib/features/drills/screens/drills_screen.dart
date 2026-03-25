@@ -6,7 +6,7 @@ import '../../../utils/app_spacing.dart';
 import '../../../widgets/app_card.dart';
 import '../../../widgets/section_title.dart';
 import '../models/drill.dart';
-import '../services/drill_mock_service.dart';
+import '../services/drills_service.dart';
 
 enum _DrillFilter {
   all,
@@ -25,9 +25,28 @@ class DrillsScreen extends StatefulWidget {
 
 class _DrillsScreenState extends State<DrillsScreen> {
   _DrillFilter _activeFilter = _DrillFilter.all;
+  List<Drill> _drills = const [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDrills();
+  }
+
+  Future<void> _loadDrills() async {
+    final drills = await DrillsService.instance.listDrills();
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _drills = drills;
+      _isLoading = false;
+    });
+  }
 
   List<Drill> get _filteredDrills {
-    final drills = DrillMockService.instance.getDrills();
+    final drills = _drills;
     switch (_activeFilter) {
       case _DrillFilter.all:
         return drills;
@@ -95,7 +114,14 @@ class _DrillsScreenState extends State<DrillsScreen> {
             ),
           ),
           AppSpacing.gapMedium,
-          if (drills.isEmpty)
+          if (_isLoading)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 32),
+                child: CircularProgressIndicator(),
+              ),
+            )
+          else if (drills.isEmpty)
             AppCard(
               child: Text(
                 'Nenhum drill encontrado para esse filtro.',

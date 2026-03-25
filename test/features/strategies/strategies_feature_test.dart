@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:scoutset/core/theme/app_theme.dart';
+import 'package:scoutset/data/local/database/app_services.dart';
 import 'package:scoutset/features/strategies/models/player_position.dart';
 import 'package:scoutset/features/strategies/models/strategy.dart';
 import 'package:scoutset/features/strategies/models/substitution.dart';
@@ -12,9 +13,10 @@ import 'package:scoutset/features/strategies/widgets/player_marker.dart';
 void main() {
   late StrategyService service;
 
-  setUp(() {
+  setUp(() async {
+    await AppServices.useInMemoryDatabaseForTesting();
     service = StrategyService.instance;
-    service.clearAll();
+    await service.clearAll();
   });
 
   Widget buildTestable(Widget child) {
@@ -34,6 +36,7 @@ void main() {
     await tester.pumpWidget(
       buildTestable(const StrategiesScreen()),
     );
+    await tester.pumpAndSettle();
 
     expect(find.text('Criar primeira estratégia'), findsOneWidget);
 
@@ -50,6 +53,7 @@ void main() {
     await tester.pumpWidget(
       buildTestable(const StrategiesScreen()),
     );
+    await tester.pumpAndSettle();
 
     await tapVisible(tester, find.text('Criar primeira estratégia'));
 
@@ -64,6 +68,7 @@ void main() {
     await tester.pumpWidget(
       buildTestable(const StrategiesScreen()),
     );
+    await tester.pumpAndSettle();
 
     await tapVisible(tester, find.text('Criar primeira estratégia'));
     await tapVisible(tester, find.text('Praia'));
@@ -78,6 +83,7 @@ void main() {
     await tester.pumpWidget(
       buildTestable(const StrategiesScreen()),
     );
+    await tester.pumpAndSettle();
 
     await tapVisible(tester, find.text('Criar primeira estratégia'));
 
@@ -94,7 +100,7 @@ void main() {
   });
 
   testWidgets('detail screen renders strategy in read only mode', (tester) async {
-    final strategy = service.createStrategy(
+    final strategy = await service.createStrategy(
       Strategy(
         id: '',
         name: 'Bloqueio duplo',
@@ -118,6 +124,7 @@ void main() {
     await tester.pumpWidget(
       buildTestable(StrategyDetailScreen(strategyId: strategy.id)),
     );
+    await tester.pumpAndSettle();
 
     expect(find.text('Bloqueio duplo'), findsWidgets);
     expect(find.text('Visualização'), findsOneWidget);

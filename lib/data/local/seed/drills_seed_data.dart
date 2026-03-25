@@ -1,25 +1,10 @@
-import '../models/drill.dart';
-
-class DrillMockService {
-  const DrillMockService._();
-
-  static const DrillMockService instance = DrillMockService._();
-
-  List<Drill> getDrills() => _drills;
-
-  Drill getById(String id) {
-    return _drills.firstWhere(
-      (drill) => drill.id == id,
-      orElse: () => _drills.first,
-    );
-  }
-}
+import '../../../features/drills/models/drill.dart';
 
 const _teamBlue = 0xFF0F58B5;
 const _teamOrange = 0xFFF5BE00;
 const _teamDark = 0xFF081426;
 
-const List<Drill> _drills = [
+const List<Drill> kInitialDrills = [
   Drill(
     id: 'reception-triangle',
     name: 'Recepção em Triângulo com Transição',
@@ -218,119 +203,112 @@ const List<Drill> _drills = [
         stepIndex: 3,
         highlightPlayerId: 'hitter',
         instructionText: 'Ataque com tronco firme',
-        ballPosition: BallPosition(x: 82, y: 28),
+        ballPosition: BallPosition(x: 28, y: 28),
+        highlightedZones: [
+          CourtZoneHighlight(x: 20, y: 18, width: 20, height: 16, label: 'Zona alvo'),
+        ],
         playersPositions: [
-          PlayerPosition(playerId: 'setter', x: 50, y: 54),
-          PlayerPosition(playerId: 'hitter', x: 42, y: 34),
-          PlayerPosition(playerId: 'block', x: 74, y: 34),
+          PlayerPosition(playerId: 'setter', x: 50, y: 52),
+          PlayerPosition(playerId: 'hitter', x: 28, y: 35),
+          PlayerPosition(playerId: 'block', x: 74, y: 37),
         ],
         movements: [
-          MovementPath(playerId: 'hitter', fromX: 36, fromY: 46, toX: 42, toY: 34, label: 'ataca'),
-          MovementPath(playerId: 'block', fromX: 76, fromY: 38, toX: 74, toY: 34, label: 'fecha'),
+          MovementPath(playerId: 'hitter', fromX: 36, fromY: 46, toX: 28, toY: 35, label: 'ataca'),
         ],
       ),
     ],
   ),
   Drill(
-    id: 'serve-targets',
-    name: 'Saque com Alvos por Zona',
+    id: 'serve-target',
+    name: 'Saque Direcionado por Zona',
     category: 'Saque',
-    objective: 'Melhorar precisão, repetição técnica e tomada de decisão no direcionamento do saque.',
-    difficulty: 'Iniciante',
+    objective: 'Desenvolver precisão no saque com foco em alvos específicos da quadra.',
+    difficulty: 'Intermediário',
     duration: '10 min',
     isFavorite: true,
     players: [
       DrillPlayer(id: 'server', label: 'S', role: 'Sacadora', colorHex: _teamBlue),
-      DrillPlayer(id: 'target1', label: '1', role: 'Alvo zona 1', colorHex: _teamOrange),
-      DrillPlayer(id: 'target5', label: '5', role: 'Alvo zona 5', colorHex: _teamDark),
+      DrillPlayer(id: 'target', label: 'T', role: 'Alvo', colorHex: _teamOrange),
     ],
     steps: [
-      'A sacadora alinha corpo e alvo antes do toss.',
-      'O saque é direcionado para a zona 1.',
-      'Na repetição seguinte, o alvo muda para a zona 5.',
-      'A atleta reinicia a rotina mantendo o mesmo gesto técnico.',
+      'A sacadora se posiciona atrás da linha de fundo.',
+      'Defina a zona alvo antes da execução.',
+      'Realize o saque buscando profundidade e direção.',
+      'Avalie a consistência e repita alternando os alvos.',
     ],
     tips: [
-      'Repita a mesma rotina de respiração antes do saque.',
-      'Observe o contato da mão com a parte posterior da bola.',
-      'Finalize o gesto apontando para a zona alvo.',
+      'Visualize a trajetória antes do lançamento.',
+      'Mantenha o contato firme e o braço acelerando até o final.',
+      'Varie entre zonas curtas e profundas para ampliar controle.',
     ],
     commonErrors: [
-      'Lançamento da bola muito à frente do corpo.',
-      'Mudança no gesto técnico ao trocar o alvo.',
-      'Contato na lateral da bola gerando saque sem controle.',
+      'Lançamento inconsistente que prejudica o tempo do golpe.',
+      'Contato muito baixo na bola, reduzindo direção.',
+      'Foco excessivo na força e pouco na precisão.',
     ],
     variations: [
-      'Reduzir a área do alvo com cones.',
-      'Alternar saque curto e profundo.',
-      'Somar pontuação por acerto consecutivo.',
+      'Pontuar apenas saques que caiam em zonas marcadas.',
+      'Alternar entre saque flutuante e viagem.',
+      'Reduzir o tamanho das zonas para aumentar dificuldade.',
     ],
     animationFrames: [
       AnimationFrame(
         timestamp: 0,
         stepIndex: 0,
         highlightPlayerId: 'server',
-        instructionText: 'Defina o alvo antes do toss',
-        ballPosition: BallPosition(x: 50, y: 88),
-        highlightedZones: [
-          CourtZoneHighlight(x: 72, y: 16, width: 16, height: 16, label: 'Zona 1'),
-        ],
+        instructionText: 'Prepare a base do saque',
+        ballPosition: BallPosition(x: 14, y: 86),
         playersPositions: [
-          PlayerPosition(playerId: 'server', x: 50, y: 92),
-          PlayerPosition(playerId: 'target1', x: 78, y: 24),
-          PlayerPosition(playerId: 'target5', x: 22, y: 24),
+          PlayerPosition(playerId: 'server', x: 14, y: 88),
+          PlayerPosition(playerId: 'target', x: 72, y: 26),
         ],
-        movements: [
-          MovementPath(playerId: 'server', fromX: 50, fromY: 96, toX: 50, toY: 92, label: 'rotina'),
-        ],
+        movements: [],
       ),
       AnimationFrame(
-        timestamp: 1600,
+        timestamp: 1800,
         stepIndex: 1,
-        highlightPlayerId: 'server',
-        instructionText: 'Ataque a bola para a zona 1',
-        ballPosition: BallPosition(x: 68, y: 42),
+        highlightPlayerId: 'target',
+        instructionText: 'Visualize a zona de destino',
+        ballPosition: BallPosition(x: 18, y: 78),
+        highlightedZones: [
+          CourtZoneHighlight(x: 64, y: 18, width: 18, height: 18, label: 'Zona 1'),
+        ],
         playersPositions: [
-          PlayerPosition(playerId: 'server', x: 50, y: 88),
-          PlayerPosition(playerId: 'target1', x: 78, y: 24),
-          PlayerPosition(playerId: 'target5', x: 22, y: 24),
+          PlayerPosition(playerId: 'server', x: 16, y: 84),
+          PlayerPosition(playerId: 'target', x: 72, y: 26),
         ],
         movements: [
-          MovementPath(playerId: 'server', fromX: 50, fromY: 92, toX: 50, toY: 88, label: 'saque'),
+          MovementPath(playerId: 'server', fromX: 14, fromY: 88, toX: 16, toY: 84, label: 'lança'),
         ],
       ),
       AnimationFrame(
-        timestamp: 3200,
+        timestamp: 3600,
         stepIndex: 2,
         highlightPlayerId: 'server',
-        instructionText: 'Troque o alvo sem mudar a técnica',
-        ballPosition: BallPosition(x: 34, y: 40),
-        highlightedZones: [
-          CourtZoneHighlight(x: 14, y: 16, width: 16, height: 16, label: 'Zona 5'),
-        ],
+        instructionText: 'Acelere o braço até o contato',
+        ballPosition: BallPosition(x: 46, y: 54),
         playersPositions: [
-          PlayerPosition(playerId: 'server', x: 50, y: 88),
-          PlayerPosition(playerId: 'target1', x: 78, y: 24),
-          PlayerPosition(playerId: 'target5', x: 22, y: 24),
+          PlayerPosition(playerId: 'server', x: 18, y: 82),
+          PlayerPosition(playerId: 'target', x: 72, y: 26),
         ],
         movements: [
-          MovementPath(playerId: 'server', fromX: 50, fromY: 88, toX: 50, toY: 88, label: 'repete gesto'),
+          MovementPath(playerId: 'server', fromX: 16, fromY: 84, toX: 18, toY: 82, label: 'golpeia'),
         ],
       ),
       AnimationFrame(
-        timestamp: 4800,
+        timestamp: 5200,
         stepIndex: 3,
-        highlightPlayerId: 'server',
-        instructionText: 'Reinicie e mantenha consistência',
-        ballPosition: BallPosition(x: 50, y: 88),
+        highlightPlayerId: 'target',
+        instructionText: 'Confirme a queda na zona',
+        ballPosition: BallPosition(x: 72, y: 24),
+        highlightedZones: [
+          CourtZoneHighlight(x: 64, y: 18, width: 18, height: 18, label: 'Acerto'),
+        ],
         playersPositions: [
-          PlayerPosition(playerId: 'server', x: 50, y: 92),
-          PlayerPosition(playerId: 'target1', x: 78, y: 24),
-          PlayerPosition(playerId: 'target5', x: 22, y: 24),
+          PlayerPosition(playerId: 'server', x: 18, y: 82),
+          PlayerPosition(playerId: 'target', x: 72, y: 26),
         ],
-        movements: [
-          MovementPath(playerId: 'server', fromX: 50, fromY: 88, toX: 50, toY: 92, label: 'reset'),
-        ],
+        movements: [],
       ),
     ],
   ),

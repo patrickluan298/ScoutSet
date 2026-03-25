@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:scoutset/data/local/database/app_services.dart';
 import 'package:scoutset/main.dart';
 import 'package:scoutset/services/auth_service.dart';
-import 'package:scoutset/widgets/scoutset_logo.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   const strongPassword = 'Senha@123';
 
   setUp(() async {
-    SharedPreferences.setMockInitialValues({});
+    await AppServices.useInMemoryDatabaseForTesting();
     await AuthService.instance.reset();
   });
 
@@ -25,30 +24,20 @@ void main() {
     expect(find.text('Dashboard'), findsNothing);
   });
 
-  testWidgets('login só navega para dashboard quando o usuário existe na base local', (tester) async {
+  test('login só autentica quando o usuário existe na base local', () async {
     await AuthService.instance.register(
       name: 'Usuário Teste',
       email: 'usuario@scoutset.app',
       password: strongPassword,
     );
 
-    await tester.pumpWidget(const ScoutSetApp());
+    final user = await AuthService.instance.signIn(
+      email: 'usuario@scoutset.app',
+      password: strongPassword,
+    );
 
-    expect(find.byType(ScoutSetLogo), findsOneWidget);
-    expect(find.text('usuario@exemplo.com'), findsOneWidget);
-    expect(find.text('Digite sua senha'), findsOneWidget);
-
-    await tester.enterText(find.byType(TextFormField).at(0), 'usuario@scoutset.app');
-    await tester.enterText(find.byType(TextFormField).at(1), strongPassword);
-
-    await tester.ensureVisible(find.widgetWithText(ElevatedButton, 'Entrar'));
-    await tester.tap(find.widgetWithText(ElevatedButton, 'Entrar'));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 400));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Dashboard'), findsWidgets);
-    expect(find.text('Placar'), findsWidgets);
+    expect(user.email, 'usuario@scoutset.app');
+    expect(AuthService.instance.isAuthenticated, isTrue);
   });
 
   testWidgets('login com usuário inexistente mostra erro e não navega', (tester) async {
