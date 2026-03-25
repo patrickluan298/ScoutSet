@@ -14,7 +14,7 @@ class MatchHistoryScreen extends StatelessWidget {
     final service = ScoreboardService.instance;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Histórico de partidas')),
+      appBar: AppBar(title: const Text('Histórico de Partidas')),
       body: ValueListenableBuilder(
         valueListenable: service.stateNotifier,
         builder: (context, state, _) {

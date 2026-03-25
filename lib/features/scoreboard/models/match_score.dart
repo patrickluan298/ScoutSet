@@ -9,6 +9,17 @@ enum MatchStatus {
 
   final String value;
 
+  String get label {
+    switch (this) {
+      case MatchStatus.notStarted:
+        return 'Não iniciada';
+      case MatchStatus.inProgress:
+        return 'Em andamento';
+      case MatchStatus.finished:
+        return 'Finalizada';
+    }
+  }
+
   static MatchStatus fromValue(String? value) {
     return MatchStatus.values.firstWhere(
       (status) => status.value == value,

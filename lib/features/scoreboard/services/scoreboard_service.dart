@@ -17,15 +17,20 @@ class ScoreboardService {
 
   ScoreboardState getState() => stateNotifier.value;
 
+  String _inProgressSetLabel(int setNumber) => '$setNumber° set em andamento';
+
   MatchScore startMatch({
     required String teamAName,
     required String teamBName,
     String? servingTeam,
   }) {
-    final normalizedTeamA = teamAName.trim();
-    final normalizedTeamB = teamBName.trim();
+    final normalizedTeamA = teamAName.trim().toUpperCase();
+    final normalizedTeamB = teamBName.trim().toUpperCase();
     if (normalizedTeamA.isEmpty || normalizedTeamB.isEmpty) {
       throw ArgumentError('Os nomes dos times sao obrigatorios.');
+    }
+    if (normalizedTeamA.toLowerCase() == normalizedTeamB.toLowerCase()) {
+      throw ArgumentError('Os times precisam ter nomes diferentes.');
     }
 
     final match = MatchScore(
@@ -47,7 +52,7 @@ class ScoreboardService {
       ScoreboardState(
         activeMatch: match,
         history: stateNotifier.value.history,
-        statusMessage: 'Set 1 em andamento',
+        statusMessage: _inProgressSetLabel(1),
         canUndo: false,
         currentTeamAScore: 0,
         currentTeamBScore: 0,
@@ -104,7 +109,7 @@ class ScoreboardService {
           winnerTeam: null,
           finishedAt: null,
         ),
-        statusMessage: 'Set 1 em andamento',
+        statusMessage: _inProgressSetLabel(1),
         canUndo: false,
         currentTeamAScore: 0,
         currentTeamBScore: 0,
@@ -160,7 +165,7 @@ class ScoreboardService {
       ScoreboardState(
         activeMatch: null,
         history: stateNotifier.value.history,
-        statusMessage: 'Preencha os times para iniciar uma nova partida.',
+        statusMessage: '',
         canUndo: false,
         currentTeamAScore: 0,
         currentTeamBScore: 0,
@@ -215,7 +220,7 @@ class ScoreboardService {
       _setState(
         state.copyWith(
           activeMatch: updatedMatch,
-          statusMessage: 'Set ${updatedMatch.currentSet} em andamento',
+          statusMessage: _inProgressSetLabel(updatedMatch.currentSet),
           canUndo: true,
           currentTeamAScore: teamAScore,
           currentTeamBScore: teamBScore,
@@ -245,7 +250,7 @@ class ScoreboardService {
       state.copyWith(
         activeMatch: progressedMatch,
         statusMessage:
-            '$setWinnerName venceu o set ${completedSet.setNumber}. Set ${progressedMatch.currentSet} em andamento',
+            '$setWinnerName venceu o set ${completedSet.setNumber}. ${_inProgressSetLabel(progressedMatch.currentSet)}',
         canUndo: false,
         currentTeamAScore: 0,
         currentTeamBScore: 0,

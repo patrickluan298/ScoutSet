@@ -22,14 +22,14 @@ class MatchDetailScreen extends StatelessWidget {
     final lastSet = match.sets.isEmpty ? null : match.sets.last;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Detalhes da partida')),
+      appBar: AppBar(title: const Text('Detalhes da Partida')),
       body: ListView(
         padding: AppSpacing.screen,
         children: [
           ScoreboardHeader(
             title: '${match.teamAName} x ${match.teamBName}',
             subtitle: 'Resultado final em sets: ${match.teamASetsWon} x ${match.teamBSetsWon}',
-            statusLabel: 'Status: ${match.matchStatus.value}',
+            statusLabel: 'Status: ${match.matchStatus.label}',
           ),
           AppSpacing.gapMedium,
           MatchStatusBanner(
@@ -41,14 +41,14 @@ class MatchDetailScreen extends StatelessWidget {
             children: [
               Expanded(
                 child: _InfoCard(
-                  title: 'Placar final',
+                  title: 'Placar Final',
                   value: '${match.teamASetsWon} x ${match.teamBSetsWon}',
                 ),
               ),
               const SizedBox(width: 16),
               Expanded(
                 child: _InfoCard(
-                  title: 'Ultimo set',
+                  title: 'Último set',
                   value: lastSet == null ? '-' : '${lastSet.teamAScore} x ${lastSet.teamBScore}',
                 ),
               ),
@@ -67,7 +67,14 @@ class MatchDetailScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Resumo da partida', style: Theme.of(context).textTheme.titleMedium),
+                Align(
+                  alignment: Alignment.center,
+                  child: Text(
+                    'Resumo da partida',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ),
                 const SizedBox(height: 12),
                 _DetailRow(label: 'Vencedor', value: winner),
                 _DetailRow(label: 'Data de inicio', value: _formatDate(match.createdAt)),
@@ -75,7 +82,7 @@ class MatchDetailScreen extends StatelessWidget {
                   label: 'Data de encerramento',
                   value: match.finishedAt == null ? '-' : _formatDate(match.finishedAt!),
                 ),
-                _DetailRow(label: 'Status', value: match.matchStatus.value),
+                _DetailRow(label: 'Status', value: match.matchStatus.label),
               ],
             ),
           ),

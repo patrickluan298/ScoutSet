@@ -38,7 +38,7 @@ Telas:
 - `lib/features/auth/screens/login_screen.dart`
 - `lib/features/auth/screens/register_screen.dart`
 
-### Placar eletrônico de vôlei
+### Placar Eletrônico de Vôlei
 
 A feature `lib/features/scoreboard/` funciona como um placar operacional para partidas de vôlei.
 

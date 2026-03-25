@@ -28,7 +28,7 @@ class ScoreboardState {
   const ScoreboardState.initial()
       : activeMatch = null,
         history = const [],
-        statusMessage = 'Preencha os times para iniciar uma nova partida.',
+        statusMessage = '',
         canUndo = false,
         currentTeamAScore = 0,
         currentTeamBScore = 0,

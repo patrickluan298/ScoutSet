@@ -50,6 +50,8 @@ class TeamScoreCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   teamName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.titleMedium?.copyWith(
                     color: foregroundColor,
                     fontWeight: FontWeight.w800,
@@ -58,16 +60,18 @@ class TeamScoreCard extends StatelessWidget {
               ),
               if (isServing)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  width: 32,
+                  height: 32,
                   decoration: BoxDecoration(
                     color: AppTheme.secondaryBlueColor,
                     borderRadius: BorderRadius.circular(999),
                   ),
-                  child: const Text(
-                    'Sacando',
-                    style: TextStyle(
+                  child: const Tooltip(
+                    message: 'Sacando',
+                    child: Icon(
+                      Icons.sports_volleyball,
                       color: AppTheme.whiteColor,
-                      fontWeight: FontWeight.w700,
+                      size: 18,
                     ),
                   ),
                 ),

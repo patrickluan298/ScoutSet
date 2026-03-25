@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../utils/app_spacing.dart';
@@ -28,6 +29,7 @@ class ScoreboardScreen extends StatefulWidget {
 }
 
 class _ScoreboardScreenState extends State<ScoreboardScreen> {
+  static const int _maxTeamNameLength = 10;
   final _formKey = GlobalKey<FormState>();
   final _teamAController = TextEditingController();
   final _teamBController = TextEditingController();
@@ -46,6 +48,26 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
         builder: (_) => const MatchHistoryScreen(),
       ),
     );
+  }
+
+  bool _hasDuplicatedTeamNames() {
+    final teamAName = _teamAController.text.trim().toLowerCase();
+    final teamBName = _teamBController.text.trim().toLowerCase();
+    return teamAName.isNotEmpty && teamBName.isNotEmpty && teamAName == teamBName;
+  }
+
+  String? _validateTeamName(
+    String? value,
+    String fieldLabel, {
+    bool validateDuplicate = false,
+  }) {
+    if ((value ?? '').trim().isEmpty) {
+      return 'Informe o nome do $fieldLabel.';
+    }
+    if (validateDuplicate && _hasDuplicatedTeamNames()) {
+      return 'Os times precisam ter nomes diferentes.';
+    }
+    return null;
   }
 
   void _startMatch() {
@@ -69,11 +91,12 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
     }
   }
 
-  void _prepareNewMatch(ScoreboardState state) {
-    final activeMatch = state.activeMatch;
-    _teamAController.text = activeMatch?.teamAName ?? '';
-    _teamBController.text = activeMatch?.teamBName ?? '';
+  void _prepareNewMatch() {
     _service.prepareForNewMatch();
+    _formKey.currentState?.reset();
+    _teamAController.clear();
+    _teamBController.clear();
+    FocusScope.of(context).unfocus();
   }
 
   @override
@@ -108,7 +131,6 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
           title: 'Placar Eletrônico de Vôlei',
           subtitle: 'Monte a partida, acompanhe os sets e salve o histórico em tempo real.',
           statusLabel: state.statusMessage,
-          onHistoryTap: state.history.isEmpty ? null : _openHistory,
         ),
         AppSpacing.gapMedium,
         AppCard(
@@ -118,38 +140,38 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SectionTitle(
-                  title: 'Nova partida',
-                  subtitle: 'Informe os nomes dos dois times para iniciar o placar.',
+                  title: 'Nova Partida',
+                  subtitle: 'Informe os nomes dos times para iniciar o placar. Máximo de 10 caracteres.',
                 ),
                 const SizedBox(height: 20),
                 TextFormField(
                   key: const Key('scoreboard-team-a-field'),
                   controller: _teamAController,
+                  inputFormatters: [
+                    LengthLimitingTextInputFormatter(_maxTeamNameLength),
+                  ],
                   decoration: const InputDecoration(
                     labelText: 'Nome do time A',
                     prefixIcon: Icon(Icons.groups_2_outlined),
                   ),
-                  validator: (value) {
-                    if ((value ?? '').trim().isEmpty) {
-                      return 'Informe o nome do time A.';
-                    }
-                    return null;
-                  },
+                  validator: (value) => _validateTeamName(value, 'time A'),
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
                   key: const Key('scoreboard-team-b-field'),
                   controller: _teamBController,
+                  inputFormatters: [
+                    LengthLimitingTextInputFormatter(_maxTeamNameLength),
+                  ],
                   decoration: const InputDecoration(
                     labelText: 'Nome do time B',
                     prefixIcon: Icon(Icons.groups_outlined),
                   ),
-                  validator: (value) {
-                    if ((value ?? '').trim().isEmpty) {
-                      return 'Informe o nome do time B.';
-                    }
-                    return null;
-                  },
+                  validator: (value) => _validateTeamName(
+                    value,
+                    'time B',
+                    validateDuplicate: true,
+                  ),
                 ),
                 const SizedBox(height: 20),
                 AppButton(
@@ -198,62 +220,63 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
       children: [
         ScoreboardHeader(
           title: '${match.teamAName} x ${match.teamBName}',
-          subtitle: isFinished
-              ? 'Resultado final em sets: ${match.teamASetsWon} x ${match.teamBSetsWon}'
-              : 'Set ${match.currentSet} em disputa',
-          statusLabel: isFinished ? 'Partida encerrada' : 'Set atual: ${match.currentSet}',
-          onHistoryTap: _openHistory,
+          subtitle: isFinished ? 'Resultado final em sets: ${match.teamASetsWon} x ${match.teamBSetsWon}' : '',
+          statusLabel: isFinished ? 'Partida encerrada' : '',
         ),
+        if (state.history.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          Align(
+            alignment: Alignment.centerRight,
+            child: OutlinedButton.icon(
+              onPressed: _openHistory,
+              icon: const Icon(Icons.history),
+              label: const Text('Histórico de Partidas'),
+            ),
+          ),
+        ],
         AppSpacing.gapMedium,
         MatchStatusBanner(
           message: state.statusMessage,
           isFinished: isFinished,
         ),
         AppSpacing.gapMedium,
-        LayoutBuilder(
-          builder: (context, constraints) {
-            final useRow = constraints.maxWidth >= 720;
-            final firstCard = TeamScoreCard(
-              teamName: match.teamAName,
-              score: state.currentTeamAScore,
-              setsWon: match.teamASetsWon,
-              isServing: match.servingTeam == TeamSide.teamA,
-              isWinner: winnerTeam == TeamSide.teamA.value,
-            );
-            final secondCard = TeamScoreCard(
-              teamName: match.teamBName,
-              score: state.currentTeamBScore,
-              setsWon: match.teamBSetsWon,
-              isServing: match.servingTeam == TeamSide.teamB,
-              isWinner: winnerTeam == TeamSide.teamB.value,
-            );
-
-            if (useRow) {
-              return Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(child: firstCard),
-                  const SizedBox(width: 16),
-                  Expanded(child: secondCard),
-                ],
-              );
-            }
-
-            return Column(
-              children: [
-                firstCard,
-                const SizedBox(height: 16),
-                secondCard,
-              ],
-            );
-          },
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: TeamScoreCard(
+                teamName: match.teamAName,
+                score: state.currentTeamAScore,
+                setsWon: match.teamASetsWon,
+                isServing: match.servingTeam == TeamSide.teamA,
+                isWinner: winnerTeam == TeamSide.teamA.value,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: TeamScoreCard(
+                teamName: match.teamBName,
+                score: state.currentTeamBScore,
+                setsWon: match.teamBSetsWon,
+                isServing: match.servingTeam == TeamSide.teamB,
+                isWinner: winnerTeam == TeamSide.teamB.value,
+              ),
+            ),
+          ],
         ),
         AppSpacing.gapMedium,
         AppCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Controles do placar', style: Theme.of(context).textTheme.titleMedium),
+              Align(
+                alignment: Alignment.center,
+                child: Text(
+                  'Controles do Placar',
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ),
               const SizedBox(height: 16),
               ScoreControls(
                 teamAName: match.teamAName,
@@ -263,7 +286,7 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
                 onUndo: _service.undoLastPoint,
                 onReset: _service.resetCurrentMatch,
                 onFinish: _service.finishCurrentMatch,
-                onNewMatch: () => _prepareNewMatch(state),
+                onNewMatch: _prepareNewMatch,
                 canScore: !isFinished,
                 canUndo: state.canUndo,
                 canReset: !isFinished,

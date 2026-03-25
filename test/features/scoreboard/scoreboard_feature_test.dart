@@ -27,7 +27,7 @@ void main() {
   testWidgets('shows setup card before a match starts', (tester) async {
     await pumpScoreboard(tester);
 
-    expect(find.text('Nova partida'), findsOneWidget);
+    expect(find.text('Nova Partida'), findsOneWidget);
     expect(find.byKey(const Key('scoreboard-team-a-field')), findsOneWidget);
     expect(find.byKey(const Key('scoreboard-team-b-field')), findsOneWidget);
   });
@@ -40,9 +40,55 @@ void main() {
     await tester.tap(find.byKey(const Key('scoreboard-start-button')));
     await tester.pumpAndSettle();
 
-    expect(find.text('Time Azul x Time Ouro'), findsOneWidget);
-    expect(find.text('Controles do placar'), findsOneWidget);
-    expect(find.text('Set 1 em andamento'), findsWidgets);
+    expect(find.text('TIME AZUL x TIME OURO'), findsOneWidget);
+    expect(find.text('Controles do Placar'), findsOneWidget);
+    expect(find.text('1° set em andamento'), findsWidgets);
+  });
+
+  testWidgets('prevents starting a match with duplicated team names', (tester) async {
+    await pumpScoreboard(tester);
+
+    await tester.enterText(find.byKey(const Key('scoreboard-team-a-field')), 'Time Azul');
+    await tester.enterText(find.byKey(const Key('scoreboard-team-b-field')), 'time azul');
+    await tester.tap(find.byKey(const Key('scoreboard-start-button')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Os times precisam ter nomes diferentes.'), findsOneWidget);
+    expect(find.text('Controles do Placar'), findsNothing);
+  });
+
+  testWidgets('clears team fields when preparing a new match', (tester) async {
+    service.startMatch(teamAName: 'Azul', teamBName: 'Ouro');
+    service.finishCurrentMatch();
+
+    await pumpScoreboard(tester);
+    final newMatchButton = find.widgetWithText(ElevatedButton, 'Nova Partida');
+    final button = tester.widget<ElevatedButton>(newMatchButton);
+    button.onPressed?.call();
+    await tester.pumpAndSettle();
+
+    final teamAField = tester.widget<TextFormField>(
+      find.byKey(const Key('scoreboard-team-a-field')),
+    );
+    final teamBField = tester.widget<TextFormField>(
+      find.byKey(const Key('scoreboard-team-b-field')),
+    );
+
+    expect(teamAField.controller?.text, isEmpty);
+    expect(teamBField.controller?.text, isEmpty);
+  });
+
+  testWidgets('limits team names to 10 characters', (tester) async {
+    await pumpScoreboard(tester);
+
+    await tester.enterText(find.byKey(const Key('scoreboard-team-a-field')), '12345678901');
+    await tester.pump();
+
+    final teamAField = tester.widget<TextFormField>(
+      find.byKey(const Key('scoreboard-team-a-field')),
+    );
+
+    expect(teamAField.controller?.text, '1234567890');
   });
 
   testWidgets('renders banner and scores during the match', (tester) async {
@@ -70,7 +116,7 @@ void main() {
 
     final pointButton = tester.widget<ElevatedButton>(find.widgetWithText(ElevatedButton, '+1 A').first);
     expect(pointButton.onPressed, isNull);
-    expect(find.text('Nova partida'), findsOneWidget);
+    expect(find.text('Nova Partida'), findsOneWidget);
     expect(find.textContaining('venceu a partida'), findsOneWidget);
   });
 
@@ -82,16 +128,16 @@ void main() {
     service.finishCurrentMatch();
 
     await pumpScoreboard(tester);
-    await tester.tap(find.byIcon(Icons.history).first);
+    await tester.tap(find.widgetWithText(OutlinedButton, 'Histórico de Partidas'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Histórico de partidas'), findsOneWidget);
+    expect(find.text('Histórico de Partidas'), findsOneWidget);
     expect(find.text('A x B'), findsOneWidget);
 
     await tester.tap(find.text('A x B').first);
     await tester.pumpAndSettle();
 
-    expect(find.text('Detalhes da partida'), findsOneWidget);
+    expect(find.text('Detalhes da Partida'), findsOneWidget);
     expect(find.textContaining('Vencedor:'), findsWidgets);
   });
 }

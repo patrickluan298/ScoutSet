@@ -8,17 +8,17 @@ class ScoreboardHeader extends StatelessWidget {
     required this.subtitle,
     required this.statusLabel,
     super.key,
-    this.onHistoryTap,
   });
 
   final String title;
   final String subtitle;
   final String statusLabel;
-  final VoidCallback? onHistoryTap;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final hasSubtitle = subtitle.trim().isNotEmpty;
+    final hasStatusLabel = statusLabel.trim().isNotEmpty;
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -44,44 +44,43 @@ class ScoreboardHeader extends StatelessWidget {
                   children: [
                     Text(
                       title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.titleLarge?.copyWith(
                         color: AppTheme.whiteColor,
                       ),
                     ),
-                    const SizedBox(height: 6),
-                    Text(
-                      subtitle,
-                      style: theme.textTheme.bodyLarge?.copyWith(
-                        color: AppTheme.whiteColor.withValues(alpha: 0.9),
+                    if (hasSubtitle) ...[
+                      const SizedBox(height: 6),
+                      Text(
+                        subtitle,
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          color: AppTheme.whiteColor.withValues(alpha: 0.9),
+                        ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
               ),
-              if (onHistoryTap != null)
-                IconButton(
-                  onPressed: onHistoryTap,
-                  icon: const Icon(Icons.history),
-                  color: AppTheme.whiteColor,
-                  tooltip: 'Histórico',
-                ),
             ],
           ),
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(999),
-            ),
-            child: Text(
-              statusLabel,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: AppTheme.whiteColor,
-                fontWeight: FontWeight.w700,
+          if (hasStatusLabel) ...[
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Text(
+                statusLabel,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: AppTheme.whiteColor,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
-          ),
+          ],
         ],
       ),
     );

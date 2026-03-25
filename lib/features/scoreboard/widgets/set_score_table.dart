@@ -26,9 +26,13 @@ class SetScoreTable extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Resumo dos sets',
-            style: Theme.of(context).textTheme.titleMedium,
+          Align(
+            alignment: Alignment.center,
+            child: Text(
+              'Resumo dos Sets',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
           ),
           const SizedBox(height: 16),
           Table(
@@ -103,6 +107,7 @@ class _HeaderCell extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 10),
       child: Text(
         label,
+        textAlign: TextAlign.center,
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               fontWeight: FontWeight.w700,
               color: AppTheme.mediumGrayColor,
