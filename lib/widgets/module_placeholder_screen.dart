@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
 
 import 'app_card.dart';
+import 'dashboard_profile_bottom_navigation.dart';
 import 'section_title.dart';
 
 class ModulePlaceholderScreen extends StatelessWidget {
   const ModulePlaceholderScreen({
     required this.title,
     required this.description,
+    required this.currentRoute,
     super.key,
     this.showScaffold = true,
   });
 
   final String title;
   final String description;
+  final String currentRoute;
   final bool showScaffold;
 
   @override
@@ -45,8 +48,12 @@ class ModulePlaceholderScreen extends StatelessWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      body: SingleChildScrollView(child: content),
+      body: SafeArea(
+        child: SingleChildScrollView(child: content),
+      ),
+      bottomNavigationBar: DashboardProfileBottomNavigation(
+        currentRoute: currentRoute,
+      ),
     );
   }
 }

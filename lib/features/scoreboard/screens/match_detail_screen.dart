@@ -24,9 +24,11 @@ class MatchDetailScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
+        centerTitle: true,
         title: const Text('Detalhes da Partida'),
         actions: [
           IconButton(
+            color: AppTheme.secondaryBlueColor,
             icon: const Icon(Icons.download_outlined),
             tooltip: 'Baixar PDF',
             onPressed: () async {
@@ -40,6 +42,7 @@ class MatchDetailScreen extends StatelessWidget {
             },
           ),
           IconButton(
+            color: AppTheme.secondaryBlueColor,
             icon: const Icon(Icons.share_outlined),
             tooltip: 'Compartilhar PDF',
             onPressed: () async {

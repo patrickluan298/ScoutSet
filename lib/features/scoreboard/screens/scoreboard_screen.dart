@@ -162,8 +162,7 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Placar')),
-      body: content,
+      body: SafeArea(child: content),
     );
   }
 
@@ -223,7 +222,7 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
                 OutlinedButton.icon(
                   onPressed: _openSavedTeams,
                   icon: const Icon(Icons.folder_shared_outlined),
-                  label: const Text('Selecionar equipes salvas'),
+                  label: const Text('Selecionar Equipes Salvas'),
                 ),
                 const SizedBox(height: 20),
                 AppButton(

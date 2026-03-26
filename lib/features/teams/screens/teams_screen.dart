@@ -5,6 +5,7 @@ import '../../../../config/app_routes.dart';
 import '../../../../utils/app_spacing.dart';
 import '../../../../widgets/app_button.dart';
 import '../../../../widgets/app_card.dart';
+import '../../../../widgets/dashboard_profile_bottom_navigation.dart';
 import '../models/team_draw_player.dart';
 import '../services/saved_team_service.dart';
 import '../services/team_draw_service.dart';
@@ -261,15 +262,10 @@ class _TeamsScreenState extends State<TeamsScreen> {
       }
 
       return Scaffold(
-        appBar: AppBar(
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            tooltip: 'Voltar ao dashboard',
-            onPressed: () => Navigator.pushReplacementNamed(context, AppRoutes.dashboard),
-          ),
-          title: const Text('Equipes'),
+        body: SafeArea(child: loading),
+        bottomNavigationBar: const DashboardProfileBottomNavigation(
+          currentRoute: AppRoutes.teams,
         ),
-        body: loading,
       );
     }
 
@@ -411,15 +407,10 @@ class _TeamsScreenState extends State<TeamsScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          tooltip: 'Voltar ao dashboard',
-          onPressed: () => Navigator.pushReplacementNamed(context, AppRoutes.dashboard),
-        ),
-        title: const Text('Equipes'),
+      body: SafeArea(child: content),
+      bottomNavigationBar: const DashboardProfileBottomNavigation(
+        currentRoute: AppRoutes.teams,
       ),
-      body: content,
     );
   }
 }

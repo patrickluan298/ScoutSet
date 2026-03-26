@@ -177,8 +177,7 @@ class _StrategiesScreenState extends State<StrategiesScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Estratégias')),
-      body: content,
+      body: SafeArea(child: content),
     );
   }
 

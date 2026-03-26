@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/theme/app_theme.dart';
 import '../../../utils/app_spacing.dart';
 import '../../../widgets/app_card.dart';
 import '../models/match_score.dart';
@@ -15,7 +16,10 @@ class MatchHistoryScreen extends StatelessWidget {
     final service = ScoreboardService.instance;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Histórico de Partidas')),
+      appBar: AppBar(
+        centerTitle: true,
+        title: const Text('Histórico de Partidas'),
+      ),
       body: ValueListenableBuilder(
         valueListenable: service.stateNotifier,
         builder: (context, state, _) {
@@ -88,6 +92,10 @@ class MatchHistoryScreen extends StatelessWidget {
                         runSpacing: 8,
                         children: [
                           OutlinedButton.icon(
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppTheme.secondaryBlueColor,
+                              side: const BorderSide(color: AppTheme.secondaryBlueColor),
+                            ),
                             onPressed: () async {
                               final file = await MatchPdfService.instance.savePdf(match);
                               if (!context.mounted) {
@@ -101,6 +109,10 @@ class MatchHistoryScreen extends StatelessWidget {
                             label: const Text('Baixar PDF'),
                           ),
                           OutlinedButton.icon(
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppTheme.secondaryBlueColor,
+                              side: const BorderSide(color: AppTheme.secondaryBlueColor),
+                            ),
                             onPressed: () async {
                               await MatchPdfService.instance.sharePdf(match);
                             },
