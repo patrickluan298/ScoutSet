@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../../config/app_routes.dart';
+import '../../../services/auth_service.dart';
 import '../../../utils/app_spacing.dart';
 import '../../../widgets/app_card.dart';
 import '../../../widgets/dashboard_tile.dart';
-import '../../../widgets/section_title.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({
@@ -14,30 +14,36 @@ class DashboardScreen extends StatelessWidget {
 
   final bool showScaffold;
 
+  static const _shellRoutes = {
+    AppRoutes.dashboard,
+    AppRoutes.scoreboard,
+    AppRoutes.strategies,
+    AppRoutes.reports,
+    AppRoutes.profile,
+  };
+
   static const _tiles = [
     _DashboardItem('Placar', 'Controle o jogo em tempo real', Icons.sports_volleyball, AppRoutes.scoreboard),
-    _DashboardItem('Estrategias', 'Monte cenarios e simulacoes', Icons.schema, AppRoutes.strategies),
-    _DashboardItem('Drills', 'Organize treinos e exercicios', Icons.fitness_center, AppRoutes.drills),
-    _DashboardItem('Regras', 'Consulte regras e observacoes', Icons.gavel, AppRoutes.rules),
-    _DashboardItem('Videos', 'Central de analise de video', Icons.videocam_outlined, AppRoutes.videos),
-    _DashboardItem('Relatorios', 'Acompanhe dados e metricas', Icons.bar_chart, AppRoutes.reports),
+    _DashboardItem('Estratégias', 'Monte cenários e simulações', Icons.schema, AppRoutes.strategies),
+    _DashboardItem('Drills', 'Organize treinos e exercícios', Icons.fitness_center, AppRoutes.drills),
+    _DashboardItem('Regras', 'Consulte regras e observações', Icons.gavel, AppRoutes.rules),
+    _DashboardItem('Vídeos', 'Central de análise de vídeo', Icons.videocam_outlined, AppRoutes.videos),
+    _DashboardItem('Relatórios', 'Acompanhe dados e métricas', Icons.bar_chart, AppRoutes.reports),
     _DashboardItem('Equipes', 'Gerencie times e atletas', Icons.groups_outlined, AppRoutes.teams),
-    _DashboardItem('Perfil', 'Preferencias e conta', Icons.person_outline, AppRoutes.profile),
+    _DashboardItem('Perfil', 'Preferências e conta', Icons.person_outline, AppRoutes.profile),
   ];
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final user = AuthService.instance.currentUser;
+    final userName = (user?.name.trim().isNotEmpty ?? false) ? user!.name.trim() : 'Usuário';
 
     final content = SingleChildScrollView(
       padding: AppSpacing.screen,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SectionTitle(
-            title: 'Dashboard',
-            subtitle: 'Bem-vindo, Coach Patrick. Escolha um modulo para continuar.',
-          ),
           AppSpacing.gapMedium,
           AppCard(
             child: Row(
@@ -46,10 +52,10 @@ class DashboardScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Base pronta para crescer', style: theme.textTheme.titleMedium),
+                      Text('Vamos começar os treinos?', style: theme.textTheme.titleMedium),
                       const SizedBox(height: 8),
                       Text(
-                        'Arquitetura modular preparada para backend em Python, analise de video com IA e dashboards avancados.',
+                        'Bem-vindo, $userName. Escolha um módulo para continuar.',
                         style: theme.textTheme.bodyMedium,
                       ),
                     ],
@@ -97,7 +103,14 @@ class DashboardScreen extends StatelessWidget {
                 title: item.title,
                 subtitle: item.subtitle,
                 icon: item.icon,
-                onTap: () => Navigator.pushNamed(context, item.route),
+                onTap: () {
+                  if (_shellRoutes.contains(item.route)) {
+                    Navigator.pushReplacementNamed(context, item.route);
+                    return;
+                  }
+
+                  Navigator.pushNamed(context, item.route);
+                },
               );
             },
           ),

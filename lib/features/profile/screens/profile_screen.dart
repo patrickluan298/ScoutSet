@@ -34,8 +34,8 @@ class ProfileScreen extends StatelessWidget {
             const SizedBox(height: 16),
             Text(
               user == null
-                  ? 'Nenhum usuario autenticado.'
-                  : 'Usuario conectado: ${user.email}',
+                  ? 'Nenhum usuário autenticado.'
+                  : 'Usuário conectado: ${user.name.isEmpty ? user.email : user.name}',
               style: Theme.of(context).textTheme.bodyLarge,
             ),
             const SizedBox(height: 20),

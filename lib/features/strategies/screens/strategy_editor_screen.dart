@@ -232,7 +232,7 @@ class _StrategyEditorScreenState extends State<StrategyEditorScreen> {
 
   void _applySubstitution() {
     if (_gameMode == StrategyGameMode.beach) {
-      _showSnackBar('No volei de praia nao sao permitidas substituicoes.');
+      _showSnackBar('No vôlei de praia não são permitidas substituições.');
       return;
     }
 
@@ -248,17 +248,17 @@ class _StrategyEditorScreenState extends State<StrategyEditorScreen> {
 
     if (_isLiberoExchange) {
       if (!(outgoing.isLibero ^ incoming.isLibero)) {
-        _showSnackBar('A troca de libero deve envolver exatamente um libero.');
+        _showSnackBar('A troca de líbero deve envolver exatamente um líbero.');
         return;
       }
     } else {
       if (_substitutions.where((item) => item.countsTowardLimit).length >= 6) {
-        _showSnackBar('Cada equipe pode fazer ate 6 substituicoes por set.');
+        _showSnackBar('Cada equipe pode fazer até 6 substituições por set.');
         return;
       }
 
       if (incoming.isLibero) {
-        _showSnackBar('O libero deve entrar apenas em troca de libero.');
+        _showSnackBar('O líbero deve entrar apenas em troca de líbero.');
         return;
       }
 
@@ -366,7 +366,7 @@ class _StrategyEditorScreenState extends State<StrategyEditorScreen> {
     return _benchPlayers.where((player) => !player.isLibero).toList();
   }
 
-  void _handleSave() {
+  Future<void> _handleSave() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
@@ -384,11 +384,14 @@ class _StrategyEditorScreenState extends State<StrategyEditorScreen> {
     );
 
     if (_isEditing) {
-      _strategyService.updateStrategy(baseStrategy);
+      await _strategyService.updateStrategy(baseStrategy);
     } else {
-      _strategyService.createStrategy(baseStrategy);
+      await _strategyService.createStrategy(baseStrategy);
     }
 
+    if (!mounted) {
+      return;
+    }
     Navigator.of(context).pop();
   }
 
@@ -402,7 +405,7 @@ class _StrategyEditorScreenState extends State<StrategyEditorScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_isEditing ? 'Editar estrategia' : 'Nova estrategia'),
+        title: Text(_isEditing ? 'Editar estratégia' : 'Nova estratégia'),
       ),
       body: Center(
         child: ConstrainedBox(
@@ -413,7 +416,7 @@ class _StrategyEditorScreenState extends State<StrategyEditorScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SectionTitle(
-                  title: _isEditing ? 'Ajuste a jogada' : 'Crie uma nova estrategia',
+                  title: _isEditing ? 'Ajuste a jogada' : 'Crie uma nova estratégia',
                   subtitle: 'Posicione os jogadores, desenhe movimentos e salve uma versao pronta para consulta.',
                 ),
                 AppSpacing.gapMedium,
@@ -427,11 +430,11 @@ class _StrategyEditorScreenState extends State<StrategyEditorScreen> {
                           key: const Key('strategy-name-field'),
                           controller: _nameController,
                           decoration: const InputDecoration(
-                            labelText: 'Nome da estrategia',
+                            labelText: 'Nome da estratégia',
                           ),
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
-                              return 'Informe um nome para a estrategia.';
+                              return 'Informe um nome para a estratégia.';
                             }
                             return null;
                           },
@@ -441,8 +444,8 @@ class _StrategyEditorScreenState extends State<StrategyEditorScreen> {
                           controller: _descriptionController,
                           maxLines: 3,
                           decoration: const InputDecoration(
-                            labelText: 'Descricao',
-                            hintText: 'Ex.: recepcao com cobertura curta no fundo.',
+                            labelText: 'Descrição',
+                            hintText: 'Ex.: recepção com cobertura curta no fundo.',
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -532,11 +535,11 @@ class _StrategyEditorScreenState extends State<StrategyEditorScreen> {
   String _interactionHint() {
     switch (_interactionMode) {
       case StrategyInteractionMode.movePlayers:
-        return 'Arraste os marcadores para reposicionar os atletas. Toque duas vezes no jogador para resetar sua posicao.';
+        return 'Arraste os marcadores para reposicionar os atletas. Toque duas vezes no jogador para resetar sua posição.';
       case StrategyInteractionMode.drawMovement:
         return 'Selecione um jogador e toque na quadra para criar uma seta de movimento.';
       case StrategyInteractionMode.eraseMovement:
-        return 'Toque proximo de uma seta desenhada para remove-la.';
+        return 'Toque próximo de uma seta desenhada para removê-la.';
     }
   }
 
@@ -547,12 +550,12 @@ class _StrategyEditorScreenState extends State<StrategyEditorScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Substituicoes',
+              'Substituições',
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 12),
             Text(
-              'No volei de praia nao sao permitidas substituicoes durante o set.',
+              'No vôlei de praia não são permitidas substituições durante o set.',
               style: Theme.of(context).textTheme.bodyMedium,
             ),
           ],
@@ -567,12 +570,12 @@ class _StrategyEditorScreenState extends State<StrategyEditorScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Substituicoes',
+            'Substituições',
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 8),
           Text(
-            'Quadra: ate 6 substituicoes regulamentares por set. Trocas de libero sao ilimitadas e nao contam nesse limite.',
+            'Quadra: até 6 substituições regulamentares por set. Trocas de líbero são ilimitadas e não contam nesse limite.',
             style: Theme.of(context).textTheme.bodyMedium,
           ),
           const SizedBox(height: 16),
@@ -589,7 +592,7 @@ class _StrategyEditorScreenState extends State<StrategyEditorScreen> {
           SwitchListTile.adaptive(
             value: _isLiberoExchange,
             contentPadding: EdgeInsets.zero,
-            title: const Text('Troca de libero'),
+            title: const Text('Troca de líbero'),
             subtitle: const Text('Ilimitada e fora do limite regulamentar.'),
             onChanged: (value) {
               setState(() {
@@ -607,7 +610,7 @@ class _StrategyEditorScreenState extends State<StrategyEditorScreen> {
                 .map(
                   (player) => DropdownMenuItem<String>(
                     value: player.playerId,
-                    child: Text('${player.label} - ${player.playerId}${player.isLibero ? ' (Libero)' : ''}'),
+                    child: Text('${player.label} - ${player.playerId}${player.isLibero ? ' (Líbero)' : ''}'),
                   ),
                 )
                 .toList(),
@@ -628,7 +631,7 @@ class _StrategyEditorScreenState extends State<StrategyEditorScreen> {
                 .map(
                   (player) => DropdownMenuItem<String>(
                     value: player.playerId,
-                    child: Text('${player.label} - ${player.playerId}${player.isLibero ? ' (Libero)' : ''}'),
+                    child: Text('${player.label} - ${player.playerId}${player.isLibero ? ' (Líbero)' : ''}'),
                   ),
                 )
                 .toList(),
@@ -644,13 +647,13 @@ class _StrategyEditorScreenState extends State<StrategyEditorScreen> {
             child: OutlinedButton.icon(
               onPressed: _applySubstitution,
               icon: const Icon(Icons.swap_horiz),
-              label: const Text('Aplicar substituicao'),
+              label: const Text('Aplicar substituição'),
             ),
           ),
           if (_substitutions.isNotEmpty) ...[
             const SizedBox(height: 16),
             Text(
-              'Historico do set',
+              'Histórico do Set',
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
@@ -658,7 +661,7 @@ class _StrategyEditorScreenState extends State<StrategyEditorScreen> {
               (substitution) => Padding(
                 padding: const EdgeInsets.only(bottom: 8),
                 child: Text(
-                  '${substitution.playerOutId} -> ${substitution.playerInId}${substitution.isLiberoExchange ? ' (Libero)' : ''}',
+                  '${substitution.playerOutId} -> ${substitution.playerInId}${substitution.isLiberoExchange ? ' (Líbero)' : ''}',
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
               ),

@@ -8,8 +8,8 @@ class VideosScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const ModulePlaceholderScreen(
-      title: 'Videos',
-      description: 'Espaco reservado para upload, recorte e analise de video com suporte futuro a IA.',
+      title: 'Vídeos',
+      description: 'Espaço reservado para upload, recorte e análise de vídeo com suporte futuro a IA.',
     );
   }
 }

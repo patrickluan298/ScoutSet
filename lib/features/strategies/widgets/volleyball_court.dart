@@ -224,7 +224,7 @@ class _CourtLegend extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         child: Text(
-          isReadOnly ? 'Visualizacao' : _labelForMode(interactionMode),
+          isReadOnly ? 'Visualização' : _labelForMode(interactionMode),
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: Colors.white,
                 fontWeight: FontWeight.w600,
@@ -241,7 +241,7 @@ class _CourtLegend extends StatelessWidget {
       case StrategyInteractionMode.drawMovement:
         return 'Selecione um jogador e toque na quadra';
       case StrategyInteractionMode.eraseMovement:
-        return 'Toque proximo de uma seta para apagar';
+        return 'Toque próximo de uma seta para apagar';
     }
   }
 }

@@ -33,8 +33,8 @@ class _AppShellScreenState extends State<AppShellScreen> {
   static const List<String> _titles = [
     'ScoutSet',
     'Placar',
-    'Estrategias',
-    'Relatorios',
+    'Estratégias',
+    'Relatórios',
     'Perfil',
   ];
 
@@ -61,10 +61,26 @@ class _AppShellScreenState extends State<AppShellScreen> {
     Navigator.pushReplacementNamed(context, _routes[index]);
   }
 
+  void _goToDashboard() {
+    if (_currentIndex == 0) {
+      return;
+    }
+
+    setState(() => _currentIndex = 0);
+    Navigator.pushReplacementNamed(context, AppRoutes.dashboard);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: _currentIndex == 0
+            ? null
+            : IconButton(
+                icon: const Icon(Icons.arrow_back),
+                tooltip: 'Voltar ao dashboard',
+                onPressed: _goToDashboard,
+              ),
         title: Text(_titles[_currentIndex]),
       ),
       body: _pages[_currentIndex],
@@ -85,12 +101,12 @@ class _AppShellScreenState extends State<AppShellScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.schema),
             activeIcon: Icon(Icons.schema),
-            label: 'Estrategias',
+            label: 'Estratégias',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.bar_chart),
             activeIcon: Icon(Icons.bar_chart),
-            label: 'Relatorios',
+            label: 'Relatórios',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person_outline),

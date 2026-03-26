@@ -39,7 +39,7 @@ class _LoginScreenState extends State<LoginScreen> {
       return 'Informe seu e-mail.';
     }
     if (!email.contains('@') || !email.contains('.')) {
-      return 'Digite um e-mail valido.';
+      return 'Digite um e-mail válido.';
     }
     return null;
   }
@@ -53,8 +53,8 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _resetFormState() {
-    _emailController.clear();
-    _passwordController.clear();
+    _emailController.value = TextEditingValue.empty;
+    _passwordController.value = TextEditingValue.empty;
     _formKey.currentState?.reset();
   }
 
@@ -102,11 +102,22 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     FocusScope.of(context).unfocus();
+    setState(() {
+      _obscurePassword = true;
+    });
     _resetFormState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      _emailController.value = TextEditingValue.empty;
+      _passwordController.value = TextEditingValue.empty;
+      _formKey.currentState?.reset();
+    });
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Conta criada com sucesso. Agora faca login.'),
+        content: Text('Conta criada com sucesso. Agora faça login.'),
       ),
     );
   }
@@ -144,18 +155,16 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     AppSpacing.gapLarge,
                     AppCard(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Acesso do usuario',
-                            style: theme.textTheme.titleLarge,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Use seu e-mail e senha para entrar na sua conta.',
-                            style: theme.textTheme.bodyMedium,
-                          ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Center(
+                              child: Text(
+                                'Login',
+                                textAlign: TextAlign.center,
+                                style: theme.textTheme.titleLarge,
+                              ),
+                            ),
                           AppSpacing.gapLarge,
                           AppTextField(
                             label: 'E-mail',
@@ -201,21 +210,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             child: OutlinedButton(
                               onPressed: _openRegister,
                               child: const Text('Criar conta'),
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(14),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF2F5FA),
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                            child: Text(
-                              'Todas as areas do app exigem autenticacao antes do acesso.',
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
-                              ),
                             ),
                           ),
                         ],

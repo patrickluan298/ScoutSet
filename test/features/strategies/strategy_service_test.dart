@@ -1,23 +1,25 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:scoutset/data/local/database/app_services.dart';
 import 'package:scoutset/features/strategies/models/movement.dart';
 import 'package:scoutset/features/strategies/models/player_position.dart';
 import 'package:scoutset/features/strategies/models/strategy.dart';
-import 'package:scoutset/features/strategies/services/strategy_service.dart';
 import 'package:scoutset/features/strategies/models/substitution.dart';
+import 'package:scoutset/features/strategies/services/strategy_service.dart';
 
 void main() {
   late StrategyService service;
 
-  setUp(() {
+  setUp(() async {
+    await AppServices.useInMemoryDatabaseForTesting();
     service = StrategyService.instance;
-    service.clearAll();
+    await service.clearAll();
   });
 
-  test('create, list, update and delete strategies in memory', () {
+  test('create, list, update and delete strategies in sqlite', () async {
     final createdAt = DateTime(2026, 3, 16);
     final strategy = Strategy(
       id: '',
-      name: 'Saida rapida',
+      name: 'Saída rápida',
       description: 'Ataque pela ponta com cobertura.',
       playersPositions: service.defaultPlayersForMode(StrategyGameMode.indoor),
       benchPlayers: service.defaultBenchPlayersForMode(StrategyGameMode.indoor),
@@ -35,13 +37,13 @@ void main() {
       gameMode: StrategyGameMode.indoor,
     );
 
-    final created = service.createStrategy(strategy);
+    final created = await service.createStrategy(strategy);
     expect(created.id, isNotEmpty);
-    expect(service.listStrategies(), hasLength(1));
+    expect(await service.listStrategies(), hasLength(1));
 
-    final updated = service.updateStrategy(
+    final updated = await service.updateStrategy(
       created.copyWith(
-        name: 'Saida rapida ajustada',
+        name: 'Saída rápida ajustada',
         description: 'Ataque pela ponta com ajuste no bloqueio.',
         movements: [
           const Movement(
@@ -64,12 +66,12 @@ void main() {
     );
 
     expect(updated.createdAt, createdAt);
-    expect(updated.name, 'Saida rapida ajustada');
+    expect(updated.name, 'Saída rápida ajustada');
     expect(updated.movements.single.movementType, MovementType.block);
     expect(updated.regulationSubstitutionsCount, 1);
 
-    service.deleteStrategy(updated.id);
-    expect(service.listStrategies(), isEmpty);
+    await service.deleteStrategy(updated.id);
+    expect(await service.listStrategies(), isEmpty);
   });
 
   test('returns default player templates for indoor and beach', () {

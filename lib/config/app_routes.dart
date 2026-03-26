@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import '../features/auth/screens/login_screen.dart';
 import '../features/auth/screens/register_screen.dart';
 import '../features/dashboard/screens/app_shell_screen.dart';
+import '../features/drills/screens/drill_detail_screen.dart';
 import '../features/drills/screens/drills_screen.dart';
-import '../features/profile/screens/profile_screen.dart';
 import '../features/rules/screens/rules_screen.dart';
 import '../features/teams/screens/teams_screen.dart';
 import '../features/videos/screens/videos_screen.dart';
@@ -17,6 +17,7 @@ class AppRoutes {
   static const String scoreboard = '/scoreboard';
   static const String strategies = '/strategies';
   static const String drills = '/drills';
+  static const String drillDetail = '/drills/detail';
   static const String rules = '/rules';
   static const String videos = '/videos';
   static const String reports = '/reports';
@@ -33,7 +34,7 @@ class AppRoutes {
     final routeName = _resolveRoute(requestedRoute);
 
     return MaterialPageRoute<void>(
-      builder: (_) => _builderFor(routeName),
+      builder: (_) => _builderFor(routeName, settings.arguments),
       settings: RouteSettings(name: routeName, arguments: settings.arguments),
     );
   }
@@ -56,7 +57,7 @@ class AppRoutes {
     return _allRoutes.contains(routeName) ? routeName : initialRoute;
   }
 
-  static Widget _builderFor(String routeName) {
+  static Widget _builderFor(String routeName, Object? arguments) {
     switch (routeName) {
       case login:
         return const LoginScreen();
@@ -70,6 +71,8 @@ class AppRoutes {
         return const AppShellScreen(initialIndex: 2);
       case drills:
         return const DrillsScreen();
+      case drillDetail:
+        return DrillDetailScreen(drillId: arguments as String? ?? 'reception-triangle');
       case rules:
         return const RulesScreen();
       case videos:
@@ -79,7 +82,7 @@ class AppRoutes {
       case teams:
         return const TeamsScreen();
       case profile:
-        return const ProfileScreen();
+        return const AppShellScreen(initialIndex: 4);
       default:
         return const LoginScreen();
     }
@@ -95,6 +98,7 @@ class AppRoutes {
     scoreboard,
     strategies,
     drills,
+    drillDetail,
     rules,
     videos,
     reports,
@@ -109,6 +113,7 @@ class AppRoutes {
     scoreboard,
     strategies,
     drills,
+    drillDetail,
     rules,
     videos,
     reports,

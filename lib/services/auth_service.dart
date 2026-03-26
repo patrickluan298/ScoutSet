@@ -4,47 +4,43 @@ import 'dart:math';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 
+import '../data/local/database/app_services.dart';
+import '../data/local/repositories/auth_repository.dart';
 import '../models/user.dart';
-import 'storage_service.dart';
 
 class AuthService {
   AuthService._();
 
   static final AuthService instance = AuthService._();
 
-  static const _usersKey = 'auth_users';
-  static const _sessionKey = 'auth_session_user_id';
   static const _nameMaxLength = 80;
   static const _emailMaxLength = 120;
   static const _passwordMaxLength = 64;
 
   final ValueNotifier<User?> authState = ValueNotifier<User?>(null);
-  final StorageService _storage = StorageService.instance;
   final Random _random = Random.secure();
 
   bool _initialized = false;
 
   User? get currentUser => authState.value;
   bool get isAuthenticated => currentUser != null;
+  AuthRepository get _repository => AppServices.authRepository;
 
   Future<void> initialize() async {
     if (_initialized) {
       return;
     }
 
-    await _storage.initialize();
-    final accounts = await _loadAccounts();
-    final sessionUserId = await _storage.read(_sessionKey);
+    await AppServices.initialize();
+
+    final sessionUserId = await _repository.getActiveSessionUserId();
     if (sessionUserId != null) {
-      try {
-        final sessionAccount = accounts.firstWhere(
-          (account) => account.id == sessionUserId,
-        );
-        authState.value = sessionAccount.toUser();
-      } catch (_) {
-        authState.value = null;
-      }
+      final sessionAccount = await _repository.findUserById(sessionUserId);
+      authState.value = sessionAccount?.toUser();
+    } else {
+      authState.value = null;
     }
+
     _initialized = true;
   }
 
@@ -61,27 +57,20 @@ class AuthService {
       password: trimmedPassword,
     );
     if (trimmedEmail.isEmpty || trimmedPassword.isEmpty) {
-      throw ArgumentError('E-mail e senha sao obrigatorios.');
+      throw ArgumentError('E-mail e senha são obrigatórios.');
     }
 
     await Future<void>.delayed(const Duration(milliseconds: 350));
 
-    final accounts = await _loadAccounts();
-    final matchingAccount = accounts.cast<_StoredAuthUser?>().firstWhere(
-          (account) =>
-              account != null &&
-              account.email.toLowerCase() == trimmedEmail &&
-              account.passwordHash ==
-                  _hashPassword(trimmedPassword, account.passwordSalt),
-          orElse: () => null,
-        );
-
-    if (matchingAccount == null) {
-      throw ArgumentError('Usuario nao encontrado ou senha incorreta.');
+    final matchingAccount = await _repository.findUserByEmail(trimmedEmail);
+    if (matchingAccount == null ||
+        matchingAccount.passwordHash !=
+            _hashPassword(trimmedPassword, matchingAccount.passwordSalt)) {
+      throw ArgumentError('Usuário não encontrado ou senha incorreta.');
     }
 
     authState.value = matchingAccount.toUser();
-    await _storage.save(key: _sessionKey, value: matchingAccount.id);
+    await _repository.replaceSession(matchingAccount.id);
     return matchingAccount.toUser();
   }
 
@@ -101,43 +90,40 @@ class AuthService {
       password: trimmedPassword,
     );
     if (trimmedName.isEmpty || trimmedEmail.isEmpty || trimmedPassword.isEmpty) {
-      throw ArgumentError('Nome, e-mail e senha sao obrigatorios.');
+      throw ArgumentError('Nome, e-mail e senha são obrigatórios.');
     }
     if (!_isStrongPassword(trimmedPassword)) {
       throw ArgumentError(
-        'A senha deve ter ao menos 8 caracteres, com numero, letra maiuscula e caractere especial.',
+        'A senha deve ter ao menos 8 caracteres, com número, letra maiúscula e caractere especial.',
       );
     }
 
     await Future<void>.delayed(const Duration(milliseconds: 350));
 
-    final accounts = await _loadAccounts();
-    final emailAlreadyExists = accounts.any(
-      (account) => account.email.toLowerCase() == trimmedEmail,
-    );
-    if (emailAlreadyExists) {
-      throw ArgumentError('Ja existe um usuario cadastrado com esse e-mail.');
+    final existingAccount = await _repository.findUserByEmail(trimmedEmail);
+    if (existingAccount != null) {
+      throw ArgumentError('Já existe um usuário cadastrado com esse e-mail.');
     }
 
     final salt = _generateSalt();
-    final account = _StoredAuthUser(
+    final account = StoredAuthAccount(
       id: DateTime.now().microsecondsSinceEpoch.toString(),
       name: trimmedName,
       email: trimmedEmail,
       passwordHash: _hashPassword(trimmedPassword, salt),
       passwordSalt: salt,
       teamId: 'team-1',
+      createdAt: DateTime.now(),
     );
 
-    final updatedAccounts = [...accounts, account];
-    await _saveAccounts(updatedAccounts);
+    await _repository.upsertUser(account);
     return account.toUser();
   }
 
   Future<void> signOut() async {
     await initialize();
     authState.value = null;
-    await _storage.remove(_sessionKey);
+    await _repository.clearSession();
   }
 
   bool _isStrongPassword(String password) {
@@ -173,131 +159,17 @@ class AuthService {
     return sha256.convert(input).toString();
   }
 
-  Future<List<_StoredAuthUser>> _loadAccounts() async {
-    final raw = await _storage.read(_usersKey);
-    if (raw == null || raw.isEmpty) {
-      return [];
-    }
-
-    final decoded = jsonDecode(raw) as List<dynamic>;
-    var migrated = false;
-    final accounts = <_StoredAuthUser>[];
-
-    for (final item in decoded) {
-      try {
-        final account = _StoredAuthUser.fromJson(item as Map<String, dynamic>);
-        if (account.wasMigrated) {
-          migrated = true;
-        }
-        accounts.add(account);
-      } catch (_) {
-        migrated = true;
-      }
-    }
-
-    if (migrated) {
-      await _saveAccounts(accounts);
-    }
-
-    return accounts;
-  }
-
-  Future<void> _saveAccounts(List<_StoredAuthUser> accounts) async {
-    final encoded = jsonEncode(accounts.map((account) => account.toJson()).toList());
-    await _storage.save(key: _usersKey, value: encoded);
-  }
-
   @visibleForTesting
   Future<void> reset() async {
     _initialized = false;
     authState.value = null;
-    await _storage.removeMany(const [_usersKey, _sessionKey]);
-  }
-}
-
-class _StoredAuthUser {
-  const _StoredAuthUser({
-    required this.id,
-    required this.name,
-    required this.email,
-    required this.passwordHash,
-    required this.passwordSalt,
-    required this.teamId,
-    this.wasMigrated = false,
-  });
-
-  final String id;
-  final String name;
-  final String email;
-  final String passwordHash;
-  final String passwordSalt;
-  final String teamId;
-  final bool wasMigrated;
-
-  User toUser() {
-    return User(
-      id: id,
-      name: name,
-      email: email,
-      teamId: teamId,
-    );
+    await AppServices.initialize();
+    await _repository.clearAll();
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'email': email,
-      'passwordHash': passwordHash,
-      'passwordSalt': passwordSalt,
-      'teamId': teamId,
-    };
-  }
-
-  factory _StoredAuthUser.fromJson(Map<String, dynamic> json) {
-    final rawId = json['id'];
-    final rawName = json['name'];
-    final rawEmail = json['email'];
-    final rawTeamId = json['teamId'];
-    final rawPasswordHash = json['passwordHash'];
-    final rawPasswordSalt = json['passwordSalt'];
-    final rawLegacyPassword = json['password'];
-
-    if (rawId is! String || rawName is! String || rawEmail is! String) {
-      throw const FormatException('Usuario salvo em formato invalido.');
-    }
-
-    final teamId = rawTeamId is String && rawTeamId.isNotEmpty ? rawTeamId : 'team-1';
-    final hasSecurePassword =
-        rawPasswordHash is String &&
-        rawPasswordHash.isNotEmpty &&
-        rawPasswordSalt is String &&
-        rawPasswordSalt.isNotEmpty;
-
-    if (hasSecurePassword) {
-      return _StoredAuthUser(
-        id: rawId,
-        name: rawName,
-        email: rawEmail,
-        passwordHash: rawPasswordHash,
-        passwordSalt: rawPasswordSalt,
-        teamId: teamId,
-      );
-    }
-
-    if (rawLegacyPassword is String && rawLegacyPassword.isNotEmpty) {
-      final salt = AuthService.instance._generateSalt();
-      return _StoredAuthUser(
-        id: rawId,
-        name: rawName,
-        email: rawEmail,
-        passwordHash: AuthService.instance._hashPassword(rawLegacyPassword, salt),
-        passwordSalt: salt,
-        teamId: teamId,
-        wasMigrated: true,
-      );
-    }
-
-    throw const FormatException('Usuario salvo sem credenciais validas.');
+  @visibleForTesting
+  void clearCachedStateForTesting() {
+    _initialized = false;
+    authState.value = null;
   }
 }

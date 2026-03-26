@@ -2,16 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:scoutset/config/app_routes.dart';
 import 'package:scoutset/core/theme/app_theme.dart';
+import 'package:scoutset/data/local/database/app_services.dart';
 import 'package:scoutset/services/auth_service.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   setUp(() async {
-    SharedPreferences.setMockInitialValues({});
+    await AppServices.useInMemoryDatabaseForTesting();
     await AuthService.instance.reset();
   });
 
-  testWidgets('usuario nao autenticado e redirecionado ao login ao acessar rota protegida', (tester) async {
+  testWidgets('usuário não autenticado é redirecionado ao login ao acessar rota protegida', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
         theme: AppTheme.theme,
@@ -23,7 +23,7 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    expect(find.text('Acesso do usuario'), findsOneWidget);
+    expect(find.text('Login'), findsOneWidget);
     expect(find.text('Dashboard'), findsNothing);
   });
 }

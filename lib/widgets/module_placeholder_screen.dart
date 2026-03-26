@@ -30,7 +30,7 @@ class ModulePlaceholderScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'Este modulo ja esta pronto para evolucao com servicos, widgets e modelos dedicados.',
+              'Este módulo já está pronto para evolução com serviços, widgets e modelos dedicados.',
               style: Theme.of(context).textTheme.bodyLarge,
             ),
           ],
