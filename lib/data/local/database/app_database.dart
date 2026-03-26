@@ -6,6 +6,7 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 import '../seed/drills_seed.dart';
+import '../seed/teams_seed.dart';
 
 part 'app_database.g.dart';
 
@@ -125,6 +126,14 @@ class Matches extends Table {
   TextColumn get servingTeam => text().named('serving_team')();
   TextColumn get matchStatus => text().named('match_status')();
   TextColumn get winnerTeam => text().named('winner_team').nullable()();
+  TextColumn get sourceType => text().named('source_type').withDefault(const Constant('manual'))();
+  TextColumn get savedTeamGroupId => text().named('saved_team_group_id').nullable()();
+  TextColumn get savedTeamGroupTitle => text().named('saved_team_group_title').nullable()();
+  TextColumn get teamAOriginTeamId => text().named('team_a_origin_team_id').nullable()();
+  TextColumn get teamBOriginTeamId => text().named('team_b_origin_team_id').nullable()();
+  TextColumn get teamAPlayersJson => text().named('team_a_players_json').nullable()();
+  TextColumn get teamBPlayersJson => text().named('team_b_players_json').nullable()();
+  TextColumn get waitingPlayersSnapshotJson => text().named('waiting_players_snapshot_json').nullable()();
   TextColumn get createdAt => text().named('created_at')();
   TextColumn get finishedAt => text().named('finished_at').nullable()();
 
@@ -263,6 +272,109 @@ class DrillFrameZones extends Table {
   Set<Column<Object>> get primaryKey => {id};
 }
 
+class TeamDrawPlayers extends Table {
+  TextColumn get id => text()();
+  TextColumn get name => text()();
+  TextColumn get position => text()();
+  TextColumn get level => text()();
+  BoolColumn get isActive => boolean().named('is_active').withDefault(const Constant(true))();
+  TextColumn get createdAt => text().named('created_at')();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+class DrawSessions extends Table {
+  TextColumn get id => text()();
+  TextColumn get contextKey => text().named('context_key')();
+  IntColumn get totalPlayers => integer().named('total_players')();
+  IntColumn get numberOfTeams => integer().named('number_of_teams')();
+  TextColumn get drawMode => text().named('draw_mode')();
+  TextColumn get oddPlayerHandling => text().named('odd_player_handling')();
+  TextColumn get createdAt => text().named('created_at')();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+class DrawSessionTeams extends Table {
+  TextColumn get id => text()();
+  TextColumn get sessionId => text().named('session_id').references(DrawSessions, #id)();
+  TextColumn get name => text()();
+  IntColumn get sortOrder => integer().named('sort_order')();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+class DrawSessionTeamPlayers extends Table {
+  TextColumn get id => text()();
+  TextColumn get sessionTeamId => text().named('session_team_id').references(DrawSessionTeams, #id)();
+  TextColumn get playerId => text().named('player_id').references(TeamDrawPlayers, #id)();
+  IntColumn get sortOrder => integer().named('sort_order')();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+class WaitingQueueEntries extends Table {
+  TextColumn get id => text()();
+  TextColumn get contextKey => text().named('context_key')();
+  TextColumn get playerId => text().named('player_id').references(TeamDrawPlayers, #id)();
+  TextColumn get playerName => text().named('player_name')();
+  TextColumn get waitingSince => text().named('waiting_since')();
+  IntColumn get priorityOrder => integer().named('priority_order')();
+  TextColumn get lastSessionId => text().named('last_session_id').nullable()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+class SavedTeamGroups extends Table {
+  TextColumn get id => text()();
+  TextColumn get title => text()();
+  TextColumn get sourceType => text().named('source_type')();
+  TextColumn get contextKey => text().named('context_key').nullable()();
+  TextColumn get notes => text().nullable()();
+  TextColumn get createdAt => text().named('created_at')();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+class SavedTeams extends Table {
+  TextColumn get id => text()();
+  TextColumn get groupId => text().named('group_id').references(SavedTeamGroups, #id)();
+  TextColumn get name => text()();
+  IntColumn get sortOrder => integer().named('sort_order')();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+class SavedTeamPlayers extends Table {
+  TextColumn get id => text()();
+  TextColumn get teamId => text().named('team_id').references(SavedTeams, #id)();
+  TextColumn get playerId => text().named('player_id').references(TeamDrawPlayers, #id)();
+  IntColumn get sortOrder => integer().named('sort_order')();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+class SavedGroupWaitingPlayers extends Table {
+  TextColumn get id => text()();
+  TextColumn get groupId => text().named('group_id').references(SavedTeamGroups, #id)();
+  TextColumn get playerId => text().named('player_id').references(TeamDrawPlayers, #id)();
+  TextColumn get playerName => text().named('player_name')();
+  TextColumn get waitingSince => text().named('waiting_since')();
+  IntColumn get priorityOrder => integer().named('priority_order')();
+  IntColumn get sortOrder => integer().named('sort_order')();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
 LazyDatabase _openConnection() {
   return LazyDatabase(() async {
     final dbFolder = await getApplicationDocumentsDirectory();
@@ -293,6 +405,15 @@ LazyDatabase _openConnection() {
     DrillFramePlayers,
     DrillFrameMovements,
     DrillFrameZones,
+    TeamDrawPlayers,
+    DrawSessions,
+    DrawSessionTeams,
+    DrawSessionTeamPlayers,
+    WaitingQueueEntries,
+    SavedTeamGroups,
+    SavedTeams,
+    SavedTeamPlayers,
+    SavedGroupWaitingPlayers,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -301,18 +422,42 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
         onCreate: (m) async {
           await m.createAll();
           await DrillsSeed.seed(this);
+          await TeamsSeed.seed(this);
         },
         onUpgrade: (m, from, to) async {
           if (from < 2) {
             await m.addColumn(strategyPlayers, strategyPlayers.sortOrder);
             await m.addColumn(strategyMovements, strategyMovements.sortOrder);
+          }
+          if (from < 3) {
+            await m.addColumn(matches, matches.sourceType);
+            await m.addColumn(matches, matches.savedTeamGroupId);
+            await m.addColumn(matches, matches.savedTeamGroupTitle);
+            await m.addColumn(matches, matches.teamAOriginTeamId);
+            await m.addColumn(matches, matches.teamBOriginTeamId);
+            await m.addColumn(matches, matches.teamAPlayersJson);
+            await m.addColumn(matches, matches.teamBPlayersJson);
+            await m.addColumn(matches, matches.waitingPlayersSnapshotJson);
+            await m.createTable(teamDrawPlayers);
+            await m.createTable(drawSessions);
+            await m.createTable(drawSessionTeams);
+            await m.createTable(drawSessionTeamPlayers);
+            await m.createTable(waitingQueueEntries);
+            await m.createTable(savedTeamGroups);
+            await m.createTable(savedTeams);
+            await m.createTable(savedTeamPlayers);
+            await m.createTable(savedGroupWaitingPlayers);
+            await TeamsSeed.seed(this);
+          }
+          if (from < 4) {
+            await TeamsSeed.cleanupLegacySeedData(this);
           }
         },
         beforeOpen: (details) async {
@@ -339,6 +484,27 @@ class AppDatabase extends _$AppDatabase {
             'CREATE INDEX IF NOT EXISTS idx_drill_animation_frames_drill_id ON drill_animation_frames (drill_id)',
           );
           await customStatement('CREATE INDEX IF NOT EXISTS idx_athletes_team_id ON athletes (team_id)');
+          await customStatement(
+            'CREATE INDEX IF NOT EXISTS idx_draw_sessions_context_key ON draw_sessions (context_key)',
+          );
+          await customStatement(
+            'CREATE INDEX IF NOT EXISTS idx_draw_session_teams_session_id ON draw_session_teams (session_id)',
+          );
+          await customStatement(
+            'CREATE INDEX IF NOT EXISTS idx_draw_session_team_players_session_team_id ON draw_session_team_players (session_team_id)',
+          );
+          await customStatement(
+            'CREATE INDEX IF NOT EXISTS idx_waiting_queue_entries_context_key ON waiting_queue_entries (context_key)',
+          );
+          await customStatement(
+            'CREATE INDEX IF NOT EXISTS idx_saved_teams_group_id ON saved_teams (group_id)',
+          );
+          await customStatement(
+            'CREATE INDEX IF NOT EXISTS idx_saved_team_players_team_id ON saved_team_players (team_id)',
+          );
+          await customStatement(
+            'CREATE INDEX IF NOT EXISTS idx_saved_group_waiting_players_group_id ON saved_group_waiting_players (group_id)',
+          );
         },
       );
 }

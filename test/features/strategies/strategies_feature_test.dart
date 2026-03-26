@@ -43,7 +43,7 @@ void main() {
     await tapVisible(tester, find.text('Criar primeira estratégia'));
 
     await tester.enterText(find.byKey(const Key('strategy-name-field')), 'Recepção 3x1');
-    await tapVisible(tester, find.text('Salvar estratégia'));
+    await tapVisible(tester, find.text('Salvar Estratégia'));
 
     expect(find.text('Recepção 3x1'), findsOneWidget);
     expect(find.text('6 jogadores'), findsOneWidget);

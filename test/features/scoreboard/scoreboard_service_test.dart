@@ -40,6 +40,19 @@ void main() {
     expect(state.currentTeamBScore, 0);
   });
 
+  test('rejects team names with special characters', () {
+    expect(
+      () => service.startMatch(teamAName: 'Time@A', teamBName: 'Rivais'),
+      throwsA(
+        isA<ArgumentError>().having(
+          (error) => error.message,
+          'message',
+          'Os nomes dos times devem conter apenas letras, numeros e espacos.',
+        ),
+      ),
+    );
+  });
+
   test('set closes at 25 with two-point lead', () async {
     service.startMatch(teamAName: 'A', teamBName: 'B');
     await addPoints(teamA: 25, teamB: 20);

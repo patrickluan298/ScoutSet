@@ -6,6 +6,7 @@ import '../../../utils/app_spacing.dart';
 import '../../../widgets/app_button.dart';
 import '../../../widgets/app_card.dart';
 import '../../../widgets/section_title.dart';
+import '../../teams/screens/saved_teams_screen.dart';
 import '../models/match_score.dart';
 import '../models/scoreboard_state.dart';
 import '../services/scoreboard_service.dart';
@@ -30,6 +31,8 @@ class ScoreboardScreen extends StatefulWidget {
 
 class _ScoreboardScreenState extends State<ScoreboardScreen> {
   static const int _maxTeamNameLength = 10;
+  static final RegExp _allowedTeamNameCharacters = RegExp(r'[A-Za-z0-9À-ÖØ-öø-ÿ ]');
+  static final RegExp _allowedTeamNamePattern = RegExp(r'^[A-Za-z0-9À-ÖØ-öø-ÿ ]+$');
   final _formKey = GlobalKey<FormState>();
   final _teamAController = TextEditingController();
   final _teamBController = TextEditingController();
@@ -47,6 +50,14 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => const MatchHistoryScreen(),
+      ),
+    );
+  }
+
+  Future<void> _openSavedTeams() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => const SavedTeamsScreen(),
       ),
     );
   }
@@ -90,8 +101,12 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
     String fieldLabel, {
     bool validateDuplicate = false,
   }) {
-    if ((value ?? '').trim().isEmpty) {
+    final normalizedValue = (value ?? '').trim();
+    if (normalizedValue.isEmpty) {
       return 'Informe o nome do $fieldLabel.';
+    }
+    if (!_allowedTeamNamePattern.hasMatch(normalizedValue)) {
+      return 'Use apenas letras, numeros e espacos.';
     }
     if (validateDuplicate && _hasDuplicatedTeamNames()) {
       return 'Os times precisam ter nomes diferentes.';
@@ -170,13 +185,14 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
               children: [
                 const SectionTitle(
                   title: 'Nova Partida',
-                  subtitle: 'Informe os nomes dos times para iniciar o placar. Máximo de 10 caracteres.',
+                  subtitle: 'Informe os nomes dos times manualmente ou use equipes salvas. Máximo de 10 caracteres.',
                 ),
                 const SizedBox(height: 20),
                 TextFormField(
                   key: const Key('scoreboard-team-a-field'),
                   controller: _teamAController,
                   inputFormatters: [
+                    FilteringTextInputFormatter.allow(_allowedTeamNameCharacters),
                     LengthLimitingTextInputFormatter(_maxTeamNameLength),
                   ],
                   decoration: const InputDecoration(
@@ -190,6 +206,7 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
                   key: const Key('scoreboard-team-b-field'),
                   controller: _teamBController,
                   inputFormatters: [
+                    FilteringTextInputFormatter.allow(_allowedTeamNameCharacters),
                     LengthLimitingTextInputFormatter(_maxTeamNameLength),
                   ],
                   decoration: const InputDecoration(
@@ -203,9 +220,15 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
+                OutlinedButton.icon(
+                  onPressed: _openSavedTeams,
+                  icon: const Icon(Icons.folder_shared_outlined),
+                  label: const Text('Selecionar equipes salvas'),
+                ),
+                const SizedBox(height: 20),
                 AppButton(
                   key: const Key('scoreboard-start-button'),
-                  label: 'Iniciar partida',
+                  label: 'Iniciar Partida',
                   icon: Icons.play_arrow,
                   onPressed: _startMatch,
                 ),
@@ -229,7 +252,7 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
                 OutlinedButton.icon(
                   onPressed: _openHistory,
                   icon: const Icon(Icons.history),
-                  label: const Text('Abrir histórico'),
+                  label: const Text('Abrir Histórico'),
                 ),
               ],
             ),
@@ -252,6 +275,17 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
           subtitle: isFinished ? 'Resultado final em sets: ${match.teamASetsWon} x ${match.teamBSetsWon}' : '',
           statusLabel: isFinished ? 'Partida encerrada' : '',
         ),
+        if (match.sourceType == MatchSourceType.savedTeamGroup) ...[
+          const SizedBox(height: 12),
+          AppCard(
+            child: Text(
+              match.savedTeamGroupTitle == null
+                  ? 'Partida iniciada a partir de equipes salvas.'
+                  : 'Partida iniciada a partir da formação "${match.savedTeamGroupTitle}".',
+              style: Theme.of(context).textTheme.bodyLarge,
+            ),
+          ),
+        ],
         if (state.history.isNotEmpty) ...[
           const SizedBox(height: 12),
           Align(

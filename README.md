@@ -2,6 +2,16 @@
 
 ScoutSet é um aplicativo Flutter focado em vôlei para apoiar treinadores, atletas e equipes em rotinas de jogo, treino e organização tático-operacional. O projeto já opera com persistência local offline-first usando SQLite com Drift e está estruturado para evoluir para relatórios, gestão de elenco e futuras integrações com backend.
 
+## Visão rápida
+
+- autenticação local com sessão persistida
+- dashboard com navegação principal do app
+- placar de vôlei em melhor de 3 sets
+- simulador de estratégias para quadra e praia
+- módulo de equipes com sorteio, montagem manual e formações salvas
+- catálogo de drills com detalhe e animação 2D
+- exportação e compartilhamento de partidas em PDF
+
 ## Estado atual do projeto
 
 Hoje o app já entrega:
@@ -10,6 +20,7 @@ Hoje o app já entrega:
 - dashboard com navegação por shell e atalhos para os módulos principais
 - módulo completo de placar eletrônico de vôlei em melhor de 3 sets
 - simulador de estratégias de vôlei de quadra e praia
+- módulo de equipes e sorteio de times com persistência local
 - biblioteca de drills com filtros e tela de detalhe
 - perfil com logout
 
@@ -18,7 +29,14 @@ Ainda estão como placeholders visuais preparados para evolução:
 - regras
 - vídeos
 - relatórios
-- equipes
+
+## Como rodar
+
+```bash
+flutter pub get
+flutter pub run build_runner build --delete-conflicting-outputs
+flutter run
+```
 
 ## Persistência local
 
@@ -31,11 +49,16 @@ Hoje já persistem em banco:
 - estratégias
 - histórico de partidas finalizadas
 - catálogo de drills
-- estrutura base para equipes e atletas
+- jogadores do módulo de equipes
+- histórico de sorteios e montagens
+- fila de espera por conjunto ativo
+- grupos salvos de equipes
+- estrutura base legada para equipes e atletas
 
 Decisões atuais:
 
 - o seed inicial dos drills é aplicado na criação do banco
+- o módulo de equipes começa sem jogadores pré-cadastrados
 - a partida ativa do placar continua em memória durante a execução
 - o histórico finalizado do placar é salvo no SQLite
 - a UI não acessa o Drift diretamente; os serviços continuam como fachada da aplicação
@@ -48,7 +71,7 @@ Arquivos centrais:
 - `lib/data/local/seed/drills_seed.dart`
 - `lib/data/local/seed/drills_seed_data.dart`
 
-## Principais features
+## Principais módulos
 
 ### Autenticação local
 
@@ -66,13 +89,14 @@ Telas:
 - `lib/features/auth/screens/login_screen.dart`
 - `lib/features/auth/screens/register_screen.dart`
 
-### Placar Eletrônico de Vôlei
+### Placar
 
 A feature `lib/features/scoreboard/` funciona como um placar operacional para partidas de vôlei.
 
 Recursos atuais:
 
 - início de partida com nome dos dois times
+- início de partida a partir de equipes salvas
 - partida em melhor de 3 sets
 - sets 1 e 2 até 25 pontos
 - set 3 até 15 pontos
@@ -84,6 +108,14 @@ Recursos atuais:
 - finalização manual da partida
 - nova partida sem perder o histórico salvo
 - histórico persistido localmente com tela de lista e detalhe
+- detalhamento da origem da partida
+- exportação e compartilhamento de partida em PDF
+
+Quando a partida vem do módulo de equipes, o histórico também pode exibir:
+
+- nome da formação salva
+- jogadores do time A e time B
+- jogadores em espera da rodada
 
 Arquivos principais:
 
@@ -94,13 +126,14 @@ Arquivos principais:
 - `lib/features/scoreboard/screens/scoreboard_screen.dart`
 - `lib/features/scoreboard/screens/match_history_screen.dart`
 - `lib/features/scoreboard/screens/match_detail_screen.dart`
+- `lib/features/scoreboard/services/match_pdf_service.dart`
 
 Observações:
 
 - a partida em andamento é mantida em memória
 - ao finalizar, a partida é persistida no SQLite
 
-### Simulador de estratégias de vôlei
+### Estratégias
 
 A feature `lib/features/strategies/` oferece um simulador tático com persistência local.
 
@@ -151,6 +184,35 @@ Arquivos principais:
 - `lib/features/drills/screens/drill_detail_screen.dart`
 - `lib/features/drills/services/drills_service.dart`
 
+### Equipes e Sorteio
+
+A feature `lib/features/teams/` já possui fluxo funcional para organização de jogadores e montagem de equipes.
+
+Recursos atuais:
+
+- lista local de jogadores criada pelo próprio usuário
+- cadastro e remoção de jogadores
+- sorteio aleatório com `Random.secure()`
+- sorteio balanceado simples por nível
+- montagem manual por toque
+- suporte a 2 ou 3 equipes conforme quantidade de jogadores
+- tratamento de quantidade ímpar com equipe maior ou fila de espera
+- prioridade para jogadores que ficaram aguardando
+- histórico persistido de sorteios e montagens
+- salvamento de formações para reutilização futura
+- reutilização direta das equipes salvas no placar
+
+Arquivos principais:
+
+- `lib/features/teams/screens/teams_screen.dart`
+- `lib/features/teams/screens/team_draw_screen.dart`
+- `lib/features/teams/screens/team_manual_builder_screen.dart`
+- `lib/features/teams/screens/team_draw_result_screen.dart`
+- `lib/features/teams/screens/saved_teams_screen.dart`
+- `lib/features/teams/screens/draw_history_screen.dart`
+- `lib/features/teams/services/team_draw_service.dart`
+- `lib/features/teams/services/saved_team_service.dart`
+
 ## Estrutura principal
 
 ```text
@@ -189,6 +251,13 @@ O app usa uma shell principal com abas para:
 - relatórios
 - perfil
 
+Além da shell, o app também possui rotas dedicadas para:
+
+- equipes
+- drills
+- regras
+- vídeos
+
 Padrões compartilhados:
 
 - `AppTheme` em `lib/core/theme/app_theme.dart`
@@ -206,22 +275,22 @@ Padrões compartilhados:
 - `path`
 - `path_provider`
 - `crypto`
+- `pdf`
+- `printing`
+- `share_plus`
 
-## Como executar
+## Comandos úteis
 
-Com Flutter instalado no ambiente:
-
-```bash
-flutter pub get
-flutter run
-```
-
-## Codegen
-
-Sempre que houver mudança no schema do Drift, rode:
+Gerar arquivos do Drift:
 
 ```bash
 flutter pub run build_runner build --delete-conflicting-outputs
+```
+
+Gerar APK de debug:
+
+```bash
+flutter build apk --debug
 ```
 
 ## Como testar
@@ -250,6 +319,12 @@ Rodar testes de estratégias:
 flutter test test/features/strategies/strategy_service_test.dart test/features/strategies/strategies_feature_test.dart
 ```
 
+Rodar testes de equipes:
+
+```bash
+flutter test test/features/teams/team_draw_service_test.dart test/features/teams/teams_screen_test.dart
+```
+
 ## Testes existentes
 
 Cobertura atual inclui:
@@ -258,6 +333,8 @@ Cobertura atual inclui:
 - regras e fluxos do placar eletrônico
 - histórico e navegação do módulo de placar
 - persistência e CRUD de estratégias
+- regras principais do módulo de equipes
+- renderização básica da tela de equipes
 - modos quadra e praia
 - comportamento de substituições
 - drills e navegação básica

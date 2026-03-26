@@ -93,6 +93,19 @@ void main() {
     expect(teamAField.controller?.text, '1234567890');
   });
 
+  testWidgets('blocks special characters in team names', (tester) async {
+    await pumpScoreboard(tester);
+
+    await tester.enterText(find.byKey(const Key('scoreboard-team-a-field')), 'Time@A!');
+    await tester.pump();
+
+    final teamAField = tester.widget<TextFormField>(
+      find.byKey(const Key('scoreboard-team-a-field')),
+    );
+
+    expect(teamAField.controller?.text, 'TimeA');
+  });
+
   testWidgets('renders banner and scores during the match', (tester) async {
     service.startMatch(teamAName: 'A', teamBName: 'B');
     await service.addPointToTeamA();

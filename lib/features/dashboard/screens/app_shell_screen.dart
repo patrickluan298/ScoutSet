@@ -61,10 +61,26 @@ class _AppShellScreenState extends State<AppShellScreen> {
     Navigator.pushReplacementNamed(context, _routes[index]);
   }
 
+  void _goToDashboard() {
+    if (_currentIndex == 0) {
+      return;
+    }
+
+    setState(() => _currentIndex = 0);
+    Navigator.pushReplacementNamed(context, AppRoutes.dashboard);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: _currentIndex == 0
+            ? null
+            : IconButton(
+                icon: const Icon(Icons.arrow_back),
+                tooltip: 'Voltar ao dashboard',
+                onPressed: _goToDashboard,
+              ),
         title: Text(_titles[_currentIndex]),
       ),
       body: _pages[_currentIndex],

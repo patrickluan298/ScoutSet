@@ -90,7 +90,7 @@ class StrategyToolbar extends StatelessWidget {
             child: ElevatedButton.icon(
               onPressed: onSave,
               icon: const Icon(Icons.save_outlined),
-              label: const Text('Salvar estratégia'),
+              label: const Text('Salvar Estratégia'),
             ),
           ),
         ],

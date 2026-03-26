@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../utils/app_spacing.dart';
 import '../../../widgets/app_card.dart';
 import '../models/match_score.dart';
+import '../services/match_pdf_service.dart';
 import '../services/scoreboard_service.dart';
 import 'match_detail_screen.dart';
 
@@ -78,6 +79,33 @@ class MatchHistoryScreen extends StatelessWidget {
                           Text(
                             _formatDate(match.finishedAt ?? match.createdAt),
                             style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          OutlinedButton.icon(
+                            onPressed: () async {
+                              final file = await MatchPdfService.instance.savePdf(match);
+                              if (!context.mounted) {
+                                return;
+                              }
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('PDF salvo em ${file.path}')),
+                              );
+                            },
+                            icon: const Icon(Icons.download_outlined),
+                            label: const Text('Baixar PDF'),
+                          ),
+                          OutlinedButton.icon(
+                            onPressed: () async {
+                              await MatchPdfService.instance.sharePdf(match);
+                            },
+                            icon: const Icon(Icons.share_outlined),
+                            label: const Text('Compartilhar PDF'),
                           ),
                         ],
                       ),

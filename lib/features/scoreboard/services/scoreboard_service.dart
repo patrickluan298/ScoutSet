@@ -2,11 +2,15 @@ import 'package:flutter/foundation.dart';
 
 import '../../../data/local/database/app_services.dart';
 import '../../../data/local/repositories/matches_repository.dart';
+import '../../teams/models/team_draw_player.dart';
+import '../../teams/models/waiting_player.dart';
 import '../models/match_score.dart';
 import '../models/scoreboard_state.dart';
 import '../models/set_score.dart';
 
 class ScoreboardService {
+  static final RegExp _allowedTeamNamePattern = RegExp(r'^[A-Za-z0-9À-ÖØ-öø-ÿ ]+$');
+
   ScoreboardService._();
 
   static final ScoreboardService instance = ScoreboardService._();
@@ -50,11 +54,23 @@ class ScoreboardService {
     required String teamAName,
     required String teamBName,
     String? servingTeam,
+    MatchSourceType sourceType = MatchSourceType.manual,
+    String? savedTeamGroupId,
+    String? savedTeamGroupTitle,
+    List<TeamDrawPlayer> teamAPlayers = const [],
+    List<TeamDrawPlayer> teamBPlayers = const [],
+    String? teamAOriginTeamId,
+    String? teamBOriginTeamId,
+    List<WaitingPlayer> waitingPlayersSnapshot = const [],
   }) {
     final normalizedTeamA = teamAName.trim().toUpperCase();
     final normalizedTeamB = teamBName.trim().toUpperCase();
     if (normalizedTeamA.isEmpty || normalizedTeamB.isEmpty) {
       throw ArgumentError('Os nomes dos times sao obrigatorios.');
+    }
+    if (!_allowedTeamNamePattern.hasMatch(normalizedTeamA) ||
+        !_allowedTeamNamePattern.hasMatch(normalizedTeamB)) {
+      throw ArgumentError('Os nomes dos times devem conter apenas letras, numeros e espacos.');
     }
     if (normalizedTeamA.toLowerCase() == normalizedTeamB.toLowerCase()) {
       throw ArgumentError('Os times precisam ter nomes diferentes.');
@@ -70,9 +86,17 @@ class ScoreboardService {
       teamBSetsWon: 0,
       servingTeam: TeamSide.fromValue(servingTeam),
       matchStatus: MatchStatus.inProgress,
+      sourceType: sourceType,
       winnerTeam: null,
       createdAt: DateTime.now(),
       finishedAt: null,
+      savedTeamGroupId: savedTeamGroupId,
+      savedTeamGroupTitle: savedTeamGroupTitle,
+      teamAPlayers: teamAPlayers,
+      teamBPlayers: teamBPlayers,
+      teamAOriginTeamId: teamAOriginTeamId,
+      teamBOriginTeamId: teamBOriginTeamId,
+      waitingPlayersSnapshot: waitingPlayersSnapshot,
     );
 
     _setState(

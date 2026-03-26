@@ -1,7 +1,11 @@
+import 'dart:convert';
+
 import 'package:drift/drift.dart';
 
 import '../../../features/scoreboard/models/match_score.dart' as scoreboard_model;
 import '../../../features/scoreboard/models/set_score.dart';
+import '../../../features/teams/models/team_draw_player.dart' as team_models;
+import '../../../features/teams/models/waiting_player.dart' as team_models;
 import '../database/app_database.dart';
 
 class MatchesRepository {
@@ -37,7 +41,15 @@ class MatchesRepository {
               currentSet: match.currentSet,
               servingTeam: match.servingTeam.value,
               matchStatus: match.matchStatus.value,
+              sourceType: Value(match.sourceType.value),
               winnerTeam: Value(match.winnerTeam),
+              savedTeamGroupId: Value(match.savedTeamGroupId),
+              savedTeamGroupTitle: Value(match.savedTeamGroupTitle),
+              teamAOriginTeamId: Value(match.teamAOriginTeamId),
+              teamBOriginTeamId: Value(match.teamBOriginTeamId),
+              teamAPlayersJson: Value(_encodePlayers(match.teamAPlayers)),
+              teamBPlayersJson: Value(_encodePlayers(match.teamBPlayers)),
+              waitingPlayersSnapshotJson: Value(_encodeWaitingPlayers(match.waitingPlayersSnapshot)),
               createdAt: match.createdAt.toIso8601String(),
               finishedAt: Value(match.finishedAt?.toIso8601String()),
             ),
@@ -87,9 +99,17 @@ class MatchesRepository {
       teamBSetsWon: row.teamBSetsWon,
       servingTeam: scoreboard_model.TeamSide.fromValue(row.servingTeam),
       matchStatus: scoreboard_model.MatchStatus.fromValue(row.matchStatus),
+      sourceType: scoreboard_model.MatchSourceType.fromValue(row.sourceType),
       winnerTeam: row.winnerTeam,
       createdAt: DateTime.parse(row.createdAt),
       finishedAt: row.finishedAt == null ? null : DateTime.parse(row.finishedAt!),
+      savedTeamGroupId: row.savedTeamGroupId,
+      savedTeamGroupTitle: row.savedTeamGroupTitle,
+      teamAPlayers: _decodePlayers(row.teamAPlayersJson),
+      teamBPlayers: _decodePlayers(row.teamBPlayersJson),
+      teamAOriginTeamId: row.teamAOriginTeamId,
+      teamBOriginTeamId: row.teamBOriginTeamId,
+      waitingPlayersSnapshot: _decodeWaitingPlayers(row.waitingPlayersSnapshotJson),
     );
   }
 
@@ -101,5 +121,39 @@ class MatchesRepository {
       winnerTeamId: row.winnerTeamId,
       targetPoints: row.targetPoints,
     );
+  }
+
+  String? _encodePlayers(List<team_models.TeamDrawPlayer> players) {
+    if (players.isEmpty) {
+      return null;
+    }
+    return jsonEncode(players.map((player) => player.toJson()).toList());
+  }
+
+  List<team_models.TeamDrawPlayer> _decodePlayers(String? source) {
+    if (source == null || source.isEmpty) {
+      return const [];
+    }
+    final decoded = jsonDecode(source) as List<dynamic>;
+    return decoded
+        .map((item) => team_models.TeamDrawPlayer.fromJson(Map<String, dynamic>.from(item as Map)))
+        .toList();
+  }
+
+  String? _encodeWaitingPlayers(List<team_models.WaitingPlayer> players) {
+    if (players.isEmpty) {
+      return null;
+    }
+    return jsonEncode(players.map((player) => player.toJson()).toList());
+  }
+
+  List<team_models.WaitingPlayer> _decodeWaitingPlayers(String? source) {
+    if (source == null || source.isEmpty) {
+      return const [];
+    }
+    final decoded = jsonDecode(source) as List<dynamic>;
+    return decoded
+        .map((item) => team_models.WaitingPlayer.fromJson(Map<String, dynamic>.from(item as Map)))
+        .toList();
   }
 }

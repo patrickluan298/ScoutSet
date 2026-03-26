@@ -4,6 +4,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../utils/app_spacing.dart';
 import '../../../widgets/app_card.dart';
 import '../models/match_score.dart';
+import '../services/match_pdf_service.dart';
 import '../widgets/match_status_banner.dart';
 import '../widgets/scoreboard_header.dart';
 import '../widgets/set_score_table.dart';
@@ -22,7 +23,31 @@ class MatchDetailScreen extends StatelessWidget {
     final lastSet = match.sets.isEmpty ? null : match.sets.last;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Detalhes da Partida')),
+      appBar: AppBar(
+        title: const Text('Detalhes da Partida'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.download_outlined),
+            tooltip: 'Baixar PDF',
+            onPressed: () async {
+              final file = await MatchPdfService.instance.savePdf(match);
+              if (!context.mounted) {
+                return;
+              }
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('PDF salvo em ${file.path}')),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.share_outlined),
+            tooltip: 'Compartilhar PDF',
+            onPressed: () async {
+              await MatchPdfService.instance.sharePdf(match);
+            },
+          ),
+        ],
+      ),
       body: ListView(
         padding: AppSpacing.screen,
         children: [
@@ -83,9 +108,44 @@ class MatchDetailScreen extends StatelessWidget {
                   value: match.finishedAt == null ? '-' : _formatDate(match.finishedAt!),
                 ),
                 _DetailRow(label: 'Status', value: match.matchStatus.label),
+                _DetailRow(
+                  label: 'Origem',
+                  value: match.sourceType == MatchSourceType.manual ? 'Times digitados manualmente' : 'Equipes salvas',
+                ),
+                if (match.savedTeamGroupTitle != null)
+                  _DetailRow(label: 'Formação', value: match.savedTeamGroupTitle!),
               ],
             ),
           ),
+          if (match.teamAPlayers.isNotEmpty || match.teamBPlayers.isNotEmpty) ...[
+            AppSpacing.gapMedium,
+            AppCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Align(
+                    alignment: Alignment.center,
+                    child: Text(
+                      'Jogadores vinculados',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  _PlayersSection(title: match.teamAName, players: match.teamAPlayers.map((player) => player.name).toList()),
+                  const SizedBox(height: 12),
+                  _PlayersSection(title: match.teamBName, players: match.teamBPlayers.map((player) => player.name).toList()),
+                  if (match.waitingPlayersSnapshot.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    _PlayersSection(
+                      title: 'Jogadores aguardando',
+                      players: match.waitingPlayersSnapshot.map((player) => player.playerName).toList(),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
           AppSpacing.gapMedium,
           Container(
             padding: const EdgeInsets.all(18),
@@ -112,6 +172,33 @@ class MatchDetailScreen extends StatelessWidget {
     final hour = value.hour.toString().padLeft(2, '0');
     final minute = value.minute.toString().padLeft(2, '0');
     return '$day/$month/${value.year} $hour:$minute';
+  }
+}
+
+class _PlayersSection extends StatelessWidget {
+  const _PlayersSection({
+    required this.title,
+    required this.players,
+  });
+
+  final String title;
+  final List<String> players;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                fontWeight: FontWeight.w800,
+              ),
+        ),
+        const SizedBox(height: 6),
+        Text(players.join(', ')),
+      ],
+    );
   }
 }
 

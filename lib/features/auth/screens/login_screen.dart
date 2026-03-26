@@ -53,8 +53,8 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _resetFormState() {
-    _emailController.clear();
-    _passwordController.clear();
+    _emailController.value = TextEditingValue.empty;
+    _passwordController.value = TextEditingValue.empty;
     _formKey.currentState?.reset();
   }
 
@@ -102,7 +102,18 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     FocusScope.of(context).unfocus();
+    setState(() {
+      _obscurePassword = true;
+    });
     _resetFormState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      _emailController.value = TextEditingValue.empty;
+      _passwordController.value = TextEditingValue.empty;
+      _formKey.currentState?.reset();
+    });
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(

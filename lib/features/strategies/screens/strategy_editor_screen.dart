@@ -653,7 +653,7 @@ class _StrategyEditorScreenState extends State<StrategyEditorScreen> {
           if (_substitutions.isNotEmpty) ...[
             const SizedBox(height: 16),
             Text(
-              'Histórico do set',
+              'Histórico do Set',
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
