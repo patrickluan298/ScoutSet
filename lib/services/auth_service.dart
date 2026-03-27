@@ -120,6 +120,46 @@ class AuthService {
     return account.toUser();
   }
 
+  Future<void> resetPassword({
+    required String email,
+    required String newPassword,
+  }) async {
+    await initialize();
+
+    final trimmedEmail = email.trim().toLowerCase();
+    final trimmedPassword = newPassword.trim();
+    _validateFieldLengths(
+      email: trimmedEmail,
+      password: trimmedPassword,
+    );
+    if (trimmedEmail.isEmpty || trimmedPassword.isEmpty) {
+      throw ArgumentError('E-mail e nova senha são obrigatórios.');
+    }
+    if (!_isStrongPassword(trimmedPassword)) {
+      throw ArgumentError(
+        'A senha deve ter ao menos 8 caracteres, com número, letra maiúscula e caractere especial.',
+      );
+    }
+
+    final existingAccount = await _repository.findUserByEmail(trimmedEmail);
+    if (existingAccount == null) {
+      throw ArgumentError('Nenhum usuário encontrado com esse e-mail.');
+    }
+
+    final salt = _generateSalt();
+    await _repository.upsertUser(
+      StoredAuthAccount(
+        id: existingAccount.id,
+        name: existingAccount.name,
+        email: existingAccount.email,
+        passwordHash: _hashPassword(trimmedPassword, salt),
+        passwordSalt: salt,
+        teamId: existingAccount.teamId,
+        createdAt: existingAccount.createdAt,
+      ),
+    );
+  }
+
   Future<void> signOut() async {
     await initialize();
     authState.value = null;

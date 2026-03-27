@@ -169,7 +169,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final strengthColor = _passwordColor(score);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Criar conta')),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: AppSpacing.screen,

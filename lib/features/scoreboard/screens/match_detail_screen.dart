@@ -19,7 +19,11 @@ class MatchDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final winner = match.winnerTeam == TeamSide.teamA.value ? match.teamAName : match.teamBName;
+    final winner = match.winnerTeam == TeamSide.teamA.value
+        ? match.teamAName
+        : match.winnerTeam == TeamSide.teamB.value
+            ? match.teamBName
+            : 'Empate';
     final lastSet = match.sets.isEmpty ? null : match.sets.last;
 
     return Scaffold(

@@ -122,6 +122,149 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  Future<void> _openForgotPassword() async {
+    final formKey = GlobalKey<FormState>();
+    final emailController = TextEditingController(text: _emailController.text.trim());
+    final newPasswordController = TextEditingController();
+    final confirmPasswordController = TextEditingController();
+    var obscureNewPassword = true;
+    var obscureConfirmPassword = true;
+
+    final shouldSubmit = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('Esqueci Minha Senha'),
+              content: Form(
+                key: formKey,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      AppTextField(
+                        label: 'E-mail',
+                        hintText: 'usuario@exemplo.com',
+                        controller: emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        prefixIcon: Icons.mail_outline,
+                        validator: _validateEmail,
+                        maxLength: _emailMaxLength,
+                      ),
+                      AppSpacing.gapSmall,
+                      AppTextField(
+                        label: 'Nova senha',
+                        hintText: 'Digite a nova senha',
+                        controller: newPasswordController,
+                        obscureText: obscureNewPassword,
+                        prefixIcon: Icons.lock_reset_outlined,
+                        maxLength: _passwordMaxLength,
+                        validator: (value) {
+                          final password = value?.trim() ?? '';
+                          if (password.isEmpty) {
+                            return 'Informe a nova senha.';
+                          }
+                          if (password.length < 8) {
+                            return 'A senha deve ter ao menos 8 caracteres.';
+                          }
+                          return null;
+                        },
+                        suffixIcon: IconButton(
+                          onPressed: () {
+                            setState(() => obscureNewPassword = !obscureNewPassword);
+                          },
+                          icon: Icon(
+                            obscureNewPassword
+                                ? Icons.visibility_outlined
+                                : Icons.visibility_off_outlined,
+                          ),
+                        ),
+                      ),
+                      AppSpacing.gapSmall,
+                      AppTextField(
+                        label: 'Confirmar nova senha',
+                        hintText: 'Repita a nova senha',
+                        controller: confirmPasswordController,
+                        obscureText: obscureConfirmPassword,
+                        prefixIcon: Icons.verified_user_outlined,
+                        maxLength: _passwordMaxLength,
+                        validator: (value) {
+                          final confirmation = value?.trim() ?? '';
+                          if (confirmation.isEmpty) {
+                            return 'Confirme a nova senha.';
+                          }
+                          if (confirmation != newPasswordController.text.trim()) {
+                            return 'As senhas precisam ser iguais.';
+                          }
+                          return null;
+                        },
+                        suffixIcon: IconButton(
+                          onPressed: () {
+                            setState(() => obscureConfirmPassword = !obscureConfirmPassword);
+                          },
+                          icon: Icon(
+                            obscureConfirmPassword
+                                ? Icons.visibility_outlined
+                                : Icons.visibility_off_outlined,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: const Text('Cancelar'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    final isValid = formKey.currentState?.validate() ?? false;
+                    if (!isValid) {
+                      return;
+                    }
+                    Navigator.of(context).pop(true);
+                  },
+                  child: const Text('Redefinir'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (shouldSubmit != true || !mounted) {
+      return;
+    }
+
+    try {
+      await _authService.resetPassword(
+        email: emailController.text.trim(),
+        newPassword: newPasswordController.text,
+      );
+      if (!mounted) {
+        return;
+      }
+      _emailController.text = emailController.text.trim();
+      _passwordController.clear();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Senha redefinida com sucesso. Faça login com a nova senha.'),
+        ),
+      );
+    } on ArgumentError catch (error) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error.message.toString())),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -160,7 +303,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           children: [
                             Center(
                               child: Text(
-                                'Login',
+                                'LOGIN',
                                 textAlign: TextAlign.center,
                                 style: theme.textTheme.titleLarge,
                               ),
@@ -195,6 +338,13 @@ class _LoginScreenState extends State<LoginScreen> {
                                     ? Icons.visibility_outlined
                                     : Icons.visibility_off_outlined,
                               ),
+                            ),
+                          ),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: TextButton(
+                              onPressed: _openForgotPassword,
+                              child: const Text('Esqueci Minha Senha'),
                             ),
                           ),
                           AppSpacing.gapMedium,

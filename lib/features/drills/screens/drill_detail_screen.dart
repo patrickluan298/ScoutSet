@@ -43,6 +43,15 @@ class _DrillDetailScreenState extends State<DrillDetailScreen> {
     });
   }
 
+  Future<void> _toggleFavorite() async {
+    final drill = _drill;
+    if (drill == null) {
+      return;
+    }
+    await DrillsService.instance.toggleFavorite(drill.id);
+    await _loadDrill();
+  }
+
   void _handleStepTap(int index) {
     _animationController.jumpToStep?.call(index);
     setState(() {
@@ -61,108 +70,125 @@ class _DrillDetailScreenState extends State<DrillDetailScreen> {
     final drill = _drill;
     if (drill == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Drill')),
-        body: const Center(
-          child: Text('Drill não encontrado.'),
+        body: const SafeArea(
+          child: Center(
+            child: Text('Drill não encontrado.'),
+          ),
         ),
       );
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text(drill.name)),
-      body: SingleChildScrollView(
-        padding: AppSpacing.screen,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            AppCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    drill.category.toUpperCase(),
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppTheme.secondaryBlueColor,
-                          fontWeight: FontWeight.w700,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: AppSpacing.screen,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AppCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            drill.category.toUpperCase(),
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                  color: AppTheme.secondaryBlueColor,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                          ),
                         ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(drill.name, style: Theme.of(context).textTheme.headlineMedium),
-                  const SizedBox(height: 12),
-                  Text(drill.objective, style: Theme.of(context).textTheme.bodyLarge),
-                  const SizedBox(height: 16),
-                  Wrap(
-                    spacing: 10,
-                    runSpacing: 10,
-                    children: [
-                      _MetaPill(label: 'Dificuldade', value: drill.difficulty),
-                      _MetaPill(label: 'Jogadores', value: '${drill.playersCount}'),
-                      _MetaPill(label: 'Duração', value: drill.duration),
-                      _MetaPill(label: 'Categoria', value: drill.category),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            AppSpacing.gapMedium,
-            DrillAnimationView(
-              drill: drill,
-              controller: _animationController,
-              onStepChanged: (stepIndex) {
-                if (_activeStepIndex == stepIndex) {
-                  return;
-                }
-
-                setState(() {
-                  _activeStepIndex = stepIndex;
-                });
-              },
-            ),
-            AppSpacing.gapMedium,
-            AppCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SectionTitle(
-                    title: 'Passo a passo',
-                    subtitle: 'Toque em qualquer etapa para sincronizar a animação com o momento desejado.',
-                  ),
-                  const SizedBox(height: 16),
-                  for (var index = 0; index < drill.steps.length; index++)
-                    _StepTile(
-                      index: index,
-                      text: drill.steps[index],
-                      isActive: index == _activeStepIndex,
-                      onTap: () => _handleStepTap(index),
+                        IconButton(
+                          onPressed: _toggleFavorite,
+                          tooltip: drill.isFavorite ? 'Desfavoritar drill' : 'Favoritar drill',
+                          icon: Icon(
+                            drill.isFavorite ? Icons.star_rounded : Icons.star_outline_rounded,
+                            color: AppTheme.accentColor,
+                          ),
+                        ),
+                      ],
                     ),
-                ],
+                    const SizedBox(height: 8),
+                    Text(drill.name, style: Theme.of(context).textTheme.headlineMedium),
+                    const SizedBox(height: 12),
+                    Text(drill.objective, style: Theme.of(context).textTheme.bodyLarge),
+                    const SizedBox(height: 16),
+                    Wrap(
+                      spacing: 10,
+                      runSpacing: 10,
+                      children: [
+                        _MetaPill(label: 'Dificuldade', value: drill.difficulty),
+                        _MetaPill(label: 'Jogadores', value: '${drill.playersCount}'),
+                        _MetaPill(label: 'Duração', value: drill.duration),
+                        _MetaPill(label: 'Categoria', value: drill.category),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-            AppSpacing.gapMedium,
-            _InfoListCard(
-              title: 'Dicas',
-              subtitle: 'Boas práticas para melhorar a execução do drill.',
-              items: drill.tips,
-              accentColor: AppTheme.secondaryBlueColor,
-              icon: Icons.tips_and_updates_outlined,
-            ),
-            AppSpacing.gapMedium,
-            _InfoListCard(
-              title: 'Erros comuns',
-              subtitle: 'Pontos de atenção para evitar vícios técnicos.',
-              items: drill.commonErrors,
-              accentColor: const Color(0xFFD14343),
-              icon: Icons.warning_amber_rounded,
-            ),
-            AppSpacing.gapMedium,
-            _InfoListCard(
-              title: 'Variações',
-              subtitle: 'Formas de evoluir a tarefa sem perder o objetivo técnico.',
-              items: drill.variations,
-              accentColor: AppTheme.accentColor,
-              icon: Icons.alt_route_rounded,
-            ),
-          ],
+              AppSpacing.gapMedium,
+              DrillAnimationView(
+                drill: drill,
+                controller: _animationController,
+                onStepChanged: (stepIndex) {
+                  if (_activeStepIndex == stepIndex) {
+                    return;
+                  }
+
+                  setState(() {
+                    _activeStepIndex = stepIndex;
+                  });
+                },
+              ),
+              AppSpacing.gapMedium,
+              AppCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SectionTitle(
+                      title: 'Passo a passo',
+                      subtitle: 'Toque em qualquer etapa para sincronizar a animação com o momento desejado.',
+                    ),
+                    const SizedBox(height: 16),
+                    for (var index = 0; index < drill.steps.length; index++)
+                      _StepTile(
+                        index: index,
+                        text: drill.steps[index],
+                        isActive: index == _activeStepIndex,
+                        onTap: () => _handleStepTap(index),
+                      ),
+                  ],
+                ),
+              ),
+              AppSpacing.gapMedium,
+              _InfoListCard(
+                title: 'Dicas',
+                subtitle: 'Boas práticas para melhorar a execução do drill.',
+                items: drill.tips,
+                accentColor: AppTheme.secondaryBlueColor,
+                icon: Icons.tips_and_updates_outlined,
+              ),
+              AppSpacing.gapMedium,
+              _InfoListCard(
+                title: 'Erros comuns',
+                subtitle: 'Pontos de atenção para evitar vícios técnicos.',
+                items: drill.commonErrors,
+                accentColor: const Color(0xFFD14343),
+                icon: Icons.warning_amber_rounded,
+              ),
+              AppSpacing.gapMedium,
+              _InfoListCard(
+                title: 'Variações',
+                subtitle: 'Formas de evoluir a tarefa sem perder o objetivo técnico.',
+                items: drill.variations,
+                accentColor: AppTheme.accentColor,
+                icon: Icons.alt_route_rounded,
+              ),
+            ],
+          ),
         ),
       ),
     );

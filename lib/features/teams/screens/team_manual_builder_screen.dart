@@ -81,6 +81,14 @@ class _TeamManualBuilderScreenState extends State<TeamManualBuilderScreen> {
 
   void _assignPlayer(String playerId, int teamIndex) {
     final player = _players.firstWhere((item) => item.id == playerId);
+    if (_teams[teamIndex].players.length >= TeamDrawService.maxPlayersPerTeam) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Cada equipe pode ter no máximo 6 jogadores.'),
+        ),
+      );
+      return;
+    }
     setState(() {
       _removePlayerFromTeams(playerId);
       final updatedPlayers = [..._teams[teamIndex].players, player];

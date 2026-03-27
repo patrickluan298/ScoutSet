@@ -43,4 +43,25 @@ void main() {
     expect(AuthService.instance.currentUser?.email, 'usuario@scoutset.app');
     expect(AuthService.instance.isAuthenticated, isTrue);
   });
+
+  test('redefinição de senha atualiza o login local', () async {
+    await AuthService.instance.register(
+      name: 'Usuário Teste',
+      email: 'usuario@scoutset.app',
+      password: 'Senha@123',
+    );
+
+    await AuthService.instance.resetPassword(
+      email: 'usuario@scoutset.app',
+      newPassword: 'Nova@123',
+    );
+
+    final user = await AuthService.instance.signIn(
+      email: 'usuario@scoutset.app',
+      password: 'Nova@123',
+    );
+
+    expect(user.email, 'usuario@scoutset.app');
+    expect(AuthService.instance.isAuthenticated, isTrue);
+  });
 }

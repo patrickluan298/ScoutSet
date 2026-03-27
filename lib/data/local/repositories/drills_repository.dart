@@ -21,6 +21,17 @@ class DrillsRepository {
     return row == null ? null : _mapDrillRow(row);
   }
 
+  Future<void> setFavorite({
+    required String drillId,
+    required bool isFavorite,
+  }) async {
+    await (_database.update(_database.drills)..where((tbl) => tbl.id.equals(drillId))).write(
+      DrillsCompanion(
+        isFavorite: Value(isFavorite),
+      ),
+    );
+  }
+
   Future<void> clearAll() async {
     await _database.transaction(() async {
       await _database.delete(_database.drillFrameZones).go();

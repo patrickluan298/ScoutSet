@@ -19,4 +19,16 @@ class DrillsService {
     await initialize();
     return AppServices.drillsRepository.getDrillById(id);
   }
+
+  Future<void> toggleFavorite(String id) async {
+    await initialize();
+    final drill = await AppServices.drillsRepository.getDrillById(id);
+    if (drill == null) {
+      throw ArgumentError('Drill não encontrado.');
+    }
+    await AppServices.drillsRepository.setFavorite(
+      drillId: id,
+      isFavorite: !drill.isFavorite,
+    );
+  }
 }

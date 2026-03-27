@@ -144,7 +144,10 @@ class MatchHistoryScreen extends StatelessWidget {
     if (match.winnerTeam == TeamSide.teamA.value) {
       return match.teamAName;
     }
-    return match.teamBName;
+    if (match.winnerTeam == TeamSide.teamB.value) {
+      return match.teamBName;
+    }
+    return 'Empate';
   }
 
   String _formatDate(DateTime value) {

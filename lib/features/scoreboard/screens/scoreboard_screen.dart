@@ -382,7 +382,9 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    '${_winnerLabel(match)} venceu a partida.',
+                    match.winnerTeam == null
+                        ? 'A partida terminou empatada.'
+                        : '${_winnerLabel(match)} venceu a partida.',
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                           color: AppTheme.whiteColor,
                           fontWeight: FontWeight.w700,
@@ -404,6 +406,6 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
     if (match.winnerTeam == TeamSide.teamB.value) {
       return match.teamBName;
     }
-    return 'Nenhum time';
+    return 'Empate';
   }
 }

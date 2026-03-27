@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../widgets/app_card.dart';
 import '../models/draw_team.dart';
 import '../models/team_draw_player.dart';
+import '../services/team_draw_service.dart';
 
 class ManualTeamBuilder extends StatelessWidget {
   const ManualTeamBuilder({
@@ -47,8 +48,13 @@ class ManualTeamBuilder extends StatelessWidget {
                         itemBuilder: (_) => [
                           for (var index = 0; index < teams.length; index++)
                             PopupMenuItem<int>(
+                              enabled: teams[index].players.length < TeamDrawService.maxPlayersPerTeam,
                               value: index,
-                              child: Text('Adicionar ao ${teams[index].name}'),
+                              child: Text(
+                                teams[index].players.length >= TeamDrawService.maxPlayersPerTeam
+                                    ? '${teams[index].name} (lotado)'
+                                    : 'Adicionar ao ${teams[index].name}',
+                              ),
                             ),
                         ],
                       ),
@@ -69,7 +75,7 @@ class ManualTeamBuilder extends StatelessWidget {
                 children: [
                   Text(teams[index].name, style: Theme.of(context).textTheme.titleMedium),
                   const SizedBox(height: 8),
-                  Text('${teams[index].players.length} jogador(es)'),
+                  Text('${teams[index].players.length} jogador(es) • máx. 6'),
                   const SizedBox(height: 12),
                   if (teams[index].players.isEmpty)
                     Text(

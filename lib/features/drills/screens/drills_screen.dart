@@ -46,6 +46,20 @@ class _DrillsScreenState extends State<DrillsScreen> {
     });
   }
 
+  Future<void> _toggleFavorite(String drillId) async {
+    await DrillsService.instance.toggleFavorite(drillId);
+    await _loadDrills();
+  }
+
+  Future<void> _openDetail(String drillId) async {
+    await Navigator.pushNamed(
+      context,
+      AppRoutes.drillDetail,
+      arguments: drillId,
+    );
+    await _loadDrills();
+  }
+
   List<Drill> get _filteredDrills {
     final drills = _drills;
     switch (_activeFilter) {
@@ -139,11 +153,8 @@ class _DrillsScreenState extends State<DrillsScreen> {
                   duration: drill.duration,
                   playersCount: drill.playersCount,
                   isFavorite: drill.isFavorite,
-                  onTap: () => Navigator.pushNamed(
-                    context,
-                    AppRoutes.drillDetail,
-                    arguments: drill.id,
-                  ),
+                  onToggleFavorite: () => _toggleFavorite(drill.id),
+                  onTap: () => _openDetail(drill.id),
                 ),
                 AppSpacing.gapMedium,
               ],
@@ -202,6 +213,7 @@ class _DrillLibraryCard extends StatelessWidget {
     required this.duration,
     required this.playersCount,
     required this.isFavorite,
+    required this.onToggleFavorite,
     required this.onTap,
   });
 
@@ -212,6 +224,7 @@ class _DrillLibraryCard extends StatelessWidget {
   final String duration;
   final int playersCount;
   final bool isFavorite;
+  final VoidCallback onToggleFavorite;
   final VoidCallback onTap;
 
   @override
@@ -240,11 +253,17 @@ class _DrillLibraryCard extends StatelessWidget {
                   ),
                 ),
                 const Spacer(),
-                if (isFavorite)
-                  const Padding(
-                    padding: EdgeInsets.only(right: 10),
-                    child: Icon(Icons.star_rounded, color: AppTheme.accentColor),
+                Padding(
+                  padding: const EdgeInsets.only(right: 10),
+                  child: IconButton(
+                    onPressed: onToggleFavorite,
+                    tooltip: isFavorite ? 'Desfavoritar drill' : 'Favoritar drill',
+                    icon: Icon(
+                      isFavorite ? Icons.star_rounded : Icons.star_outline_rounded,
+                      color: AppTheme.accentColor,
+                    ),
                   ),
+                ),
                 const Icon(Icons.play_circle_fill_rounded, color: AppTheme.secondaryBlueColor),
               ],
             ),

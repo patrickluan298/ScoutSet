@@ -88,4 +88,51 @@ void main() {
         .toList();
     expect(advancedCounts.every((count) => count >= 1), isTrue);
   });
+
+  test('permite 2 equipes com 13 jogadores apenas quando houver fila de espera', () async {
+    for (var i = 0; i < 7; i++) {
+      await service.savePlayer(
+        name: 'Jog$i',
+        position: 'Ponteiro',
+        level: PlayerLevel.intermediario,
+      );
+    }
+
+    final players = await service.listPlayers();
+
+    final result = await service.createDraw(
+      selectedPlayers: players,
+      numberOfTeams: 2,
+      drawMode: DrawMode.random,
+      oddPlayerHandling: OddPlayerHandling.waitingQueue,
+      testRandom: Random(7),
+    );
+
+    expect(result.waitingPlayers, hasLength(1));
+    expect(result.teams.every((team) => team.players.length <= TeamDrawService.maxPlayersPerTeam), isTrue);
+  });
+
+  test('rejeita 2 equipes com 14 jogadores por exceder 6 jogadores por time', () async {
+    for (var i = 0; i < 8; i++) {
+      await service.savePlayer(
+        name: 'Novo$i',
+        position: 'Central',
+        level: PlayerLevel.intermediario,
+      );
+    }
+
+    final players = await service.listPlayers();
+
+    expect(service.allowedTeamCounts(players.length), isNot(contains(2)));
+    expect(
+      () => service.createDraw(
+        selectedPlayers: players,
+        numberOfTeams: 2,
+        drawMode: DrawMode.random,
+        oddPlayerHandling: OddPlayerHandling.extraPlayerOnTeam,
+        testRandom: Random(8),
+      ),
+      throwsA(isA<ArgumentError>()),
+    );
+  });
 }
