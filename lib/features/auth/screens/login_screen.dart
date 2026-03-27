@@ -16,8 +16,8 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  static const _emailMaxLength = 120;
-  static const _passwordMaxLength = 64;
+  static const _emailMaxLength = 40;
+  static const _passwordMaxLength = 12;
 
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
@@ -38,7 +38,7 @@ class _LoginScreenState extends State<LoginScreen> {
     if (email.isEmpty) {
       return 'Informe seu e-mail.';
     }
-    if (!email.contains('@') || !email.contains('.')) {
+    if (!_authService.isValidEmail(email)) {
       return 'Digite um e-mail válido.';
     }
     return null;
@@ -136,7 +136,13 @@ class _LoginScreenState extends State<LoginScreen> {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              title: const Text('Esqueci Minha Senha'),
+              title: const Align(
+                alignment: Alignment.center,
+                child: Text(
+                  'Esqueci Minha Senha',
+                  textAlign: TextAlign.center,
+                ),
+              ),
               content: Form(
                 key: formKey,
                 child: SingleChildScrollView(
@@ -159,7 +165,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         controller: newPasswordController,
                         obscureText: obscureNewPassword,
                         prefixIcon: Icons.lock_reset_outlined,
-                        maxLength: _passwordMaxLength,
+                        maxLength: 12,
                         validator: (value) {
                           final password = value?.trim() ?? '';
                           if (password.isEmpty) {
@@ -188,7 +194,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         controller: confirmPasswordController,
                         obscureText: obscureConfirmPassword,
                         prefixIcon: Icons.verified_user_outlined,
-                        maxLength: _passwordMaxLength,
+                        maxLength: 12,
                         validator: (value) {
                           final confirmation = value?.trim() ?? '';
                           if (confirmation.isEmpty) {
@@ -215,19 +221,29 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(false),
-                  child: const Text('Cancelar'),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    final isValid = formKey.currentState?.validate() ?? false;
-                    if (!isValid) {
-                      return;
-                    }
-                    Navigator.of(context).pop(true);
-                  },
-                  child: const Text('Redefinir'),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        final isValid = formKey.currentState?.validate() ?? false;
+                        if (!isValid) {
+                          return;
+                        }
+                        Navigator.of(context).pop(true);
+                      },
+                      child: const Text('Redefinir'),
+                    ),
+                    const SizedBox(height: 8),
+                    Align(
+                      alignment: Alignment.center,
+                      child: TextButton(
+                        onPressed: () => Navigator.of(context).pop(false),
+                        child: const Text('Cancelar'),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             );
@@ -312,12 +328,12 @@ class _LoginScreenState extends State<LoginScreen> {
                           AppTextField(
                             label: 'E-mail',
                             hintText: 'usuario@exemplo.com',
-                            controller: _emailController,
-                            keyboardType: TextInputType.emailAddress,
-                            prefixIcon: Icons.mail_outline,
-                            validator: _validateEmail,
-                            maxLength: _emailMaxLength,
-                          ),
+                        controller: _emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        prefixIcon: Icons.mail_outline,
+                        validator: _validateEmail,
+                        maxLength: _emailMaxLength,
+                      ),
                           AppSpacing.gapSmall,
                           AppTextField(
                             label: 'Senha',
@@ -340,13 +356,6 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             ),
                           ),
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: TextButton(
-                              onPressed: _openForgotPassword,
-                              child: const Text('Esqueci Minha Senha'),
-                            ),
-                          ),
                           AppSpacing.gapMedium,
                           AppButton(
                             label: 'Entrar',
@@ -360,6 +369,14 @@ class _LoginScreenState extends State<LoginScreen> {
                             child: OutlinedButton(
                               onPressed: _openRegister,
                               child: const Text('Criar conta'),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Align(
+                            alignment: Alignment.center,
+                            child: TextButton(
+                              onPressed: _openForgotPassword,
+                              child: const Text('Esqueci Minha Senha'),
                             ),
                           ),
                         ],

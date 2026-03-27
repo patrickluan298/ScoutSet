@@ -64,4 +64,44 @@ void main() {
     expect(user.email, 'usuario@scoutset.app');
     expect(AuthService.instance.isAuthenticated, isTrue);
   });
+
+  test('cadastro rejeita e-mail inválido', () async {
+    expect(
+      () => AuthService.instance.register(
+        name: 'Usuário Teste',
+        email: 'usuario-invalido',
+        password: 'Senha@123',
+      ),
+      throwsA(
+        isA<ArgumentError>().having(
+          (error) => error.message,
+          'message',
+          'Digite um e-mail válido.',
+        ),
+      ),
+    );
+  });
+
+  test('cadastro rejeita e-mail já cadastrado', () async {
+    await AuthService.instance.register(
+      name: 'Usuário Teste',
+      email: 'usuario@scoutset.app',
+      password: 'Senha@123',
+    );
+
+    expect(
+      () => AuthService.instance.register(
+        name: 'Outro Usuário',
+        email: 'usuario@scoutset.app',
+        password: 'Senha@123',
+      ),
+      throwsA(
+        isA<ArgumentError>().having(
+          (error) => error.message,
+          'message',
+          'Já existe um usuário cadastrado com esse e-mail.',
+        ),
+      ),
+    );
+  });
 }

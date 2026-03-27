@@ -123,13 +123,22 @@ class MatchPdfService {
     final bytes = await buildMatchPdf(match);
     final directory = await _resolveSaveDirectory();
     final sanitizedName = '${match.teamAName}_${match.teamBName}'.replaceAll(' ', '_');
-    final file = File('${directory.path}/partida_$sanitizedName.pdf');
-    await file.writeAsBytes(bytes, flush: true);
-    return file;
+    return _writePdfFile(
+      directory: directory,
+      fileName: 'partida_$sanitizedName.pdf',
+      bytes: bytes,
+    );
   }
 
   Future<void> sharePdf(MatchScore match) async {
-    final file = await savePdf(match);
+    final bytes = await buildMatchPdf(match);
+    final temporaryDirectory = await getTemporaryDirectory();
+    final sanitizedName = '${match.teamAName}_${match.teamBName}'.replaceAll(' ', '_');
+    final file = await _writePdfFile(
+      directory: temporaryDirectory,
+      fileName: 'partida_$sanitizedName.pdf',
+      bytes: bytes,
+    );
     await SharePlus.instance.share(
       ShareParams(
         files: [XFile(file.path)],
@@ -214,15 +223,9 @@ class MatchPdfService {
       if (publicDownloads != null) {
         return publicDownloads;
       }
-
-      final externalDirectory = await getExternalStorageDirectory();
-      if (externalDirectory != null) {
-        final fallbackDirectory = Directory(
-          path.join(externalDirectory.path, 'Download', 'ScoutSet'),
-        );
-        await fallbackDirectory.create(recursive: true);
-        return fallbackDirectory;
-      }
+      throw const FileSystemException(
+        'Não foi possível acessar a pasta pública de Downloads do dispositivo.',
+      );
     }
 
     final downloadsDirectory = await getDownloadsDirectory();
@@ -260,5 +263,16 @@ class MatchPdfService {
     }
 
     return null;
+  }
+
+  Future<File> _writePdfFile({
+    required Directory directory,
+    required String fileName,
+    required Uint8List bytes,
+  }) async {
+    await directory.create(recursive: true);
+    final file = File(path.join(directory.path, fileName));
+    await file.writeAsBytes(bytes, flush: true);
+    return file;
   }
 }

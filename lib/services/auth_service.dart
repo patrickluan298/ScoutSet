@@ -13,9 +13,12 @@ class AuthService {
 
   static final AuthService instance = AuthService._();
 
-  static const _nameMaxLength = 80;
-  static const _emailMaxLength = 120;
-  static const _passwordMaxLength = 64;
+  static const _nameMaxLength = 20;
+  static const _emailMaxLength = 40;
+  static const _passwordMaxLength = 12;
+  static final RegExp _emailPattern = RegExp(
+    r'^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$',
+  );
 
   final ValueNotifier<User?> authState = ValueNotifier<User?>(null);
   final Random _random = Random.secure();
@@ -52,12 +55,17 @@ class AuthService {
 
     final trimmedEmail = email.trim().toLowerCase();
     final trimmedPassword = password.trim();
-    _validateFieldLengths(
-      email: trimmedEmail,
-      password: trimmedPassword,
-    );
     if (trimmedEmail.isEmpty || trimmedPassword.isEmpty) {
       throw ArgumentError('E-mail e senha são obrigatórios.');
+    }
+    if (!isValidEmail(trimmedEmail)) {
+      throw ArgumentError('Digite um e-mail válido.');
+    }
+    if (trimmedEmail.length > _emailMaxLength) {
+      final legacyAccount = await _repository.findUserByEmail(trimmedEmail);
+      if (legacyAccount == null) {
+        throw ArgumentError('O e-mail ultrapassa o limite permitido.');
+      }
     }
 
     await Future<void>.delayed(const Duration(milliseconds: 350));
@@ -91,6 +99,9 @@ class AuthService {
     );
     if (trimmedName.isEmpty || trimmedEmail.isEmpty || trimmedPassword.isEmpty) {
       throw ArgumentError('Nome, e-mail e senha são obrigatórios.');
+    }
+    if (!isValidEmail(trimmedEmail)) {
+      throw ArgumentError('Digite um e-mail válido.');
     }
     if (!_isStrongPassword(trimmedPassword)) {
       throw ArgumentError(
@@ -128,12 +139,17 @@ class AuthService {
 
     final trimmedEmail = email.trim().toLowerCase();
     final trimmedPassword = newPassword.trim();
-    _validateFieldLengths(
-      email: trimmedEmail,
-      password: trimmedPassword,
-    );
     if (trimmedEmail.isEmpty || trimmedPassword.isEmpty) {
       throw ArgumentError('E-mail e nova senha são obrigatórios.');
+    }
+    if (!isValidEmail(trimmedEmail)) {
+      throw ArgumentError('Digite um e-mail válido.');
+    }
+    if (trimmedEmail.length > _emailMaxLength) {
+      throw ArgumentError('O e-mail ultrapassa o limite permitido.');
+    }
+    if (trimmedPassword.length > _passwordMaxLength) {
+      throw ArgumentError('A senha ultrapassa o limite permitido.');
     }
     if (!_isStrongPassword(trimmedPassword)) {
       throw ArgumentError(
@@ -172,6 +188,8 @@ class AuthService {
     final hasSpecial = password.contains(RegExp(r'[^A-Za-z0-9]'));
     return password.length >= 8 && hasUppercase && hasNumber && hasSpecial;
   }
+
+  bool isValidEmail(String email) => _emailPattern.hasMatch(email.trim());
 
   void _validateFieldLengths({
     String? name,

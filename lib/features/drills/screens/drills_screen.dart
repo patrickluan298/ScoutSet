@@ -90,8 +90,9 @@ class _DrillsScreenState extends State<DrillsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SectionTitle(
-                    title: 'Biblioteca de drills',
+                    title: 'Biblioteca de Drills',
                     subtitle: 'Visualize, entenda e execute exercícios com animação 2D, passos guiados e dicas práticas.',
+                    centered: true,
                   ),
                   const SizedBox(height: 16),
                   Wrap(

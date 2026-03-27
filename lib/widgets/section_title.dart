@@ -5,25 +5,34 @@ class SectionTitle extends StatelessWidget {
     required this.title,
     super.key,
     this.subtitle,
+    this.centered = false,
   });
 
   final String title;
   final String? subtitle;
+  final bool centered;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: centered ? CrossAxisAlignment.center : CrossAxisAlignment.start,
       children: [
-        Text(title, style: theme.textTheme.titleLarge),
+        Text(
+          title,
+          textAlign: centered ? TextAlign.center : TextAlign.start,
+          style: theme.textTheme.titleLarge,
+        ),
         if (subtitle != null) ...[
           const SizedBox(height: 6),
-          Text(subtitle!, style: theme.textTheme.bodyMedium),
+          Text(
+            subtitle!,
+            textAlign: centered ? TextAlign.center : TextAlign.start,
+            style: theme.textTheme.bodyMedium,
+          ),
         ],
       ],
     );
   }
 }
-

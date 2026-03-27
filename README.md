@@ -11,6 +11,7 @@ ScoutSet é um aplicativo Flutter focado em vôlei para apoiar treinadores, atle
 - módulo de equipes com sorteio, montagem manual e formações salvas
 - catálogo de drills com detalhe e animação 2D
 - exportação e compartilhamento de partidas em PDF
+- limpeza automática de históricos após 7 dias
 
 ## Estado atual do projeto
 
@@ -18,9 +19,10 @@ Hoje o app já entrega:
 
 - autenticação local com cadastro, login, sessão persistida e validação de senha forte
 - dashboard com navegação por shell e atalhos para os módulos principais
+- navegação inferior simplificada com acesso rápido a dashboard e perfil
 - módulo completo de placar eletrônico de vôlei em melhor de 3 sets
 - simulador de estratégias de vôlei de quadra e praia
-- módulo de equipes e sorteio de times com persistência local
+- módulo de formação de equipes de times com persistência local
 - biblioteca de drills com filtros e tela de detalhe
 - perfil com logout
 
@@ -61,6 +63,7 @@ Decisões atuais:
 - o módulo de equipes começa sem jogadores pré-cadastrados
 - a partida ativa do placar continua em memória durante a execução
 - o histórico finalizado do placar é salvo no SQLite
+- históricos persistidos de partidas e sorteios são limpos automaticamente após 7 dias
 - a UI não acessa o Drift diretamente; os serviços continuam como fachada da aplicação
 
 Arquivos centrais:
@@ -80,6 +83,7 @@ A autenticação fica em `lib/services/auth_service.dart` e usa SQLite via repos
 Recursos atuais:
 
 - cadastro com validação de senha forte
+- recuperação local de senha pela tela de login
 - login com sessão persistida localmente
 - proteção de rotas autenticadas
 - logout com limpeza da sessão ativa
@@ -110,6 +114,7 @@ Recursos atuais:
 - histórico persistido localmente com tela de lista e detalhe
 - detalhamento da origem da partida
 - exportação e compartilhamento de partida em PDF
+- encerramento manual com empate quando a pontuação estiver igual
 
 Quando a partida vem do módulo de equipes, o histórico também pode exibir:
 
@@ -175,6 +180,7 @@ Recursos atuais:
 
 - listagem de drills carregados do SQLite
 - filtros por categoria e favoritos
+- favoritar e desfavoritar drills com persistência local
 - cards com metadados de dificuldade, duração e número de jogadores
 - tela de detalhe com suporte a animação 2D
 
@@ -184,7 +190,7 @@ Arquivos principais:
 - `lib/features/drills/screens/drill_detail_screen.dart`
 - `lib/features/drills/services/drills_service.dart`
 
-### Equipes e Sorteio
+### Formação de Equipes
 
 A feature `lib/features/teams/` já possui fluxo funcional para organização de jogadores e montagem de equipes.
 
@@ -196,6 +202,7 @@ Recursos atuais:
 - sorteio balanceado simples por nível
 - montagem manual por toque
 - suporte a 2 ou 3 equipes conforme quantidade de jogadores
+- limite de até 6 jogadores por equipe
 - tratamento de quantidade ímpar com equipe maior ou fila de espera
 - prioridade para jogadores que ficaram aguardando
 - histórico persistido de sorteios e montagens
@@ -243,18 +250,18 @@ lib/
 
 ## Navegação e UI
 
-O app usa uma shell principal com abas para:
+O app usa navegação inferior principal com:
 
 - dashboard
-- placar
-- estratégias
-- relatórios
 - perfil
 
-Além da shell, o app também possui rotas dedicadas para:
+Os demais módulos abrem como rotas dedicadas com a mesma linguagem visual do app:
 
+- placar
+- estratégias
 - equipes
 - drills
+- relatórios
 - regras
 - vídeos
 

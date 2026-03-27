@@ -15,6 +15,8 @@ class TeamsRepository {
 
   final AppDatabase _database;
 
+  static const Duration historyRetention = Duration(days: 7);
+
   Future<List<legacy_domain.Team>> listTeams() async {
     final teamRows = await _database.select(_database.teams).get();
     final athleteRows = await _database.select(_database.athletes).get();
@@ -72,6 +74,55 @@ class TeamsRepository {
         isActive: Value(false),
       ),
     );
+  }
+
+  Future<void> cleanupExpiredHistory() async {
+    final cutoff = DateTime.now().subtract(historyRetention).toIso8601String();
+    final expiredSessions = await (_database.select(_database.drawSessions)
+          ..where((tbl) => tbl.createdAt.isSmallerThanValue(cutoff)))
+        .get();
+    final expiredSessionIds = expiredSessions.map((session) => session.id).toList();
+    final expiredSessionContextKeys = expiredSessions.map((session) => session.contextKey).toSet().toList();
+
+    await _database.transaction(() async {
+      if (expiredSessionIds.isNotEmpty) {
+        final sessionTeams = await (_database.select(_database.drawSessionTeams)
+              ..where((tbl) => tbl.sessionId.isIn(expiredSessionIds)))
+            .get();
+        final sessionTeamIds = sessionTeams.map((team) => team.id).toList();
+
+        if (sessionTeamIds.isNotEmpty) {
+          await (_database.delete(_database.drawSessionTeamPlayers)
+                ..where((tbl) => tbl.sessionTeamId.isIn(sessionTeamIds)))
+              .go();
+        }
+        await (_database.delete(_database.drawSessionTeams)
+              ..where((tbl) => tbl.sessionId.isIn(expiredSessionIds)))
+            .go();
+        await (_database.delete(_database.drawSessions)..where((tbl) => tbl.id.isIn(expiredSessionIds))).go();
+      }
+
+      await (_database.delete(_database.waitingQueueEntries)
+            ..where((tbl) => tbl.waitingSince.isSmallerThanValue(cutoff)))
+          .go();
+
+      if (expiredSessionContextKeys.isNotEmpty) {
+        final activeContexts = await (_database.selectOnly(_database.drawSessions)
+              ..addColumns([_database.drawSessions.contextKey])
+              ..where(_database.drawSessions.contextKey.isIn(expiredSessionContextKeys)))
+            .get();
+        final activeContextKeys = activeContexts
+            .map((row) => row.read(_database.drawSessions.contextKey))
+            .whereType<String>()
+            .toSet();
+        final orphanedContextKeys = expiredSessionContextKeys.where((key) => !activeContextKeys.contains(key)).toList();
+        if (orphanedContextKeys.isNotEmpty) {
+          await (_database.delete(_database.waitingQueueEntries)
+                ..where((tbl) => tbl.contextKey.isIn(orphanedContextKeys)))
+              .go();
+        }
+      }
+    });
   }
 
   Future<void> saveDrawResult(team_models.TeamDrawResult result) async {

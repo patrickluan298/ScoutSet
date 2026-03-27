@@ -13,6 +13,24 @@ class MatchesRepository {
 
   final AppDatabase _database;
 
+  static const Duration historyRetention = Duration(days: 7);
+
+  Future<void> cleanupExpiredHistory() async {
+    final cutoff = DateTime.now().subtract(historyRetention).toIso8601String();
+    final expiredMatches = await (_database.select(_database.matches)
+          ..where((tbl) => tbl.createdAt.isSmallerThanValue(cutoff)))
+        .get();
+    final expiredIds = expiredMatches.map((match) => match.id).toList();
+    if (expiredIds.isEmpty) {
+      return;
+    }
+
+    await _database.transaction(() async {
+      await (_database.delete(_database.matchSets)..where((tbl) => tbl.matchId.isIn(expiredIds))).go();
+      await (_database.delete(_database.matches)..where((tbl) => tbl.id.isIn(expiredIds))).go();
+    });
+  }
+
   Future<List<scoreboard_model.MatchScore>> listHistory() async {
     final rows = await (_database.select(_database.matches)
           ..orderBy([

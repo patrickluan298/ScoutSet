@@ -15,9 +15,9 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  static const _nameMaxLength = 80;
-  static const _emailMaxLength = 120;
-  static const _passwordMaxLength = 64;
+  static const _nameMaxLength = 20;
+  static const _emailMaxLength = 40;
+  static const _passwordMaxLength = 12;
 
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
@@ -61,7 +61,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (email.isEmpty) {
       return 'Informe seu e-mail.';
     }
-    if (!email.contains('@') || !email.contains('.')) {
+    if (!_authService.isValidEmail(email)) {
       return 'Digite um e-mail válido.';
     }
     return null;
@@ -182,8 +182,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SectionTitle(
-                        title: 'Cadastro de usuário',
+                        title: 'Cadastro de Usuário',
                         subtitle: 'Crie sua conta. Depois do cadastro, você retorna ao login para entrar no app.',
+                        centered: true,
                       ),
                       AppSpacing.gapLarge,
                       AppTextField(
