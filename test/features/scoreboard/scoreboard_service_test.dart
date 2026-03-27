@@ -177,4 +177,20 @@ void main() {
     expect(history.single.matchStatus, MatchStatus.finished);
     expect(service.getMatchById(history.single.id), isNotNull);
   });
+
+  test('manual finish with tied scoreboard ends in draw', () async {
+    service.startMatch(teamAName: 'A', teamBName: 'B');
+    await addPoints(teamA: 12, teamB: 12);
+    await service.finishCurrentMatch();
+
+    final match = service.getState().activeMatch;
+    expect(match?.matchStatus, MatchStatus.finished);
+    expect(match?.winnerTeam, isNull);
+    expect(match?.teamASetsWon, 0);
+    expect(match?.teamBSetsWon, 0);
+    expect(match?.sets.single.teamAScore, 12);
+    expect(match?.sets.single.teamBScore, 12);
+    expect(match?.sets.single.winnerTeamId, isEmpty);
+    expect(service.getState().statusMessage, 'Partida encerrada em empate por 0x0.');
+  });
 }

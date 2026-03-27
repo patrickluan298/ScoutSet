@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../config/app_routes.dart';
+import '../../../widgets/dashboard_profile_bottom_navigation.dart';
 import '../../profile/screens/profile_screen.dart';
 import '../../reports/screens/reports_screen.dart';
 import '../../scoreboard/screens/scoreboard_screen.dart';
@@ -30,14 +31,6 @@ class _AppShellScreenState extends State<AppShellScreen> {
     ProfileScreen(showScaffold: false),
   ];
 
-  static const List<String> _titles = [
-    'ScoutSet',
-    'Placar',
-    'Estratégias',
-    'Relatórios',
-    'Perfil',
-  ];
-
   static const List<String> _routes = [
     AppRoutes.dashboard,
     AppRoutes.scoreboard,
@@ -52,69 +45,13 @@ class _AppShellScreenState extends State<AppShellScreen> {
     _currentIndex = widget.initialIndex;
   }
 
-  void _onDestinationSelected(int index) {
-    if (index == _currentIndex) {
-      return;
-    }
-
-    setState(() => _currentIndex = index);
-    Navigator.pushReplacementNamed(context, _routes[index]);
-  }
-
-  void _goToDashboard() {
-    if (_currentIndex == 0) {
-      return;
-    }
-
-    setState(() => _currentIndex = 0);
-    Navigator.pushReplacementNamed(context, AppRoutes.dashboard);
-  }
-
   @override
   Widget build(BuildContext context) {
+    final currentRoute = _routes[_currentIndex];
+
     return Scaffold(
-      appBar: AppBar(
-        leading: _currentIndex == 0
-            ? null
-            : IconButton(
-                icon: const Icon(Icons.arrow_back),
-                tooltip: 'Voltar ao dashboard',
-                onPressed: _goToDashboard,
-              ),
-        title: Text(_titles[_currentIndex]),
-      ),
-      body: _pages[_currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: _onDestinationSelected,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard_outlined),
-            activeIcon: Icon(Icons.dashboard),
-            label: 'Dashboard',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.sports_volleyball),
-            activeIcon: Icon(Icons.sports_volleyball),
-            label: 'Placar',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.schema),
-            activeIcon: Icon(Icons.schema),
-            label: 'Estratégias',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.bar_chart),
-            activeIcon: Icon(Icons.bar_chart),
-            label: 'Relatórios',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            activeIcon: Icon(Icons.person),
-            label: 'Perfil',
-          ),
-        ],
-      ),
+      body: SafeArea(child: _pages[_currentIndex]),
+      bottomNavigationBar: DashboardProfileBottomNavigation(currentRoute: currentRoute),
     );
   }
 }

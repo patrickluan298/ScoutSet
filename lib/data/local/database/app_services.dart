@@ -37,6 +37,8 @@ class AppServices {
     _teamsRepository = TeamsRepository(_database!);
 
     await _database!.customSelect('SELECT 1').get();
+    await _matchesRepository!.cleanupExpiredHistory();
+    await _teamsRepository!.cleanupExpiredHistory();
   }
 
   static Future<void> resetForTesting() async {

@@ -23,9 +23,11 @@ class AppTheme {
 
     return base.copyWith(
       appBarTheme: const AppBarTheme(
-        backgroundColor: primaryColor,
-        foregroundColor: whiteColor,
+        backgroundColor: lightGrayColor,
+        foregroundColor: textColor,
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
+        scrolledUnderElevation: 0,
         centerTitle: false,
       ),
       textTheme: base.textTheme.copyWith(

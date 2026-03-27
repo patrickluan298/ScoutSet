@@ -16,8 +16,8 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  static const _emailMaxLength = 120;
-  static const _passwordMaxLength = 64;
+  static const _emailMaxLength = 40;
+  static const _passwordMaxLength = 12;
 
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
@@ -38,7 +38,7 @@ class _LoginScreenState extends State<LoginScreen> {
     if (email.isEmpty) {
       return 'Informe seu e-mail.';
     }
-    if (!email.contains('@') || !email.contains('.')) {
+    if (!_authService.isValidEmail(email)) {
       return 'Digite um e-mail válido.';
     }
     return null;
@@ -122,6 +122,165 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  Future<void> _openForgotPassword() async {
+    final formKey = GlobalKey<FormState>();
+    final emailController = TextEditingController(text: _emailController.text.trim());
+    final newPasswordController = TextEditingController();
+    final confirmPasswordController = TextEditingController();
+    var obscureNewPassword = true;
+    var obscureConfirmPassword = true;
+
+    final shouldSubmit = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Align(
+                alignment: Alignment.center,
+                child: Text(
+                  'Esqueci Minha Senha',
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              content: Form(
+                key: formKey,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      AppTextField(
+                        label: 'E-mail',
+                        hintText: 'usuario@exemplo.com',
+                        controller: emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        prefixIcon: Icons.mail_outline,
+                        validator: _validateEmail,
+                        maxLength: _emailMaxLength,
+                      ),
+                      AppSpacing.gapSmall,
+                      AppTextField(
+                        label: 'Nova senha',
+                        hintText: 'Digite a nova senha',
+                        controller: newPasswordController,
+                        obscureText: obscureNewPassword,
+                        prefixIcon: Icons.lock_reset_outlined,
+                        maxLength: 12,
+                        validator: (value) {
+                          final password = value?.trim() ?? '';
+                          if (password.isEmpty) {
+                            return 'Informe a nova senha.';
+                          }
+                          if (password.length < 8) {
+                            return 'A senha deve ter ao menos 8 caracteres.';
+                          }
+                          return null;
+                        },
+                        suffixIcon: IconButton(
+                          onPressed: () {
+                            setState(() => obscureNewPassword = !obscureNewPassword);
+                          },
+                          icon: Icon(
+                            obscureNewPassword
+                                ? Icons.visibility_outlined
+                                : Icons.visibility_off_outlined,
+                          ),
+                        ),
+                      ),
+                      AppSpacing.gapSmall,
+                      AppTextField(
+                        label: 'Confirmar nova senha',
+                        hintText: 'Repita a nova senha',
+                        controller: confirmPasswordController,
+                        obscureText: obscureConfirmPassword,
+                        prefixIcon: Icons.verified_user_outlined,
+                        maxLength: 12,
+                        validator: (value) {
+                          final confirmation = value?.trim() ?? '';
+                          if (confirmation.isEmpty) {
+                            return 'Confirme a nova senha.';
+                          }
+                          if (confirmation != newPasswordController.text.trim()) {
+                            return 'As senhas precisam ser iguais.';
+                          }
+                          return null;
+                        },
+                        suffixIcon: IconButton(
+                          onPressed: () {
+                            setState(() => obscureConfirmPassword = !obscureConfirmPassword);
+                          },
+                          icon: Icon(
+                            obscureConfirmPassword
+                                ? Icons.visibility_outlined
+                                : Icons.visibility_off_outlined,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              actions: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        final isValid = formKey.currentState?.validate() ?? false;
+                        if (!isValid) {
+                          return;
+                        }
+                        Navigator.of(context).pop(true);
+                      },
+                      child: const Text('Redefinir'),
+                    ),
+                    const SizedBox(height: 8),
+                    Align(
+                      alignment: Alignment.center,
+                      child: TextButton(
+                        onPressed: () => Navigator.of(context).pop(false),
+                        child: const Text('Cancelar'),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (shouldSubmit != true || !mounted) {
+      return;
+    }
+
+    try {
+      await _authService.resetPassword(
+        email: emailController.text.trim(),
+        newPassword: newPasswordController.text,
+      );
+      if (!mounted) {
+        return;
+      }
+      _emailController.text = emailController.text.trim();
+      _passwordController.clear();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Senha redefinida com sucesso. Faça login com a nova senha.'),
+        ),
+      );
+    } on ArgumentError catch (error) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error.message.toString())),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -160,7 +319,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           children: [
                             Center(
                               child: Text(
-                                'Login',
+                                'LOGIN',
                                 textAlign: TextAlign.center,
                                 style: theme.textTheme.titleLarge,
                               ),
@@ -169,12 +328,12 @@ class _LoginScreenState extends State<LoginScreen> {
                           AppTextField(
                             label: 'E-mail',
                             hintText: 'usuario@exemplo.com',
-                            controller: _emailController,
-                            keyboardType: TextInputType.emailAddress,
-                            prefixIcon: Icons.mail_outline,
-                            validator: _validateEmail,
-                            maxLength: _emailMaxLength,
-                          ),
+                        controller: _emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        prefixIcon: Icons.mail_outline,
+                        validator: _validateEmail,
+                        maxLength: _emailMaxLength,
+                      ),
                           AppSpacing.gapSmall,
                           AppTextField(
                             label: 'Senha',
@@ -210,6 +369,14 @@ class _LoginScreenState extends State<LoginScreen> {
                             child: OutlinedButton(
                               onPressed: _openRegister,
                               child: const Text('Criar conta'),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Align(
+                            alignment: Alignment.center,
+                            child: TextButton(
+                              onPressed: _openForgotPassword,
+                              child: const Text('Esqueci Minha Senha'),
                             ),
                           ),
                         ],

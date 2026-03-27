@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../config/app_routes.dart';
 import '../../../widgets/module_placeholder_screen.dart';
 
 class VideosScreen extends StatelessWidget {
@@ -10,7 +11,7 @@ class VideosScreen extends StatelessWidget {
     return const ModulePlaceholderScreen(
       title: 'Vídeos',
       description: 'Espaço reservado para upload, recorte e análise de vídeo com suporte futuro a IA.',
+      currentRoute: AppRoutes.videos,
     );
   }
 }
-

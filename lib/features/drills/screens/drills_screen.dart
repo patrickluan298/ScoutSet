@@ -4,6 +4,7 @@ import '../../../config/app_routes.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../utils/app_spacing.dart';
 import '../../../widgets/app_card.dart';
+import '../../../widgets/dashboard_profile_bottom_navigation.dart';
 import '../../../widgets/section_title.dart';
 import '../models/drill.dart';
 import '../services/drills_service.dart';
@@ -45,6 +46,20 @@ class _DrillsScreenState extends State<DrillsScreen> {
     });
   }
 
+  Future<void> _toggleFavorite(String drillId) async {
+    await DrillsService.instance.toggleFavorite(drillId);
+    await _loadDrills();
+  }
+
+  Future<void> _openDetail(String drillId) async {
+    await Navigator.pushNamed(
+      context,
+      AppRoutes.drillDetail,
+      arguments: drillId,
+    );
+    await _loadDrills();
+  }
+
   List<Drill> get _filteredDrills {
     final drills = _drills;
     switch (_activeFilter) {
@@ -66,86 +81,89 @@ class _DrillsScreenState extends State<DrillsScreen> {
     final drills = _filteredDrills;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Drills')),
-      body: ListView(
-        padding: AppSpacing.screen,
-        children: [
-          AppCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SectionTitle(
-                  title: 'Biblioteca de drills',
-                  subtitle: 'Visualize, entenda e execute exercícios com animação 2D, passos guiados e dicas práticas.',
-                ),
-                const SizedBox(height: 16),
-                Wrap(
-                  spacing: 10,
-                  runSpacing: 10,
-                  children: [
-                    _FilterChipLabel(
-                      label: 'Todos',
-                      isSelected: _activeFilter == _DrillFilter.all,
-                      onTap: () => setState(() => _activeFilter = _DrillFilter.all),
-                    ),
-                    _FilterChipLabel(
-                      label: 'Recepção',
-                      isSelected: _activeFilter == _DrillFilter.recepcao,
-                      onTap: () => setState(() => _activeFilter = _DrillFilter.recepcao),
-                    ),
-                    _FilterChipLabel(
-                      label: 'Ataque',
-                      isSelected: _activeFilter == _DrillFilter.ataque,
-                      onTap: () => setState(() => _activeFilter = _DrillFilter.ataque),
-                    ),
-                    _FilterChipLabel(
-                      label: 'Saque',
-                      isSelected: _activeFilter == _DrillFilter.saque,
-                      onTap: () => setState(() => _activeFilter = _DrillFilter.saque),
-                    ),
-                    _FilterChipLabel(
-                      label: 'Favoritos',
-                      isSelected: _activeFilter == _DrillFilter.favoritos,
-                      onTap: () => setState(() => _activeFilter = _DrillFilter.favoritos),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          AppSpacing.gapMedium,
-          if (_isLoading)
-            const Center(
-              child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 32),
-                child: CircularProgressIndicator(),
-              ),
-            )
-          else if (drills.isEmpty)
+      body: SafeArea(
+        child: ListView(
+          padding: AppSpacing.screen,
+          children: [
             AppCard(
-              child: Text(
-                'Nenhum drill encontrado para esse filtro.',
-                style: Theme.of(context).textTheme.bodyLarge,
-              ),
-            ),
-          for (final drill in drills) ...[
-            _DrillLibraryCard(
-              title: drill.name,
-              category: drill.category,
-              objective: drill.objective,
-              difficulty: drill.difficulty,
-              duration: drill.duration,
-              playersCount: drill.playersCount,
-              isFavorite: drill.isFavorite,
-              onTap: () => Navigator.pushNamed(
-                context,
-                AppRoutes.drillDetail,
-                arguments: drill.id,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SectionTitle(
+                    title: 'Biblioteca de Drills',
+                    subtitle: 'Visualize, entenda e execute exercícios com animação 2D, passos guiados e dicas práticas.',
+                    centered: true,
+                  ),
+                  const SizedBox(height: 16),
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    children: [
+                      _FilterChipLabel(
+                        label: 'Todos',
+                        isSelected: _activeFilter == _DrillFilter.all,
+                        onTap: () => setState(() => _activeFilter = _DrillFilter.all),
+                      ),
+                      _FilterChipLabel(
+                        label: 'Recepção',
+                        isSelected: _activeFilter == _DrillFilter.recepcao,
+                        onTap: () => setState(() => _activeFilter = _DrillFilter.recepcao),
+                      ),
+                      _FilterChipLabel(
+                        label: 'Ataque',
+                        isSelected: _activeFilter == _DrillFilter.ataque,
+                        onTap: () => setState(() => _activeFilter = _DrillFilter.ataque),
+                      ),
+                      _FilterChipLabel(
+                        label: 'Saque',
+                        isSelected: _activeFilter == _DrillFilter.saque,
+                        onTap: () => setState(() => _activeFilter = _DrillFilter.saque),
+                      ),
+                      _FilterChipLabel(
+                        label: 'Favoritos',
+                        isSelected: _activeFilter == _DrillFilter.favoritos,
+                        onTap: () => setState(() => _activeFilter = _DrillFilter.favoritos),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
             AppSpacing.gapMedium,
+            if (_isLoading)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 32),
+                  child: CircularProgressIndicator(),
+                ),
+              )
+            else if (drills.isEmpty)
+              AppCard(
+                child: Text(
+                  'Nenhum drill encontrado para esse filtro.',
+                  style: Theme.of(context).textTheme.bodyLarge,
+                ),
+              )
+            else
+              for (final drill in drills) ...[
+                _DrillLibraryCard(
+                  title: drill.name,
+                  category: drill.category,
+                  objective: drill.objective,
+                  difficulty: drill.difficulty,
+                  duration: drill.duration,
+                  playersCount: drill.playersCount,
+                  isFavorite: drill.isFavorite,
+                  onToggleFavorite: () => _toggleFavorite(drill.id),
+                  onTap: () => _openDetail(drill.id),
+                ),
+                AppSpacing.gapMedium,
+              ],
           ],
-        ],
+        ),
+      ),
+      bottomNavigationBar: const DashboardProfileBottomNavigation(
+        currentRoute: AppRoutes.drills,
       ),
     );
   }
@@ -196,6 +214,7 @@ class _DrillLibraryCard extends StatelessWidget {
     required this.duration,
     required this.playersCount,
     required this.isFavorite,
+    required this.onToggleFavorite,
     required this.onTap,
   });
 
@@ -206,6 +225,7 @@ class _DrillLibraryCard extends StatelessWidget {
   final String duration;
   final int playersCount;
   final bool isFavorite;
+  final VoidCallback onToggleFavorite;
   final VoidCallback onTap;
 
   @override
@@ -234,11 +254,17 @@ class _DrillLibraryCard extends StatelessWidget {
                   ),
                 ),
                 const Spacer(),
-                if (isFavorite)
-                  const Padding(
-                    padding: EdgeInsets.only(right: 10),
-                    child: Icon(Icons.star_rounded, color: AppTheme.accentColor),
+                Padding(
+                  padding: const EdgeInsets.only(right: 10),
+                  child: IconButton(
+                    onPressed: onToggleFavorite,
+                    tooltip: isFavorite ? 'Desfavoritar drill' : 'Favoritar drill',
+                    icon: Icon(
+                      isFavorite ? Icons.star_rounded : Icons.star_outline_rounded,
+                      color: AppTheme.accentColor,
+                    ),
                   ),
+                ),
                 const Icon(Icons.play_circle_fill_rounded, color: AppTheme.secondaryBlueColor),
               ],
             ),

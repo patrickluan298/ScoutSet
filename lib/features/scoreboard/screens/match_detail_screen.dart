@@ -4,7 +4,6 @@ import '../../../core/theme/app_theme.dart';
 import '../../../utils/app_spacing.dart';
 import '../../../widgets/app_card.dart';
 import '../models/match_score.dart';
-import '../services/match_pdf_service.dart';
 import '../widgets/match_status_banner.dart';
 import '../widgets/scoreboard_header.dart';
 import '../widgets/set_score_table.dart';
@@ -19,34 +18,17 @@ class MatchDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final winner = match.winnerTeam == TeamSide.teamA.value ? match.teamAName : match.teamBName;
+    final winner = match.winnerTeam == TeamSide.teamA.value
+        ? match.teamAName
+        : match.winnerTeam == TeamSide.teamB.value
+            ? match.teamBName
+            : 'Empate';
     final lastSet = match.sets.isEmpty ? null : match.sets.last;
 
     return Scaffold(
       appBar: AppBar(
+        centerTitle: true,
         title: const Text('Detalhes da Partida'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.download_outlined),
-            tooltip: 'Baixar PDF',
-            onPressed: () async {
-              final file = await MatchPdfService.instance.savePdf(match);
-              if (!context.mounted) {
-                return;
-              }
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('PDF salvo em ${file.path}')),
-              );
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.share_outlined),
-            tooltip: 'Compartilhar PDF',
-            onPressed: () async {
-              await MatchPdfService.instance.sharePdf(match);
-            },
-          ),
-        ],
       ),
       body: ListView(
         padding: AppSpacing.screen,

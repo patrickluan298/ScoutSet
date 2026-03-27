@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
+import '../../../core/theme/app_theme.dart';
 import '../../../utils/app_spacing.dart';
 import '../../../widgets/app_card.dart';
 import '../models/match_score.dart';
@@ -15,7 +18,10 @@ class MatchHistoryScreen extends StatelessWidget {
     final service = ScoreboardService.instance;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Histórico de Partidas')),
+      appBar: AppBar(
+        centerTitle: true,
+        title: const Text('Histórico de Partidas'),
+      ),
       body: ValueListenableBuilder(
         valueListenable: service.stateNotifier,
         builder: (context, state, _) {
@@ -88,21 +94,62 @@ class MatchHistoryScreen extends StatelessWidget {
                         runSpacing: 8,
                         children: [
                           OutlinedButton.icon(
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppTheme.secondaryBlueColor,
+                              side: const BorderSide(color: AppTheme.secondaryBlueColor),
+                            ),
                             onPressed: () async {
-                              final file = await MatchPdfService.instance.savePdf(match);
                               if (!context.mounted) {
                                 return;
                               }
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('PDF salvo em ${file.path}')),
-                              );
+                              try {
+                                final file = await MatchPdfService.instance.savePdf(match);
+                                if (!context.mounted) {
+                                  return;
+                                }
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('PDF salvo em ${file.path}')),
+                                );
+                              } on FileSystemException catch (error) {
+                                if (!context.mounted) {
+                                  return;
+                                }
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      error.message.isEmpty
+                                          ? 'Não foi possível salvar o PDF nos downloads do dispositivo.'
+                                          : error.message,
+                                    ),
+                                  ),
+                                );
+                              }
                             },
                             icon: const Icon(Icons.download_outlined),
                             label: const Text('Baixar PDF'),
                           ),
                           OutlinedButton.icon(
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppTheme.secondaryBlueColor,
+                              side: const BorderSide(color: AppTheme.secondaryBlueColor),
+                            ),
                             onPressed: () async {
-                              await MatchPdfService.instance.sharePdf(match);
+                              try {
+                                await MatchPdfService.instance.sharePdf(match);
+                              } on FileSystemException catch (error) {
+                                if (!context.mounted) {
+                                  return;
+                                }
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      error.message.isEmpty
+                                          ? 'Não foi possível preparar o PDF para compartilhamento.'
+                                          : error.message,
+                                    ),
+                                  ),
+                                );
+                              }
                             },
                             icon: const Icon(Icons.share_outlined),
                             label: const Text('Compartilhar PDF'),
@@ -132,7 +179,10 @@ class MatchHistoryScreen extends StatelessWidget {
     if (match.winnerTeam == TeamSide.teamA.value) {
       return match.teamAName;
     }
-    return match.teamBName;
+    if (match.winnerTeam == TeamSide.teamB.value) {
+      return match.teamBName;
+    }
+    return 'Empate';
   }
 
   String _formatDate(DateTime value) {

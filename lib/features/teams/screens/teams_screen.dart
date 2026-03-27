@@ -5,6 +5,7 @@ import '../../../../config/app_routes.dart';
 import '../../../../utils/app_spacing.dart';
 import '../../../../widgets/app_button.dart';
 import '../../../../widgets/app_card.dart';
+import '../../../../widgets/dashboard_profile_bottom_navigation.dart';
 import '../models/team_draw_player.dart';
 import '../services/saved_team_service.dart';
 import '../services/team_draw_service.dart';
@@ -222,16 +223,32 @@ class _TeamsScreenState extends State<TeamsScreen> {
     final shouldRemove = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Remover jogador'),
+        title: const Align(
+          alignment: Alignment.center,
+          child: Text(
+            'Remover Jogador',
+            textAlign: TextAlign.center,
+          ),
+        ),
         content: Text('Deseja remover "${player.name}" da lista de jogadores?'),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Não'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Sim'),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ElevatedButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text('Sim'),
+              ),
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.center,
+                child: TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: const Text('Cancelar'),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -261,15 +278,10 @@ class _TeamsScreenState extends State<TeamsScreen> {
       }
 
       return Scaffold(
-        appBar: AppBar(
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            tooltip: 'Voltar ao dashboard',
-            onPressed: () => Navigator.pushReplacementNamed(context, AppRoutes.dashboard),
-          ),
-          title: const Text('Equipes'),
+        body: SafeArea(child: loading),
+        bottomNavigationBar: const DashboardProfileBottomNavigation(
+          currentRoute: AppRoutes.teams,
         ),
-        body: loading,
       );
     }
 
@@ -278,12 +290,17 @@ class _TeamsScreenState extends State<TeamsScreen> {
       children: [
         AppCard(
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Text('Equipes e Sorteio', style: Theme.of(context).textTheme.headlineSmall),
+              Text(
+                'Formação de Equipes',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
               const SizedBox(height: 8),
               Text(
                 'Organize jogadores, monte times, salve formações e reutilize tudo no placar.',
+                textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyLarge,
               ),
               const SizedBox(height: 16),
@@ -395,7 +412,7 @@ class _TeamsScreenState extends State<TeamsScreen> {
                       subtitle: Text('${player.position} • ${player.level.label}'),
                       trailing: IconButton(
                         icon: const Icon(Icons.delete_outline),
-                        tooltip: 'Remover jogador',
+                        tooltip: 'Remover Jogador',
                         onPressed: () => _removePlayer(player),
                       ),
                     ),
@@ -411,15 +428,10 @@ class _TeamsScreenState extends State<TeamsScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          tooltip: 'Voltar ao dashboard',
-          onPressed: () => Navigator.pushReplacementNamed(context, AppRoutes.dashboard),
-        ),
-        title: const Text('Equipes'),
+      body: SafeArea(child: content),
+      bottomNavigationBar: const DashboardProfileBottomNavigation(
+        currentRoute: AppRoutes.teams,
       ),
-      body: content,
     );
   }
 }

@@ -183,13 +183,13 @@ class ScoreboardService {
 
     final setHasScore = state.currentTeamAScore > 0 || state.currentTeamBScore > 0;
     if (setHasScore) {
-      final winner =
-          state.currentTeamAScore >= state.currentTeamBScore ? TeamSide.teamA : TeamSide.teamB;
       final finalizedSet = SetScore(
         setNumber: match.currentSet,
         teamAScore: state.currentTeamAScore,
         teamBScore: state.currentTeamBScore,
-        winnerTeamId: winner.value,
+        winnerTeamId: state.currentTeamAScore == state.currentTeamBScore
+            ? ''
+            : (state.currentTeamAScore > state.currentTeamBScore ? TeamSide.teamA.value : TeamSide.teamB.value),
         targetPoints: _targetPointsForSet(match.currentSet),
       );
       updatedMatch = _applyFinishedSet(updatedMatch, finalizedSet);
@@ -332,9 +332,8 @@ class ScoreboardService {
   }
 
   MatchScore _applyFinishedSet(MatchScore match, SetScore setScore) {
-    final winner = TeamSide.fromValue(setScore.winnerTeamId);
-    final teamASetsWon = match.teamASetsWon + (winner == TeamSide.teamA ? 1 : 0);
-    final teamBSetsWon = match.teamBSetsWon + (winner == TeamSide.teamB ? 1 : 0);
+    final teamASetsWon = match.teamASetsWon + (setScore.winnerTeamId == TeamSide.teamA.value ? 1 : 0);
+    final teamBSetsWon = match.teamBSetsWon + (setScore.winnerTeamId == TeamSide.teamB.value ? 1 : 0);
     final shouldFinish = teamASetsWon == 2 || teamBSetsWon == 2 || setScore.setNumber == 3;
     final nextSet = shouldFinish ? setScore.setNumber : setScore.setNumber + 1;
 
@@ -347,10 +346,11 @@ class ScoreboardService {
   }
 
   MatchScore _finishMatch(MatchScore match) {
-    final winner = match.teamASetsWon >= match.teamBSetsWon ? TeamSide.teamA : TeamSide.teamB;
     return match.copyWith(
       matchStatus: MatchStatus.finished,
-      winnerTeam: winner.value,
+      winnerTeam: match.teamASetsWon == match.teamBSetsWon
+          ? null
+          : (match.teamASetsWon > match.teamBSetsWon ? TeamSide.teamA.value : TeamSide.teamB.value),
       finishedAt: DateTime.now(),
     );
   }
@@ -388,6 +388,10 @@ class ScoreboardService {
   int _targetPointsForSet(int setNumber) => setNumber == 3 ? 15 : 25;
 
   String _buildMatchFinishedMessage(MatchScore match) {
+    if (match.winnerTeam == null) {
+      return 'Partida encerrada em empate por ${match.teamASetsWon}x${match.teamBSetsWon}.';
+    }
+
     final winner = match.winnerTeam == TeamSide.teamA.value ? match.teamAName : match.teamBName;
     return 'Partida encerrada. $winner venceu por ${match.teamASetsWon}x${match.teamBSetsWon}.';
   }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../config/app_routes.dart';
 import '../../../widgets/module_placeholder_screen.dart';
 
 class ReportsScreen extends StatelessWidget {
@@ -15,6 +16,7 @@ class ReportsScreen extends StatelessWidget {
     return ModulePlaceholderScreen(
       title: 'Relatórios',
       description: 'Espaço reservado para dashboards de desempenho, métricas históricas e análises avançadas.',
+      currentRoute: AppRoutes.reports,
       showScaffold: showScaffold,
     );
   }

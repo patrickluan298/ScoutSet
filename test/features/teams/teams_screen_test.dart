@@ -20,7 +20,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Equipes e Sorteio'), findsOneWidget);
+    expect(find.text('Formação de Equipes'), findsOneWidget);
     expect(find.text('Sortear Times'), findsOneWidget);
     expect(find.text('Montagem Manual'), findsOneWidget);
   });

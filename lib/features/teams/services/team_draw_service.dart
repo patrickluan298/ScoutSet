@@ -15,6 +15,7 @@ class TeamDrawService {
 
   static const int minPlayers = 4;
   static const int maxPlayers = 18;
+  static const int maxPlayersPerTeam = 6;
 
   TeamsRepository get _repository => AppServices.teamsRepository;
 
@@ -57,9 +58,6 @@ class TeamDrawService {
     if (totalPlayers < minPlayers || totalPlayers > maxPlayers) {
       return const [];
     }
-    if (totalPlayers < 12) {
-      return const [2];
-    }
     final counts = <int>[2];
     if (totalPlayers >= 12) {
       counts.add(3);
@@ -99,6 +97,12 @@ class TeamDrawService {
 
     if (waitingCandidates.isNotEmpty && oddPlayerHandling != OddPlayerHandling.waitingQueue) {
       throw ArgumentError('Se houver jogador aguardando, escolha a opção de fila de espera.');
+    }
+
+    for (final team in teams) {
+      if (team.players.length > maxPlayersPerTeam) {
+        throw ArgumentError('Cada equipe pode ter no máximo 6 jogadores.');
+      }
     }
 
     _validateTeamBalance(teams);
@@ -261,12 +265,32 @@ class TeamDrawService {
 
   bool _isValidTeamCount(int totalPlayers, int numberOfTeams) {
     if (numberOfTeams == 2) {
-      return totalPlayers >= 4 && totalPlayers <= 18;
+      if (totalPlayers < 4 || totalPlayers > 18) {
+        return false;
+      }
+      return _canDistribute(totalPlayers, numberOfTeams, OddPlayerHandling.extraPlayerOnTeam) ||
+          (totalPlayers.isOdd && _canDistribute(totalPlayers, numberOfTeams, OddPlayerHandling.waitingQueue));
     }
     if (numberOfTeams == 3) {
-      return totalPlayers >= 12 && totalPlayers <= 18;
+      if (totalPlayers < 12 || totalPlayers > 18) {
+        return false;
+      }
+      return _canDistribute(totalPlayers, numberOfTeams, OddPlayerHandling.extraPlayerOnTeam) ||
+          (totalPlayers.isOdd && _canDistribute(totalPlayers, numberOfTeams, OddPlayerHandling.waitingQueue));
     }
     return false;
+  }
+
+  bool _canDistribute(
+    int totalPlayers,
+    int numberOfTeams,
+    OddPlayerHandling oddPlayerHandling,
+  ) {
+    final playersInTeams = totalPlayers.isOdd && oddPlayerHandling == OddPlayerHandling.waitingQueue
+        ? totalPlayers - 1
+        : totalPlayers;
+    final maxTeamSize = (playersInTeams / numberOfTeams).ceil();
+    return maxTeamSize <= maxPlayersPerTeam;
   }
 
   List<TeamDrawPlayer> _applyWaitingPriority(
@@ -400,6 +424,9 @@ class TeamDrawService {
     final maxCount = counts.reduce((left, right) => left > right ? left : right);
     if (maxCount - minCount > 1) {
       throw ArgumentError('A distribuição entre as equipes precisa ficar equilibrada.');
+    }
+    if (maxCount > maxPlayersPerTeam) {
+      throw ArgumentError('Cada equipe pode ter no máximo 6 jogadores.');
     }
   }
 

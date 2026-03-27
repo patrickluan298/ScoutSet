@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -64,7 +65,11 @@ class MatchPdfService {
           _detailRow('Placar final', '${match.teamASetsWon} x ${match.teamBSetsWon}'),
           _detailRow(
             'Vencedor',
-            match.winnerTeam == TeamSide.teamA.value ? match.teamAName : match.teamBName,
+            match.winnerTeam == TeamSide.teamA.value
+                ? match.teamAName
+                : match.winnerTeam == TeamSide.teamB.value
+                    ? match.teamBName
+                    : 'Empate',
           ),
           pw.SizedBox(height: 20),
           _sectionTitle('Sets'),
@@ -116,15 +121,24 @@ class MatchPdfService {
 
   Future<File> savePdf(MatchScore match) async {
     final bytes = await buildMatchPdf(match);
-    final directory = await getApplicationDocumentsDirectory();
+    final directory = await _resolveSaveDirectory();
     final sanitizedName = '${match.teamAName}_${match.teamBName}'.replaceAll(' ', '_');
-    final file = File('${directory.path}/partida_$sanitizedName.pdf');
-    await file.writeAsBytes(bytes, flush: true);
-    return file;
+    return _writePdfFile(
+      directory: directory,
+      fileName: 'partida_$sanitizedName.pdf',
+      bytes: bytes,
+    );
   }
 
   Future<void> sharePdf(MatchScore match) async {
-    final file = await savePdf(match);
+    final bytes = await buildMatchPdf(match);
+    final temporaryDirectory = await getTemporaryDirectory();
+    final sanitizedName = '${match.teamAName}_${match.teamBName}'.replaceAll(' ', '_');
+    final file = await _writePdfFile(
+      directory: temporaryDirectory,
+      fileName: 'partida_$sanitizedName.pdf',
+      bytes: bytes,
+    );
     await SharePlus.instance.share(
       ShareParams(
         files: [XFile(file.path)],
@@ -201,5 +215,64 @@ class MatchPdfService {
     final hour = value.hour.toString().padLeft(2, '0');
     final minute = value.minute.toString().padLeft(2, '0');
     return '$day/$month/${value.year} $hour:$minute';
+  }
+
+  Future<Directory> _resolveSaveDirectory() async {
+    if (Platform.isAndroid) {
+      final publicDownloads = await _tryAndroidPublicDownloadsDirectory();
+      if (publicDownloads != null) {
+        return publicDownloads;
+      }
+      throw const FileSystemException(
+        'Não foi possível acessar a pasta pública de Downloads do dispositivo.',
+      );
+    }
+
+    final downloadsDirectory = await getDownloadsDirectory();
+    if (downloadsDirectory != null) {
+      final scoutSetDownloads = Directory(path.join(downloadsDirectory.path, 'ScoutSet'));
+      await scoutSetDownloads.create(recursive: true);
+      return scoutSetDownloads;
+    }
+
+    final documentsDirectory = await getApplicationDocumentsDirectory();
+    final scoutSetDocuments = Directory(path.join(documentsDirectory.path, 'ScoutSet'));
+    await scoutSetDocuments.create(recursive: true);
+    return scoutSetDocuments;
+  }
+
+  Future<Directory?> _tryAndroidPublicDownloadsDirectory() async {
+    const candidates = [
+      '/storage/emulated/0/Download/ScoutSet',
+      '/sdcard/Download/ScoutSet',
+    ];
+
+    for (final candidate in candidates) {
+      try {
+        final directory = Directory(candidate);
+        await directory.create(recursive: true);
+        final probe = File(path.join(directory.path, '.probe'));
+        await probe.writeAsString('ok', flush: true);
+        if (await probe.exists()) {
+          await probe.delete();
+          return directory;
+        }
+      } catch (_) {
+        continue;
+      }
+    }
+
+    return null;
+  }
+
+  Future<File> _writePdfFile({
+    required Directory directory,
+    required String fileName,
+    required Uint8List bytes,
+  }) async {
+    await directory.create(recursive: true);
+    final file = File(path.join(directory.path, fileName));
+    await file.writeAsBytes(bytes, flush: true);
+    return file;
   }
 }

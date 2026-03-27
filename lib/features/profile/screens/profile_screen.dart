@@ -66,8 +66,9 @@ class ProfileScreen extends StatelessWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Perfil')),
-      body: SingleChildScrollView(child: content),
+      body: SafeArea(
+        child: SingleChildScrollView(child: content),
+      ),
     );
   }
 }
