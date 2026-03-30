@@ -4043,6 +4043,20 @@ class $MatchSetsTable extends MatchSets
   late final GeneratedColumn<int> targetPoints = GeneratedColumn<int>(
       'target_points', aliasedName, false,
       type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _durationSecondsMeta =
+      const VerificationMeta('durationSeconds');
+  @override
+  late final GeneratedColumn<int> durationSeconds = GeneratedColumn<int>(
+      'duration_seconds', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _pointEventsJsonMeta =
+      const VerificationMeta('pointEventsJson');
+  @override
+  late final GeneratedColumn<String> pointEventsJson = GeneratedColumn<String>(
+      'point_events_json', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   @override
   List<GeneratedColumn> get $columns => [
         id,
@@ -4051,7 +4065,9 @@ class $MatchSetsTable extends MatchSets
         teamAScore,
         teamBScore,
         winnerTeamId,
-        targetPoints
+        targetPoints,
+        durationSeconds,
+        pointEventsJson
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -4112,6 +4128,18 @@ class $MatchSetsTable extends MatchSets
     } else if (isInserting) {
       context.missing(_targetPointsMeta);
     }
+    if (data.containsKey('duration_seconds')) {
+      context.handle(
+          _durationSecondsMeta,
+          durationSeconds.isAcceptableOrUnknown(
+              data['duration_seconds']!, _durationSecondsMeta));
+    }
+    if (data.containsKey('point_events_json')) {
+      context.handle(
+          _pointEventsJsonMeta,
+          pointEventsJson.isAcceptableOrUnknown(
+              data['point_events_json']!, _pointEventsJsonMeta));
+    }
     return context;
   }
 
@@ -4135,6 +4163,10 @@ class $MatchSetsTable extends MatchSets
           .read(DriftSqlType.string, data['${effectivePrefix}winner_team_id'])!,
       targetPoints: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}target_points'])!,
+      durationSeconds: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}duration_seconds'])!,
+      pointEventsJson: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}point_events_json']),
     );
   }
 
@@ -4152,6 +4184,8 @@ class MatchSet extends DataClass implements Insertable<MatchSet> {
   final int teamBScore;
   final String winnerTeamId;
   final int targetPoints;
+  final int durationSeconds;
+  final String? pointEventsJson;
   const MatchSet(
       {required this.id,
       required this.matchId,
@@ -4159,7 +4193,9 @@ class MatchSet extends DataClass implements Insertable<MatchSet> {
       required this.teamAScore,
       required this.teamBScore,
       required this.winnerTeamId,
-      required this.targetPoints});
+      required this.targetPoints,
+      required this.durationSeconds,
+      this.pointEventsJson});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -4170,6 +4206,10 @@ class MatchSet extends DataClass implements Insertable<MatchSet> {
     map['team_b_score'] = Variable<int>(teamBScore);
     map['winner_team_id'] = Variable<String>(winnerTeamId);
     map['target_points'] = Variable<int>(targetPoints);
+    map['duration_seconds'] = Variable<int>(durationSeconds);
+    if (!nullToAbsent || pointEventsJson != null) {
+      map['point_events_json'] = Variable<String>(pointEventsJson);
+    }
     return map;
   }
 
@@ -4182,6 +4222,10 @@ class MatchSet extends DataClass implements Insertable<MatchSet> {
       teamBScore: Value(teamBScore),
       winnerTeamId: Value(winnerTeamId),
       targetPoints: Value(targetPoints),
+      durationSeconds: Value(durationSeconds),
+      pointEventsJson: pointEventsJson == null && nullToAbsent
+          ? const Value.absent()
+          : Value(pointEventsJson),
     );
   }
 
@@ -4196,6 +4240,8 @@ class MatchSet extends DataClass implements Insertable<MatchSet> {
       teamBScore: serializer.fromJson<int>(json['teamBScore']),
       winnerTeamId: serializer.fromJson<String>(json['winnerTeamId']),
       targetPoints: serializer.fromJson<int>(json['targetPoints']),
+      durationSeconds: serializer.fromJson<int>(json['durationSeconds']),
+      pointEventsJson: serializer.fromJson<String?>(json['pointEventsJson']),
     );
   }
   @override
@@ -4209,6 +4255,8 @@ class MatchSet extends DataClass implements Insertable<MatchSet> {
       'teamBScore': serializer.toJson<int>(teamBScore),
       'winnerTeamId': serializer.toJson<String>(winnerTeamId),
       'targetPoints': serializer.toJson<int>(targetPoints),
+      'durationSeconds': serializer.toJson<int>(durationSeconds),
+      'pointEventsJson': serializer.toJson<String?>(pointEventsJson),
     };
   }
 
@@ -4219,7 +4267,9 @@ class MatchSet extends DataClass implements Insertable<MatchSet> {
           int? teamAScore,
           int? teamBScore,
           String? winnerTeamId,
-          int? targetPoints}) =>
+          int? targetPoints,
+          int? durationSeconds,
+          Value<String?> pointEventsJson = const Value.absent()}) =>
       MatchSet(
         id: id ?? this.id,
         matchId: matchId ?? this.matchId,
@@ -4228,6 +4278,10 @@ class MatchSet extends DataClass implements Insertable<MatchSet> {
         teamBScore: teamBScore ?? this.teamBScore,
         winnerTeamId: winnerTeamId ?? this.winnerTeamId,
         targetPoints: targetPoints ?? this.targetPoints,
+        durationSeconds: durationSeconds ?? this.durationSeconds,
+        pointEventsJson: pointEventsJson.present
+            ? pointEventsJson.value
+            : this.pointEventsJson,
       );
   MatchSet copyWithCompanion(MatchSetsCompanion data) {
     return MatchSet(
@@ -4244,6 +4298,12 @@ class MatchSet extends DataClass implements Insertable<MatchSet> {
       targetPoints: data.targetPoints.present
           ? data.targetPoints.value
           : this.targetPoints,
+      durationSeconds: data.durationSeconds.present
+          ? data.durationSeconds.value
+          : this.durationSeconds,
+      pointEventsJson: data.pointEventsJson.present
+          ? data.pointEventsJson.value
+          : this.pointEventsJson,
     );
   }
 
@@ -4256,14 +4316,16 @@ class MatchSet extends DataClass implements Insertable<MatchSet> {
           ..write('teamAScore: $teamAScore, ')
           ..write('teamBScore: $teamBScore, ')
           ..write('winnerTeamId: $winnerTeamId, ')
-          ..write('targetPoints: $targetPoints')
+          ..write('targetPoints: $targetPoints, ')
+          ..write('durationSeconds: $durationSeconds, ')
+          ..write('pointEventsJson: $pointEventsJson')
           ..write(')'))
         .toString();
   }
 
   @override
   int get hashCode => Object.hash(id, matchId, setNumber, teamAScore,
-      teamBScore, winnerTeamId, targetPoints);
+      teamBScore, winnerTeamId, targetPoints, durationSeconds, pointEventsJson);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -4274,7 +4336,9 @@ class MatchSet extends DataClass implements Insertable<MatchSet> {
           other.teamAScore == this.teamAScore &&
           other.teamBScore == this.teamBScore &&
           other.winnerTeamId == this.winnerTeamId &&
-          other.targetPoints == this.targetPoints);
+          other.targetPoints == this.targetPoints &&
+          other.durationSeconds == this.durationSeconds &&
+          other.pointEventsJson == this.pointEventsJson);
 }
 
 class MatchSetsCompanion extends UpdateCompanion<MatchSet> {
@@ -4285,6 +4349,8 @@ class MatchSetsCompanion extends UpdateCompanion<MatchSet> {
   final Value<int> teamBScore;
   final Value<String> winnerTeamId;
   final Value<int> targetPoints;
+  final Value<int> durationSeconds;
+  final Value<String?> pointEventsJson;
   final Value<int> rowid;
   const MatchSetsCompanion({
     this.id = const Value.absent(),
@@ -4294,6 +4360,8 @@ class MatchSetsCompanion extends UpdateCompanion<MatchSet> {
     this.teamBScore = const Value.absent(),
     this.winnerTeamId = const Value.absent(),
     this.targetPoints = const Value.absent(),
+    this.durationSeconds = const Value.absent(),
+    this.pointEventsJson = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   MatchSetsCompanion.insert({
@@ -4304,6 +4372,8 @@ class MatchSetsCompanion extends UpdateCompanion<MatchSet> {
     required int teamBScore,
     required String winnerTeamId,
     required int targetPoints,
+    this.durationSeconds = const Value.absent(),
+    this.pointEventsJson = const Value.absent(),
     this.rowid = const Value.absent(),
   })  : id = Value(id),
         matchId = Value(matchId),
@@ -4320,6 +4390,8 @@ class MatchSetsCompanion extends UpdateCompanion<MatchSet> {
     Expression<int>? teamBScore,
     Expression<String>? winnerTeamId,
     Expression<int>? targetPoints,
+    Expression<int>? durationSeconds,
+    Expression<String>? pointEventsJson,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -4330,6 +4402,8 @@ class MatchSetsCompanion extends UpdateCompanion<MatchSet> {
       if (teamBScore != null) 'team_b_score': teamBScore,
       if (winnerTeamId != null) 'winner_team_id': winnerTeamId,
       if (targetPoints != null) 'target_points': targetPoints,
+      if (durationSeconds != null) 'duration_seconds': durationSeconds,
+      if (pointEventsJson != null) 'point_events_json': pointEventsJson,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -4342,6 +4416,8 @@ class MatchSetsCompanion extends UpdateCompanion<MatchSet> {
       Value<int>? teamBScore,
       Value<String>? winnerTeamId,
       Value<int>? targetPoints,
+      Value<int>? durationSeconds,
+      Value<String?>? pointEventsJson,
       Value<int>? rowid}) {
     return MatchSetsCompanion(
       id: id ?? this.id,
@@ -4351,6 +4427,8 @@ class MatchSetsCompanion extends UpdateCompanion<MatchSet> {
       teamBScore: teamBScore ?? this.teamBScore,
       winnerTeamId: winnerTeamId ?? this.winnerTeamId,
       targetPoints: targetPoints ?? this.targetPoints,
+      durationSeconds: durationSeconds ?? this.durationSeconds,
+      pointEventsJson: pointEventsJson ?? this.pointEventsJson,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -4379,6 +4457,12 @@ class MatchSetsCompanion extends UpdateCompanion<MatchSet> {
     if (targetPoints.present) {
       map['target_points'] = Variable<int>(targetPoints.value);
     }
+    if (durationSeconds.present) {
+      map['duration_seconds'] = Variable<int>(durationSeconds.value);
+    }
+    if (pointEventsJson.present) {
+      map['point_events_json'] = Variable<String>(pointEventsJson.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -4395,6 +4479,8 @@ class MatchSetsCompanion extends UpdateCompanion<MatchSet> {
           ..write('teamBScore: $teamBScore, ')
           ..write('winnerTeamId: $winnerTeamId, ')
           ..write('targetPoints: $targetPoints, ')
+          ..write('durationSeconds: $durationSeconds, ')
+          ..write('pointEventsJson: $pointEventsJson, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -13912,6 +13998,8 @@ typedef $$MatchSetsTableCreateCompanionBuilder = MatchSetsCompanion Function({
   required int teamBScore,
   required String winnerTeamId,
   required int targetPoints,
+  Value<int> durationSeconds,
+  Value<String?> pointEventsJson,
   Value<int> rowid,
 });
 typedef $$MatchSetsTableUpdateCompanionBuilder = MatchSetsCompanion Function({
@@ -13922,6 +14010,8 @@ typedef $$MatchSetsTableUpdateCompanionBuilder = MatchSetsCompanion Function({
   Value<int> teamBScore,
   Value<String> winnerTeamId,
   Value<int> targetPoints,
+  Value<int> durationSeconds,
+  Value<String?> pointEventsJson,
   Value<int> rowid,
 });
 
@@ -13970,6 +14060,14 @@ class $$MatchSetsTableFilterComposer
 
   ColumnFilters<int> get targetPoints => $composableBuilder(
       column: $table.targetPoints, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get durationSeconds => $composableBuilder(
+      column: $table.durationSeconds,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get pointEventsJson => $composableBuilder(
+      column: $table.pointEventsJson,
+      builder: (column) => ColumnFilters(column));
 
   $$MatchesTableFilterComposer get matchId {
     final $$MatchesTableFilterComposer composer = $composerBuilder(
@@ -14021,6 +14119,14 @@ class $$MatchSetsTableOrderingComposer
       column: $table.targetPoints,
       builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<int> get durationSeconds => $composableBuilder(
+      column: $table.durationSeconds,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get pointEventsJson => $composableBuilder(
+      column: $table.pointEventsJson,
+      builder: (column) => ColumnOrderings(column));
+
   $$MatchesTableOrderingComposer get matchId {
     final $$MatchesTableOrderingComposer composer = $composerBuilder(
         composer: this,
@@ -14068,6 +14174,12 @@ class $$MatchSetsTableAnnotationComposer
 
   GeneratedColumn<int> get targetPoints => $composableBuilder(
       column: $table.targetPoints, builder: (column) => column);
+
+  GeneratedColumn<int> get durationSeconds => $composableBuilder(
+      column: $table.durationSeconds, builder: (column) => column);
+
+  GeneratedColumn<String> get pointEventsJson => $composableBuilder(
+      column: $table.pointEventsJson, builder: (column) => column);
 
   $$MatchesTableAnnotationComposer get matchId {
     final $$MatchesTableAnnotationComposer composer = $composerBuilder(
@@ -14120,6 +14232,8 @@ class $$MatchSetsTableTableManager extends RootTableManager<
             Value<int> teamBScore = const Value.absent(),
             Value<String> winnerTeamId = const Value.absent(),
             Value<int> targetPoints = const Value.absent(),
+            Value<int> durationSeconds = const Value.absent(),
+            Value<String?> pointEventsJson = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               MatchSetsCompanion(
@@ -14130,6 +14244,8 @@ class $$MatchSetsTableTableManager extends RootTableManager<
             teamBScore: teamBScore,
             winnerTeamId: winnerTeamId,
             targetPoints: targetPoints,
+            durationSeconds: durationSeconds,
+            pointEventsJson: pointEventsJson,
             rowid: rowid,
           ),
           createCompanionCallback: ({
@@ -14140,6 +14256,8 @@ class $$MatchSetsTableTableManager extends RootTableManager<
             required int teamBScore,
             required String winnerTeamId,
             required int targetPoints,
+            Value<int> durationSeconds = const Value.absent(),
+            Value<String?> pointEventsJson = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               MatchSetsCompanion.insert(
@@ -14150,6 +14268,8 @@ class $$MatchSetsTableTableManager extends RootTableManager<
             teamBScore: teamBScore,
             winnerTeamId: winnerTeamId,
             targetPoints: targetPoints,
+            durationSeconds: durationSeconds,
+            pointEventsJson: pointEventsJson,
             rowid: rowid,
           ),
           withReferenceMapper: (p0) => p0

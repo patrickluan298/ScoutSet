@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:drift/drift.dart';
 
 import '../../../features/scoreboard/models/match_score.dart' as scoreboard_model;
+import '../../../features/scoreboard/models/set_point_event.dart';
 import '../../../features/scoreboard/models/set_score.dart';
 import '../../../features/teams/models/team_draw_player.dart' as team_models;
 import '../../../features/teams/models/waiting_player.dart' as team_models;
@@ -87,6 +88,8 @@ class MatchesRepository {
               teamBScore: set.teamBScore,
               winnerTeamId: set.winnerTeamId,
               targetPoints: set.targetPoints,
+              durationSeconds: Value(set.durationSeconds),
+              pointEventsJson: Value(_encodePointEvents(set.pointEvents)),
             ),
           );
         }
@@ -138,6 +141,8 @@ class MatchesRepository {
       teamBScore: row.teamBScore,
       winnerTeamId: row.winnerTeamId,
       targetPoints: row.targetPoints,
+      durationSeconds: row.durationSeconds,
+      pointEvents: _decodePointEvents(row.pointEventsJson),
     );
   }
 
@@ -172,6 +177,23 @@ class MatchesRepository {
     final decoded = jsonDecode(source) as List<dynamic>;
     return decoded
         .map((item) => team_models.WaitingPlayer.fromJson(Map<String, dynamic>.from(item as Map)))
+        .toList();
+  }
+
+  String? _encodePointEvents(List<SetPointEvent> pointEvents) {
+    if (pointEvents.isEmpty) {
+      return null;
+    }
+    return jsonEncode(pointEvents.map((event) => event.toJson()).toList());
+  }
+
+  List<SetPointEvent> _decodePointEvents(String? source) {
+    if (source == null || source.isEmpty) {
+      return const [];
+    }
+    final decoded = jsonDecode(source) as List<dynamic>;
+    return decoded
+        .map((item) => SetPointEvent.fromJson(Map<String, dynamic>.from(item as Map)))
         .toList();
   }
 }

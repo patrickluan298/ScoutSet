@@ -139,7 +139,7 @@ class _LoginScreenState extends State<LoginScreen> {
               title: const Align(
                 alignment: Alignment.center,
                 child: Text(
-                  'Esqueci Minha Senha',
+                  'Esqueci minha senha',
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -305,7 +305,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 4),
                       child: Text(
-                        'Entre para acessar os recursos do ScoutSet.',
+                        'Acesse sua conta para gerenciar seu desempenho.',
                         style: theme.textTheme.bodyLarge?.copyWith(
                           color: const Color(0xFFD9E2EC),
                         ),
@@ -376,7 +376,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             alignment: Alignment.center,
                             child: TextButton(
                               onPressed: _openForgotPassword,
-                              child: const Text('Esqueci Minha Senha'),
+                              child: const Text('Esqueci minha senha'),
                             ),
                           ),
                         ],

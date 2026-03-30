@@ -5,6 +5,7 @@ import '../../../utils/app_spacing.dart';
 import '../../../widgets/app_button.dart';
 import '../../../widgets/app_card.dart';
 import '../../../widgets/app_text_field.dart';
+import '../../../widgets/scoutset_logo.dart';
 import '../../../widgets/section_title.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -169,96 +170,108 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final strengthColor = _passwordColor(score);
 
     return Scaffold(
+      backgroundColor: const Color(0xFF081426),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: AppSpacing.screen,
-          child: Center(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: AppSpacing.screen,
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 440),
               child: Form(
                 key: _formKey,
-                child: AppCard(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SectionTitle(
-                        title: 'Cadastro de Usuário',
-                        subtitle: 'Crie sua conta. Depois do cadastro, você retorna ao login para entrar no app.',
-                        centered: true,
-                      ),
-                      AppSpacing.gapLarge,
-                      AppTextField(
-                        label: 'Nome',
-                        hintText: 'Como deseja ser identificado',
-                        controller: _nameController,
-                        prefixIcon: Icons.person_outline,
-                        validator: _validateName,
-                        maxLength: _nameMaxLength,
-                      ),
-                      AppSpacing.gapSmall,
-                      AppTextField(
-                        label: 'E-mail',
-                        hintText: 'usuario@exemplo.com',
-                        controller: _emailController,
-                        keyboardType: TextInputType.emailAddress,
-                        prefixIcon: Icons.mail_outline,
-                        validator: _validateEmail,
-                        maxLength: _emailMaxLength,
-                      ),
-                      AppSpacing.gapSmall,
-                      AppTextField(
-                        label: 'Senha',
-                        hintText: 'Crie uma senha segura',
-                        controller: _passwordController,
-                        obscureText: _obscurePassword,
-                        prefixIcon: Icons.lock_outline,
-                        validator: _validatePassword,
-                        maxLength: _passwordMaxLength,
-                        suffixIcon: IconButton(
-                          onPressed: () {
-                            setState(() {
-                              _obscurePassword = !_obscurePassword;
-                            });
-                          },
-                          icon: Icon(
-                            _obscurePassword
-                                ? Icons.visibility_outlined
-                                : Icons.visibility_off_outlined,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const Center(
+                      child: ScoutSetLogo(showTagline: true, center: true),
+                    ),
+                    AppSpacing.gapLarge,
+                    AppCard(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Align(
+                            alignment: Alignment.center,
+                            child: SectionTitle(
+                              title: 'Cadastro de Usuário',
+                              centered: true,
+                            ),
                           ),
-                        ),
+                          AppSpacing.gapLarge,
+                          AppTextField(
+                            label: 'Nome',
+                            hintText: 'Como deseja ser identificado',
+                            controller: _nameController,
+                            prefixIcon: Icons.person_outline,
+                            validator: _validateName,
+                            maxLength: _nameMaxLength,
+                          ),
+                          AppSpacing.gapSmall,
+                          AppTextField(
+                            label: 'E-mail',
+                            hintText: 'usuario@exemplo.com',
+                            controller: _emailController,
+                            keyboardType: TextInputType.emailAddress,
+                            prefixIcon: Icons.mail_outline,
+                            validator: _validateEmail,
+                            maxLength: _emailMaxLength,
+                          ),
+                          AppSpacing.gapSmall,
+                          AppTextField(
+                            label: 'Senha',
+                            hintText: 'Crie uma senha segura',
+                            controller: _passwordController,
+                            obscureText: _obscurePassword,
+                            prefixIcon: Icons.lock_outline,
+                            validator: _validatePassword,
+                            maxLength: _passwordMaxLength,
+                            suffixIcon: IconButton(
+                              onPressed: () {
+                                setState(() {
+                                  _obscurePassword = !_obscurePassword;
+                                });
+                              },
+                              icon: Icon(
+                                _obscurePassword
+                                    ? Icons.visibility_outlined
+                                    : Icons.visibility_off_outlined,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Use 8+ caracteres, pelo menos 1 número, 1 maiúscula e 1 caractere especial.',
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                          const SizedBox(height: 10),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(999),
+                            child: LinearProgressIndicator(
+                              minHeight: 8,
+                              value: score / 4,
+                              color: strengthColor,
+                              backgroundColor: const Color(0xFFE5E7EB),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            _passwordLabel(score),
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                  color: strengthColor,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                          ),
+                          AppSpacing.gapMedium,
+                          AppButton(
+                            label: 'Cadastrar',
+                            icon: Icons.person_add_alt_1,
+                            isLoading: _isLoading,
+                            onPressed: _handleRegister,
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Use 8+ caracteres, 1 numero, 1 maiuscula e 1 caractere especial.',
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                      const SizedBox(height: 10),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(999),
-                        child: LinearProgressIndicator(
-                          minHeight: 8,
-                          value: score / 4,
-                          color: strengthColor,
-                          backgroundColor: const Color(0xFFE5E7EB),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        _passwordLabel(score),
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: strengthColor,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      AppSpacing.gapMedium,
-                      AppButton(
-                        label: 'Cadastrar',
-                        icon: Icons.person_add_alt_1,
-                        isLoading: _isLoading,
-                        onPressed: _handleRegister,
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),

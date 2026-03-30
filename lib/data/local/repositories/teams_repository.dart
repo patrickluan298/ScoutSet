@@ -324,7 +324,24 @@ class TeamsRepository {
   }
 
   Future<void> deleteSavedTeamGroup(String groupId) async {
-    await (_database.delete(_database.savedTeamGroups)..where((tbl) => tbl.id.equals(groupId))).go();
+    await _database.transaction(() async {
+      final teamRows = await (_database.select(_database.savedTeams)
+            ..where((tbl) => tbl.groupId.equals(groupId)))
+          .get();
+      final teamIds = teamRows.map((team) => team.id).toList();
+
+      if (teamIds.isNotEmpty) {
+        await (_database.delete(_database.savedTeamPlayers)
+              ..where((tbl) => tbl.teamId.isIn(teamIds)))
+            .go();
+      }
+
+      await (_database.delete(_database.savedGroupWaitingPlayers)
+            ..where((tbl) => tbl.groupId.equals(groupId)))
+          .go();
+      await (_database.delete(_database.savedTeams)..where((tbl) => tbl.groupId.equals(groupId))).go();
+      await (_database.delete(_database.savedTeamGroups)..where((tbl) => tbl.id.equals(groupId))).go();
+    });
   }
 
   Future<team_models.SavedTeamGroup> duplicateSavedTeamGroup(String groupId) async {

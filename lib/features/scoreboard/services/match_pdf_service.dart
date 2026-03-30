@@ -8,6 +8,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:share_plus/share_plus.dart';
 
 import '../models/match_score.dart';
+import '../models/set_point_event.dart';
 
 class MatchPdfService {
   MatchPdfService._();
@@ -82,6 +83,7 @@ class MatchPdfService {
                   _tableCell('Set', isHeader: true),
                   _tableCell(match.teamAName, isHeader: true),
                   _tableCell(match.teamBName, isHeader: true),
+                  _tableCell('Duração', isHeader: true),
                 ],
               ),
               for (final set in match.sets)
@@ -90,10 +92,39 @@ class MatchPdfService {
                     _tableCell(set.setNumber.toString()),
                     _tableCell(set.teamAScore.toString()),
                     _tableCell(set.teamBScore.toString()),
+                    _tableCell(_formatDuration(set.durationSeconds)),
                   ],
                 ),
             ],
           ),
+          if (match.sets.isNotEmpty) ...[
+            pw.SizedBox(height: 20),
+            _sectionTitle('Detalhamento dos sets'),
+            for (final set in match.sets) ...[
+              pw.Text(
+                'Set ${set.setNumber} • ${set.teamAScore} x ${set.teamBScore} • ${_formatDuration(set.durationSeconds)}',
+                style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+              ),
+              pw.SizedBox(height: 6),
+              pw.Text(
+                set.pointsByOrigin.isEmpty
+                    ? 'Sem eventos detalhados registrados.'
+                    : PointOrigin.values
+                        .where((origin) => set.pointsByOrigin.containsKey(origin))
+                        .map((origin) => '${origin.label}: ${set.pointsByOrigin[origin]}')
+                        .join(' • '),
+              ),
+              pw.SizedBox(height: 4),
+              pw.Text(
+                set.playerPointStats.isEmpty
+                    ? 'Sem pontuação individual registrada.'
+                    : set.playerPointStats
+                        .map((stat) => '${stat.playerName}: ${stat.points}')
+                        .join(' • '),
+              ),
+              pw.SizedBox(height: 12),
+            ],
+          ],
           if (match.teamAPlayers.isNotEmpty || match.teamBPlayers.isNotEmpty) ...[
             pw.SizedBox(height: 20),
             _sectionTitle('Jogadores'),
@@ -215,6 +246,20 @@ class MatchPdfService {
     final hour = value.hour.toString().padLeft(2, '0');
     final minute = value.minute.toString().padLeft(2, '0');
     return '$day/$month/${value.year} $hour:$minute';
+  }
+
+  String _formatDuration(int durationSeconds) {
+    if (durationSeconds <= 0) {
+      return '-';
+    }
+    final duration = Duration(seconds: durationSeconds);
+    final hours = duration.inHours;
+    final minutes = duration.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final seconds = duration.inSeconds.remainder(60).toString().padLeft(2, '0');
+    if (hours > 0) {
+      return '${hours.toString().padLeft(2, '0')}:$minutes:$seconds';
+    }
+    return '${duration.inMinutes.toString().padLeft(2, '0')}:$seconds';
   }
 
   Future<Directory> _resolveSaveDirectory() async {

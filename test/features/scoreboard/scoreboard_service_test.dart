@@ -1,7 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:scoutset/data/local/database/app_services.dart';
 import 'package:scoutset/features/scoreboard/models/match_score.dart';
+import 'package:scoutset/features/scoreboard/models/set_point_event.dart';
 import 'package:scoutset/features/scoreboard/services/scoreboard_service.dart';
+import 'package:scoutset/features/teams/models/team_draw_player.dart';
 
 void main() {
   late ScoreboardService service;
@@ -192,5 +194,94 @@ void main() {
     expect(match?.sets.single.teamBScore, 12);
     expect(match?.sets.single.winnerTeamId, isEmpty);
     expect(service.getState().statusMessage, 'Partida encerrada em empate por 0x0.');
+  });
+
+  test('registers player point event for attack', () async {
+    const player = TeamDrawPlayer(
+      id: 'p1',
+      name: 'Joao',
+      position: 'Ponteiro',
+      level: PlayerLevel.avancado,
+    );
+    service.startMatch(
+      teamAName: 'A',
+      teamBName: 'B',
+      teamAPlayers: const [player],
+    );
+
+    await service.addPoint(
+      team: TeamSide.teamA,
+      pointOrigin: PointOrigin.attack,
+      player: player,
+    );
+    await service.finishCurrentMatch();
+
+    final set = service.getState().activeMatch?.sets.single;
+    expect(set?.pointEvents, hasLength(1));
+    expect(set?.pointEvents.single.playerName, 'Joao');
+    expect(set?.playerPointStats.single.points, 1);
+    expect(set?.pointsByOrigin[PointOrigin.attack], 1);
+  });
+
+  test('registers opponent error without linking a player', () async {
+    service.startMatch(teamAName: 'A', teamBName: 'B');
+
+    await service.addPoint(
+      team: TeamSide.teamA,
+      pointOrigin: PointOrigin.opponentError,
+    );
+    await service.finishCurrentMatch();
+
+    final set = service.getState().activeMatch?.sets.single;
+    expect(set?.pointEvents.single.pointOrigin, PointOrigin.opponentError);
+    expect(set?.pointEvents.single.playerId, isNull);
+    expect(set?.pointsByOrigin[PointOrigin.opponentError], 1);
+  });
+
+  test('requires player when origin is attributable and roster exists', () async {
+    const player = TeamDrawPlayer(
+      id: 'p1',
+      name: 'Joao',
+      position: 'Ponteiro',
+      level: PlayerLevel.avancado,
+    );
+    service.startMatch(
+      teamAName: 'A',
+      teamBName: 'B',
+      teamAPlayers: const [player],
+    );
+
+    await expectLater(
+      service.addPoint(
+        team: TeamSide.teamA,
+        pointOrigin: PointOrigin.attack,
+      ),
+      throwsA(isA<ArgumentError>()),
+    );
+  });
+
+  test('undo removes the last point event from the current set', () async {
+    const player = TeamDrawPlayer(
+      id: 'p1',
+      name: 'Joao',
+      position: 'Ponteiro',
+      level: PlayerLevel.avancado,
+    );
+    service.startMatch(
+      teamAName: 'A',
+      teamBName: 'B',
+      teamAPlayers: const [player],
+    );
+
+    await service.addPoint(
+      team: TeamSide.teamA,
+      pointOrigin: PointOrigin.attack,
+      player: player,
+    );
+    service.undoLastPoint();
+
+    final state = service.getState();
+    expect(state.currentTeamAScore, 0);
+    expect(state.currentSetPointEvents, isEmpty);
   });
 }
