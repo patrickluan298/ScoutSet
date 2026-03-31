@@ -623,12 +623,15 @@ class _RulesScreenState extends State<RulesScreen> {
   Future<void> _jumpToSection(String id) async {
     setState(() => _expandedIds.add(id));
     await Future<void>.delayed(const Duration(milliseconds: 16));
-    final context = _sectionKeys[id]?.currentContext;
-    if (context == null) {
+    if (!mounted) {
+      return;
+    }
+    final targetContext = _sectionKeys[id]?.currentContext;
+    if (targetContext == null || !targetContext.mounted) {
       return;
     }
     await Scrollable.ensureVisible(
-      context,
+      targetContext,
       duration: const Duration(milliseconds: 280),
       curve: Curves.easeOutCubic,
       alignment: 0.08,

@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:scoutset/core/theme/app_theme.dart';
 import 'package:scoutset/features/rules/data/rules_catalog_repository.dart';
