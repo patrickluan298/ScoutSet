@@ -31,6 +31,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/logo_scoutset.png
+    - assets/data/rules_official_catalog.json
 
 flutter_launcher_icons:
   android: true
