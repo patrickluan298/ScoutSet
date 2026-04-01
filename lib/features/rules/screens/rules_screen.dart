@@ -103,9 +103,7 @@ class _RulesScreenState extends State<RulesScreen> {
   }
 
   Widget _buildCatalogView(BuildContext context, RulesCatalog catalog) {
-    final activeCategory = catalog.categoryById(_selectedCategoryId);
     final display = _buildCurrentDisplay(catalog);
-    final quickCategories = catalog.categories.toList(growable: false);
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -130,15 +128,7 @@ class _RulesScreenState extends State<RulesScreen> {
                   children: [
                     _buildHeroHeader(context, catalog, showSidebar),
                     const SizedBox(height: 18),
-                    _buildQuickCategoryRail(quickCategories),
-                    const SizedBox(height: 18),
-                    _buildControlsPanel(context, catalog, showSidebar, activeCategory),
-                    AppSpacing.gapMedium,
-                    _buildIndexPanel(
-                      context,
-                      display: display,
-                      activeCategory: activeCategory,
-                    ),
+                    _buildControlsPanel(context, catalog, showSidebar),
                     AppSpacing.gapMedium,
                     if (display.chapters.isNotEmpty)
                       Padding(
@@ -315,6 +305,26 @@ class _RulesScreenState extends State<RulesScreen> {
               ],
             ),
           ),
+          const SizedBox(height: 16),
+          TextField(
+            key: const Key('rules-search-field'),
+            controller: _searchController,
+            onChanged: (value) => setState(() => _searchTerm = value),
+            decoration: InputDecoration(
+              hintText: 'Buscar por texto oficial, numeração ou seção',
+              prefixIcon: const Icon(Icons.search),
+              suffixIcon: _searchTerm.isEmpty
+                  ? null
+                  : IconButton(
+                      onPressed: () {
+                        _searchController.clear();
+                        setState(() => _searchTerm = '');
+                      },
+                      icon: const Icon(Icons.close),
+                    ),
+            ),
+          ),
+          const SizedBox(height: 16),
           const Text(
             'CONTEÚDO',
             style: TextStyle(
@@ -454,7 +464,7 @@ class _RulesScreenState extends State<RulesScreen> {
                 const SizedBox(width: 14),
                 Expanded(
                   child: Text(
-                    '${chapter.officialNumber} ${chapter.officialTitle}',
+                    chapter.officialTitle,
                     style: theme.textTheme.titleLarge?.copyWith(
                       color: AppTheme.whiteColor,
                     ),
@@ -620,24 +630,6 @@ class _RulesScreenState extends State<RulesScreen> {
     });
   }
 
-  Future<void> _jumpToSection(String id) async {
-    setState(() => _expandedIds.add(id));
-    await Future<void>.delayed(const Duration(milliseconds: 16));
-    if (!mounted) {
-      return;
-    }
-    final targetContext = _sectionKeys[id]?.currentContext;
-    if (targetContext == null || !targetContext.mounted) {
-      return;
-    }
-    await Scrollable.ensureVisible(
-      targetContext,
-      duration: const Duration(milliseconds: 280),
-      curve: Curves.easeOutCubic,
-      alignment: 0.08,
-    );
-  }
-
   Key _sectionKey(String id) {
     return _sectionKeys.putIfAbsent(id, () => GlobalKey());
   }
@@ -755,7 +747,7 @@ class _RulesScreenState extends State<RulesScreen> {
               ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 640),
                 child: Text(
-                  'Leitura literal do documento oficial com navegação editorial, busca local e sumário lateral integrado ao ScoutSet.',
+                  'Aprovado no 39º Congresso Mundial da FIVB de 2024.',
                   style: theme.textTheme.bodyLarge?.copyWith(
                     color: AppTheme.whiteColor.withValues(alpha: 0.88),
                   ),
@@ -774,11 +766,6 @@ class _RulesScreenState extends State<RulesScreen> {
                     label: '${catalog.chapters.length} capítulos',
                     icon: Icons.view_agenda_outlined,
                   ),
-                  if (!showSidebar)
-                    _HeroStatChip(
-                      label: 'Sumário móvel',
-                      icon: Icons.menu_open,
-                    ),
                 ],
               ),
             ],
@@ -788,61 +775,10 @@ class _RulesScreenState extends State<RulesScreen> {
     );
   }
 
-  Widget _buildQuickCategoryRail(List<RulesCategory> categories) {
-    return Material(
-      color: Colors.transparent,
-      child: SizedBox(
-        height: 46,
-        child: ListView.separated(
-          key: const Key('rules-quick-category-rail'),
-          scrollDirection: Axis.horizontal,
-          itemCount: categories.length,
-          separatorBuilder: (context, index) => const SizedBox(width: 10),
-          itemBuilder: (context, index) {
-            final category = categories[index];
-            final isSelected = _selectedCategoryId == category.id &&
-                _selectedChapterId == null &&
-                _selectedDocumentId == null &&
-                _searchTerm.trim().isEmpty;
-
-            return ChoiceChip(
-              key: Key('rules-quick-category-${category.id}'),
-              label: Text(category.title),
-              selected: isSelected,
-              onSelected: (_) {
-                setState(() {
-                  _selectedCategoryId = category.id;
-                  _selectedChapterId = null;
-                  _selectedDocumentId = null;
-                  _searchTerm = '';
-                  _searchController.clear();
-                });
-              },
-              labelStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: isSelected ? AppTheme.primaryColor : AppTheme.textColor,
-                  ),
-              selectedColor: AppTheme.accentColor,
-              backgroundColor: Colors.white,
-              side: BorderSide(
-                color: isSelected ? AppTheme.accentColor : const Color(0xFFD9E2EC),
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(999),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            );
-          },
-        ),
-      ),
-    );
-  }
-
   Widget _buildControlsPanel(
     BuildContext context,
     RulesCatalog catalog,
     bool showSidebar,
-    RulesCategory activeCategory,
   ) {
     return AppCard(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
@@ -850,51 +786,19 @@ class _RulesScreenState extends State<RulesScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SectionTitle(
-            title: 'Ferramentas de navegação',
-            subtitle: 'Busca, contexto da categoria ativa e acesso ao sumário oficial.',
-          ),
-          const SizedBox(height: 18),
-          TextField(
-            key: const Key('rules-search-field'),
-            controller: _searchController,
-            onChanged: (value) => setState(() => _searchTerm = value),
-            decoration: InputDecoration(
-              hintText: 'Buscar por texto oficial, numeração ou seção',
-              prefixIcon: const Icon(Icons.search),
-              suffixIcon: _searchTerm.isEmpty
-                  ? null
-                  : IconButton(
-                      onPressed: () {
-                        _searchController.clear();
-                        setState(() => _searchTerm = '');
-                      },
-                      icon: const Icon(Icons.close),
-                    ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              _MetaBadge(
-                icon: _categoryIcons[activeCategory.id] ?? Icons.menu_book_outlined,
-                label: activeCategory.title,
-              ),
-              _MetaBadge(
-                icon: Icons.rule_folder_outlined,
-                label: _selectedChapterId == null && _selectedDocumentId == null
-                    ? 'Visão por categoria'
-                    : (_selectedDocumentId != null ? 'Documento selecionado' : 'Capítulo selecionado'),
-              ),
-            ],
+            title: 'Ferramentas de Navegação',
+            subtitle: 'Use o sumário oficial para buscar e navegar pelo conteúdo literal do documento.',
           ),
           if (!showSidebar) ...[
-            const SizedBox(height: 16),
+            const SizedBox(height: 18),
             OutlinedButton.icon(
               key: const Key('rules-open-sidebar'),
               onPressed: () => _openSidebarSheet(catalog),
+              style: OutlinedButton.styleFrom(
+                backgroundColor: AppTheme.secondaryBlueColor,
+                foregroundColor: AppTheme.whiteColor,
+                side: const BorderSide(color: AppTheme.secondaryBlueColor),
+              ),
               icon: const Icon(Icons.menu_open),
               label: const Text('Abrir sumário lateral'),
             ),
@@ -904,79 +808,6 @@ class _RulesScreenState extends State<RulesScreen> {
     );
   }
 
-  Widget _buildIndexPanel(
-    BuildContext context, {
-    required _VisibleContent display,
-    required RulesCategory activeCategory,
-  }) {
-    final title = _searchTerm.trim().isEmpty
-        ? (_selectedChapterId == null ? activeCategory.title : display.title)
-        : 'Resultados da busca';
-    final subtitle = _searchTerm.trim().isEmpty
-        ? display.subtitle
-        : 'Exibindo ocorrências locais no conteúdo oficial sem alterar o texto fonte.';
-
-    return AppCard(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: AppTheme.primaryColor.withValues(alpha: 0.06),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: const Icon(
-                  Icons.dashboard_customize_outlined,
-                  color: AppTheme.primaryColor,
-                ),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: SectionTitle(
-                  title: title,
-                  subtitle: subtitle,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 18),
-          if (display.indexEntries.isEmpty)
-            Text(
-              'Nenhum item encontrado para o filtro atual.',
-              style: Theme.of(context).textTheme.bodyLarge,
-            )
-          else
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                for (final entry in display.indexEntries)
-                  ActionChip(
-                    key: Key('rules-index-${entry.id}'),
-                    label: Text(entry.label),
-                    onPressed: () => _jumpToSection(entry.id),
-                    avatar: const Icon(Icons.arrow_outward, size: 16),
-                    backgroundColor: AppTheme.lightGrayColor,
-                    side: const BorderSide(color: Color(0xFFD9E2EC)),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                    labelStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
-                  ),
-              ],
-            ),
-        ],
-      ),
-    );
-  }
 }
 
 class _VisibleContent {
@@ -1223,46 +1054,6 @@ class _HeroStatChip extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: AppTheme.whiteColor,
-                    fontWeight: FontWeight.w700,
-                  ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _MetaBadge extends StatelessWidget {
-  const _MetaBadge({
-    required this.icon,
-    required this.label,
-  });
-
-  final IconData icon;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      constraints: const BoxConstraints(maxWidth: 260),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: AppTheme.lightGrayColor,
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: const Color(0xFFD9E2EC)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 16, color: AppTheme.primaryColor),
-          const SizedBox(width: 8),
-          Flexible(
-            child: Text(
-              label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     fontWeight: FontWeight.w700,
                   ),
             ),

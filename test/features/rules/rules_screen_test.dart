@@ -24,15 +24,10 @@ void main() {
     );
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
-    await tester.scrollUntilVisible(
-      find.text('Resultados da busca'),
-      300,
-      scrollable: find.byType(Scrollable).first,
-    );
-    await tester.pump();
 
-    expect(find.text('Resultados da busca'), findsOneWidget);
-    expect(find.byKey(const Key('rules-index-section-19-3')), findsOneWidget);
+    expect(find.text('Resultados da busca'), findsNothing);
+    expect(find.text('19 O JOGADOR LÍBERO'), findsWidgets);
+    expect(find.textContaining('LÍBERO'), findsWidgets);
   });
 
   testWidgets('rules screen renders lateral menu and expands official sections', (tester) async {
@@ -75,7 +70,7 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
     expect(
-      find.textContaining('12.4.1 A bola deve ser golpeada com uma das mãos ou qualquer parte do braço'),
+      find.textContaining('A bola deve ser golpeada com uma das mãos ou qualquer parte do braço'),
       findsOneWidget,
     );
 
@@ -85,49 +80,6 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
 
     expect(find.text('PARTE 3: DEFINIÇÕES'), findsWidgets);
-  });
-
-  testWidgets('rules screen keeps all study categories accessible in the quick rail', (tester) async {
-    await tester.binding.setSurfaceSize(const Size(420, 900));
-    addTearDown(() => tester.binding.setSurfaceSize(null));
-
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: AppTheme.theme,
-        home: RulesScreen(
-          showScaffold: false,
-          repository: _TestRulesCatalogRepository(),
-        ),
-      ),
-    );
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 300));
-
-    final quickRail = find.byKey(const Key('rules-quick-category-rail'));
-
-    await tester.dragUntilVisible(
-      find.byKey(const Key('rules-quick-category-serve')),
-      quickRail,
-      const Offset(-180, 0),
-    );
-    await tester.pump();
-    expect(find.byKey(const Key('rules-quick-category-serve')), findsOneWidget);
-
-    await tester.dragUntilVisible(
-      find.byKey(const Key('rules-quick-category-libero')),
-      quickRail,
-      const Offset(-180, 0),
-    );
-    await tester.pump();
-    expect(find.byKey(const Key('rules-quick-category-libero')), findsOneWidget);
-
-    await tester.dragUntilVisible(
-      find.byKey(const Key('rules-quick-category-penalties')),
-      quickRail,
-      const Offset(-180, 0),
-    );
-    await tester.pump();
-    expect(find.byKey(const Key('rules-quick-category-penalties')), findsOneWidget);
   });
 
   testWidgets('rules screen opens lateral menu from mobile button', (tester) async {

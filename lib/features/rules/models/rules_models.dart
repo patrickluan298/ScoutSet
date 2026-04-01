@@ -114,7 +114,6 @@ class RulesDocument {
 
 class RulesCatalog {
   const RulesCatalog({
-    required this.sourcePdfPath,
     required this.sourceTitle,
     required this.categories,
     required this.chapters,
@@ -122,11 +121,10 @@ class RulesCatalog {
   });
 
   factory RulesCatalog.fromJson(Map<String, dynamic> json) {
-    final source = json['source'] as Map<String, dynamic>;
+    final source = json['source'] as Map<String, dynamic>?;
 
     return RulesCatalog(
-      sourcePdfPath: source['pdfPath'] as String,
-      sourceTitle: source['title'] as String,
+      sourceTitle: (source?['title'] as String?) ?? '',
       categories: (json['categories'] as List<dynamic>)
           .map((item) => RulesCategory.fromJson(item as Map<String, dynamic>))
           .toList(growable: false),
@@ -139,7 +137,6 @@ class RulesCatalog {
     );
   }
 
-  final String sourcePdfPath;
   final String sourceTitle;
   final List<RulesCategory> categories;
   final List<RulesChapter> chapters;

@@ -11,16 +11,16 @@ void main() {
     expect(
       catalog.categories.map((category) => category.title),
       containsAll(<String>[
-        'Sistema de pontuação',
-        'Estrutura do jogo',
-        'Rodízio e posições',
-        'Toques na bola',
-        'Rede e invasões',
+        'Sistema de Pontuação',
+        'Estrutura do Jogo',
+        'Rodízio e Posições',
+        'Toques na Bola',
+        'Rede e Invasões',
         'Ataque',
         'Bloqueio',
         'Saque',
         'Líbero',
-        'Faltas e penalidades',
+        'Faltas e Penalidades',
       ]),
     );
 
