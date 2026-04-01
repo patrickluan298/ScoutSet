@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../utils/app_spacing.dart';
+import '../../../utils/navigation_helpers.dart';
+import '../../../utils/team_name_validator.dart';
+import '../../../utils/ui_feedback.dart';
 import '../../../widgets/app_button.dart';
 import '../../../widgets/app_card.dart';
+import '../../../widgets/app_page_scaffold.dart';
 import '../../../widgets/section_title.dart';
 import '../../teams/models/team_draw_player.dart';
 import '../../teams/screens/saved_teams_screen.dart';
@@ -32,9 +35,6 @@ class ScoreboardScreen extends StatefulWidget {
 }
 
 class _ScoreboardScreenState extends State<ScoreboardScreen> {
-  static const int _maxTeamNameLength = 10;
-  static final RegExp _allowedTeamNameCharacters = RegExp(r'[A-Za-z0-9À-ÖØ-öø-ÿ ]');
-  static final RegExp _allowedTeamNamePattern = RegExp(r'^[A-Za-z0-9À-ÖØ-öø-ÿ ]+$');
   final _formKey = GlobalKey<FormState>();
   final _teamAController = TextEditingController();
   final _teamBController = TextEditingController();
@@ -49,22 +49,14 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
   }
 
   Future<void> _openHistory() async {
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => const MatchHistoryScreen(),
-      ),
-    );
+    await pushPage(context, const MatchHistoryScreen());
   }
 
   Future<void> _openSavedTeams() async {
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => const SavedTeamsScreen(),
-      ),
-    );
+    await pushPage(context, const SavedTeamsScreen());
   }
 
-  Future<void> _handlePointTeamA() async {
+  Future<void> _handlePointForTeam(TeamSide team) async {
     if (_isSavingPoint) {
       return;
     }
@@ -74,10 +66,7 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
       return;
     }
 
-    final selection = await _selectPointForTeam(
-      team: TeamSide.teamA,
-      match: match,
-    );
+    final selection = await _selectPointForTeam(team: team, match: match);
     if (selection == null) {
       return;
     }
@@ -85,39 +74,7 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
     setState(() => _isSavingPoint = true);
     try {
       await _service.addPoint(
-        team: TeamSide.teamA,
-        pointOrigin: selection.pointOrigin,
-        player: selection.player,
-      );
-    } finally {
-      if (mounted) {
-        setState(() => _isSavingPoint = false);
-      }
-    }
-  }
-
-  Future<void> _handlePointTeamB() async {
-    if (_isSavingPoint) {
-      return;
-    }
-    final state = _service.getState();
-    final match = state.activeMatch;
-    if (match == null) {
-      return;
-    }
-
-    final selection = await _selectPointForTeam(
-      team: TeamSide.teamB,
-      match: match,
-    );
-    if (selection == null) {
-      return;
-    }
-
-    setState(() => _isSavingPoint = true);
-    try {
-      await _service.addPoint(
-        team: TeamSide.teamB,
+        team: team,
         pointOrigin: selection.pointOrigin,
         player: selection.player,
       );
@@ -129,9 +86,10 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
   }
 
   bool _hasDuplicatedTeamNames() {
-    final teamAName = _teamAController.text.trim().toLowerCase();
-    final teamBName = _teamBController.text.trim().toLowerCase();
-    return teamAName.isNotEmpty && teamBName.isNotEmpty && teamAName == teamBName;
+    return hasDuplicatedTeamNames([
+      _teamAController.text,
+      _teamBController.text,
+    ]);
   }
 
   String? _validateTeamName(
@@ -139,12 +97,9 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
     String fieldLabel, {
     bool validateDuplicate = false,
   }) {
-    final normalizedValue = (value ?? '').trim();
-    if (normalizedValue.isEmpty) {
-      return 'Informe o nome do $fieldLabel.';
-    }
-    if (!_allowedTeamNamePattern.hasMatch(normalizedValue)) {
-      return 'Use apenas letras, numeros e espacos.';
+    final validation = validateTeamNameValue(value, fieldLabel);
+    if (validation != null) {
+      return validation;
     }
     if (validateDuplicate && _hasDuplicatedTeamNames()) {
       return 'Os times precisam ter nomes diferentes.';
@@ -165,10 +120,9 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
       );
       FocusScope.of(context).unfocus();
     } on ArgumentError catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(error.message?.toString() ?? 'Não foi possível iniciar a partida.'),
-        ),
+      showAppSnackBar(
+        context,
+        error.message?.toString() ?? 'Não foi possível iniciar a partida.',
       );
     }
   }
@@ -269,12 +223,9 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
       },
     );
 
-    if (!widget.showScaffold) {
-      return SafeArea(child: content);
-    }
-
-    return Scaffold(
-      body: SafeArea(child: content),
+    return AppPageScaffold(
+      showScaffold: widget.showScaffold,
+      child: content,
     );
   }
 
@@ -302,10 +253,7 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
                 TextFormField(
                   key: const Key('scoreboard-team-a-field'),
                   controller: _teamAController,
-                  inputFormatters: [
-                    FilteringTextInputFormatter.allow(_allowedTeamNameCharacters),
-                    LengthLimitingTextInputFormatter(_maxTeamNameLength),
-                  ],
+                  inputFormatters: teamNameInputFormatters(),
                   decoration: const InputDecoration(
                     labelText: 'Nome do time A',
                     prefixIcon: Icon(Icons.groups_2_outlined),
@@ -316,10 +264,7 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
                 TextFormField(
                   key: const Key('scoreboard-team-b-field'),
                   controller: _teamBController,
-                  inputFormatters: [
-                    FilteringTextInputFormatter.allow(_allowedTeamNameCharacters),
-                    LengthLimitingTextInputFormatter(_maxTeamNameLength),
-                  ],
+                  inputFormatters: teamNameInputFormatters(),
                   decoration: const InputDecoration(
                     labelText: 'Nome do time B',
                     prefixIcon: Icon(Icons.groups_outlined),
@@ -461,10 +406,10 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
                 teamAName: match.teamAName,
                 teamBName: match.teamBName,
                 onPointTeamA: () {
-                  _handlePointTeamA();
+                  _handlePointForTeam(TeamSide.teamA);
                 },
                 onPointTeamB: () {
-                  _handlePointTeamB();
+                  _handlePointForTeam(TeamSide.teamB);
                 },
                 onUndo: _service.undoLastPoint,
                 onReset: _service.resetCurrentMatch,

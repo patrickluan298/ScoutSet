@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../../config/app_routes.dart';
+import '../auth_validators.dart';
 import '../../../services/auth_service.dart';
 import '../../../utils/app_spacing.dart';
+import '../../../utils/ui_feedback.dart';
 import '../../../widgets/app_button.dart';
 import '../../../widgets/app_card.dart';
 import '../../../widgets/app_text_field.dart';
@@ -33,17 +35,6 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  String? _validateEmail(String? value) {
-    final email = value?.trim() ?? '';
-    if (email.isEmpty) {
-      return 'Informe seu e-mail.';
-    }
-    if (!_authService.isValidEmail(email)) {
-      return 'Digite um e-mail válido.';
-    }
-    return null;
-  }
-
   String? _validatePassword(String? value) {
     final password = value?.trim() ?? '';
     if (password.isEmpty) {
@@ -58,15 +49,29 @@ class _LoginScreenState extends State<LoginScreen> {
     _formKey.currentState?.reset();
   }
 
+  Future<void> _runAuthAction(Future<void> Function() action) async {
+    setState(() => _isLoading = true);
+    try {
+      await action();
+    } on ArgumentError catch (error) {
+      if (!mounted) {
+        return;
+      }
+      showAppSnackBar(context, error.message.toString());
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
   Future<void> _handleLogin() async {
     final isValid = _formKey.currentState?.validate() ?? false;
     if (!isValid) {
       return;
     }
 
-    setState(() => _isLoading = true);
-
-    try {
+    await _runAuthAction(() async {
       await _authService.signIn(
         email: _emailController.text.trim(),
         password: _passwordController.text,
@@ -81,18 +86,7 @@ class _LoginScreenState extends State<LoginScreen> {
         AppRoutes.dashboard,
         (route) => false,
       );
-    } on ArgumentError catch (error) {
-      if (!mounted) {
-        return;
-      }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.message.toString())),
-      );
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
-    }
+    });
   }
 
   Future<void> _openRegister() async {
@@ -115,11 +109,7 @@ class _LoginScreenState extends State<LoginScreen> {
       _formKey.currentState?.reset();
     });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Conta criada com sucesso. Agora faça login.'),
-      ),
-    );
+    showAppSnackBar(context, 'Conta criada com sucesso. Agora faça login.');
   }
 
   Future<void> _openForgotPassword() async {
@@ -155,7 +145,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         controller: emailController,
                         keyboardType: TextInputType.emailAddress,
                         prefixIcon: Icons.mail_outline,
-                        validator: _validateEmail,
+                        validator: AuthValidators.validateEmail,
                         maxLength: _emailMaxLength,
                       ),
                       AppSpacing.gapSmall,
@@ -166,16 +156,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         obscureText: obscureNewPassword,
                         prefixIcon: Icons.lock_reset_outlined,
                         maxLength: 12,
-                        validator: (value) {
-                          final password = value?.trim() ?? '';
-                          if (password.isEmpty) {
-                            return 'Informe a nova senha.';
-                          }
-                          if (password.length < 8) {
-                            return 'A senha deve ter ao menos 8 caracteres.';
-                          }
-                          return null;
-                        },
+                        validator: (value) => PasswordValidators.validateNewPassword(
+                          value,
+                          emptyMessage: 'Informe a nova senha.',
+                        ),
                         suffixIcon: IconButton(
                           onPressed: () {
                             setState(() => obscureNewPassword = !obscureNewPassword);
@@ -195,16 +179,11 @@ class _LoginScreenState extends State<LoginScreen> {
                         obscureText: obscureConfirmPassword,
                         prefixIcon: Icons.verified_user_outlined,
                         maxLength: 12,
-                        validator: (value) {
-                          final confirmation = value?.trim() ?? '';
-                          if (confirmation.isEmpty) {
-                            return 'Confirme a nova senha.';
-                          }
-                          if (confirmation != newPasswordController.text.trim()) {
-                            return 'As senhas precisam ser iguais.';
-                          }
-                          return null;
-                        },
+                        validator: (value) => PasswordValidators.validateConfirmation(
+                          value,
+                          expectedPassword: newPasswordController.text,
+                          emptyMessage: 'Confirme a nova senha.',
+                        ),
                         suffixIcon: IconButton(
                           onPressed: () {
                             setState(() => obscureConfirmPassword = !obscureConfirmPassword);
@@ -266,18 +245,15 @@ class _LoginScreenState extends State<LoginScreen> {
       }
       _emailController.text = emailController.text.trim();
       _passwordController.clear();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Senha redefinida com sucesso. Faça login com a nova senha.'),
-        ),
+      showAppSnackBar(
+        context,
+        'Senha redefinida com sucesso. Faça login com a nova senha.',
       );
     } on ArgumentError catch (error) {
       if (!mounted) {
         return;
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.message.toString())),
-      );
+      showAppSnackBar(context, error.message.toString());
     }
   }
 
@@ -319,7 +295,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           children: [
                             Center(
                               child: Text(
-                                'LOGIN',
+                                'Login',
                                 textAlign: TextAlign.center,
                                 style: theme.textTheme.titleLarge,
                               ),
@@ -331,7 +307,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
                         prefixIcon: Icons.mail_outline,
-                        validator: _validateEmail,
+                        validator: AuthValidators.validateEmail,
                         maxLength: _emailMaxLength,
                       ),
                           AppSpacing.gapSmall,

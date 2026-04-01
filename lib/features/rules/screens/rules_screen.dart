@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:diacritic/diacritic.dart';
 
 import '../../../config/app_routes.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../utils/app_spacing.dart';
 import '../../../widgets/app_card.dart';
-import '../../../widgets/dashboard_profile_bottom_navigation.dart';
+import '../../../widgets/app_page_scaffold.dart';
 import '../../../widgets/section_title.dart';
 import '../data/rules_catalog_repository.dart';
 import '../models/rules_models.dart';
@@ -90,15 +91,10 @@ class _RulesScreenState extends State<RulesScreen> {
       },
     );
 
-    if (!widget.showScaffold) {
-      return SafeArea(child: content);
-    }
-
-    return Scaffold(
-      body: SafeArea(child: content),
-      bottomNavigationBar: const DashboardProfileBottomNavigation(
-        currentRoute: AppRoutes.rules,
-      ),
+    return AppPageScaffold(
+      showScaffold: widget.showScaffold,
+      currentRoute: AppRoutes.rules,
+      child: content,
     );
   }
 
@@ -635,48 +631,7 @@ class _RulesScreenState extends State<RulesScreen> {
   }
 
   String _normalizeForSearch(String value) {
-    const replacements = {
-      'á': 'a',
-      'à': 'a',
-      'â': 'a',
-      'ã': 'a',
-      'ä': 'a',
-      'é': 'e',
-      'ê': 'e',
-      'ë': 'e',
-      'í': 'i',
-      'ï': 'i',
-      'ó': 'o',
-      'ô': 'o',
-      'õ': 'o',
-      'ö': 'o',
-      'ú': 'u',
-      'ü': 'u',
-      'ç': 'c',
-      'Á': 'a',
-      'À': 'a',
-      'Â': 'a',
-      'Ã': 'a',
-      'Ä': 'a',
-      'É': 'e',
-      'Ê': 'e',
-      'Ë': 'e',
-      'Í': 'i',
-      'Ï': 'i',
-      'Ó': 'o',
-      'Ô': 'o',
-      'Õ': 'o',
-      'Ö': 'o',
-      'Ú': 'u',
-      'Ü': 'u',
-      'Ç': 'c',
-    };
-
-    var normalized = value.toLowerCase();
-    replacements.forEach((source, target) {
-      normalized = normalized.replaceAll(source, target);
-    });
-    return normalized;
+    return removeDiacritics(value).toLowerCase();
   }
 
   Widget _buildHeroHeader(

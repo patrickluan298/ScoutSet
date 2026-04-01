@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 
 import '../../../../utils/app_spacing.dart';
+import '../../../../utils/navigation_helpers.dart';
+import '../../../../utils/ui_feedback.dart';
 import '../../../../widgets/app_button.dart';
 import '../../../../widgets/app_card.dart';
+import '../team_draw_flow.dart';
 import '../models/team_draw_player.dart';
 import '../models/team_draw_result.dart';
 import '../models/waiting_player.dart';
 import '../services/team_draw_service.dart';
-import '../widgets/draw_options_sheet.dart';
 import '../widgets/player_selection_list.dart';
 import '../widgets/waiting_queue_banner.dart';
 import 'team_draw_result_screen.dart';
@@ -81,13 +83,9 @@ class _TeamDrawScreenState extends State<TeamDrawScreen> {
 
   Future<void> _runDraw() async {
     final selectedPlayers = _players.where((player) => _selectedIds.contains(player.id)).toList();
-    var oddHandling = OddPlayerHandling.extraPlayerOnTeam;
-    if (selectedPlayers.length.isOdd) {
-      final selection = await DrawOptionsSheet.show(context);
-      if (selection == null) {
-        return;
-      }
-      oddHandling = selection;
+    final oddHandling = await resolveOddPlayerHandling(context, selectedPlayers.length);
+    if (oddHandling == null) {
+      return;
     }
 
     setState(() => _isSubmitting = true);
@@ -102,18 +100,18 @@ class _TeamDrawScreenState extends State<TeamDrawScreen> {
       if (!mounted) {
         return;
       }
-      await Navigator.of(context).push(
-        MaterialPageRoute<void>(
-          builder: (_) => TeamDrawResultScreen(result: result),
-        ),
+      await pushPageAndReload(
+        context,
+        TeamDrawResultScreen(result: result),
+        onReturn: _load,
       );
-      await _load();
     } on ArgumentError catch (error) {
       if (!mounted) {
         return;
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.message?.toString() ?? 'Não foi possível sortear os times.')),
+      showAppSnackBar(
+        context,
+        error.message?.toString() ?? 'Não foi possível sortear os times.',
       );
     } finally {
       if (mounted) {

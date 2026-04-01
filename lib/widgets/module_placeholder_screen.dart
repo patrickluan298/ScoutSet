@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'app_card.dart';
-import 'dashboard_profile_bottom_navigation.dart';
+import 'app_page_scaffold.dart';
 import 'section_title.dart';
 
 class ModulePlaceholderScreen extends StatelessWidget {
@@ -20,39 +20,30 @@ class ModulePlaceholderScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final content = Padding(
-      padding: const EdgeInsets.all(20),
-      child: AppCard(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SectionTitle(
-              title: title,
-              subtitle: description,
+    return AppPageScaffold(
+      showScaffold: showScaffold,
+      currentRoute: currentRoute,
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: AppCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SectionTitle(
+                  title: title,
+                  subtitle: description,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Este módulo já está pronto para evolução com serviços, widgets e modelos dedicados.',
+                  style: Theme.of(context).textTheme.bodyLarge,
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
-            Text(
-              'Este módulo já está pronto para evolução com serviços, widgets e modelos dedicados.',
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
-          ],
+          ),
         ),
-      ),
-    );
-
-    if (!showScaffold) {
-      return SafeArea(
-        child: SingleChildScrollView(child: content),
-      );
-    }
-
-    return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(child: content),
-      ),
-      bottomNavigationBar: DashboardProfileBottomNavigation(
-        currentRoute: currentRoute,
       ),
     );
   }

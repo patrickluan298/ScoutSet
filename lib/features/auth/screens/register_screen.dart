@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../auth_validators.dart';
 import '../../../services/auth_service.dart';
 import '../../../utils/app_spacing.dart';
+import '../../../utils/ui_feedback.dart';
 import '../../../widgets/app_button.dart';
 import '../../../widgets/app_card.dart';
 import '../../../widgets/app_text_field.dart';
@@ -57,38 +59,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return null;
   }
 
-  String? _validateEmail(String? value) {
-    final email = value?.trim() ?? '';
-    if (email.isEmpty) {
-      return 'Informe seu e-mail.';
-    }
-    if (!_authService.isValidEmail(email)) {
-      return 'Digite um e-mail válido.';
-    }
-    return null;
-  }
-
-  String? _validatePassword(String? value) {
-    final password = value?.trim() ?? '';
-    if (password.isEmpty) {
-      return 'Crie uma senha.';
-    }
-    if (password.length < 8) {
-      return 'A senha deve ter ao menos 8 caracteres.';
-    }
-    if (!_hasUppercase(password)) {
-      return 'Use ao menos uma letra maiuscula.';
-    }
-    if (!_hasNumber(password)) {
-      return 'Use ao menos um numero.';
-    }
-    if (!_hasSpecial(password)) {
-      return 'Use ao menos um caractere especial.';
-    }
-    return null;
-  }
-
-  Future<void> _handleRegister() async {
+  Future<void> _submitRegister() async {
     final isValid = _formKey.currentState?.validate() ?? false;
     if (!isValid) {
       return;
@@ -112,9 +83,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (!mounted) {
         return;
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.message.toString())),
-      );
+      showAppSnackBar(context, error.message.toString());
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -122,52 +91,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
   }
 
-  bool _hasUppercase(String value) => value.contains(RegExp(r'[A-Z]'));
-  bool _hasNumber(String value) => value.contains(RegExp(r'[0-9]'));
-  bool _hasSpecial(String value) => value.contains(RegExp(r'[^A-Za-z0-9]'));
-
-  int _passwordScore(String password) {
-    var score = 0;
-    if (password.length >= 8) {
-      score++;
-    }
-    if (_hasUppercase(password)) {
-      score++;
-    }
-    if (_hasNumber(password)) {
-      score++;
-    }
-    if (_hasSpecial(password)) {
-      score++;
-    }
-    return score;
-  }
-
-  Color _passwordColor(int score) {
-    if (score <= 1) {
-      return const Color(0xFFDC2626);
-    }
-    if (score <= 3) {
-      return const Color(0xFFF59E0B);
-    }
-    return const Color(0xFF16A34A);
-  }
-
-  String _passwordLabel(int score) {
-    if (score <= 1) {
-      return 'Senha fraca';
-    }
-    if (score <= 3) {
-      return 'Senha media';
-    }
-    return 'Senha forte';
-  }
-
   @override
   Widget build(BuildContext context) {
-    final password = _passwordController.text;
-    final score = _passwordScore(password);
-    final strengthColor = _passwordColor(score);
+    final strength = PasswordValidators.evaluate(_passwordController.text);
 
     return Scaffold(
       backgroundColor: const Color(0xFF081426),
@@ -213,7 +139,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             controller: _emailController,
                             keyboardType: TextInputType.emailAddress,
                             prefixIcon: Icons.mail_outline,
-                            validator: _validateEmail,
+                            validator: AuthValidators.validateEmail,
                             maxLength: _emailMaxLength,
                           ),
                           AppSpacing.gapSmall,
@@ -223,7 +149,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             controller: _passwordController,
                             obscureText: _obscurePassword,
                             prefixIcon: Icons.lock_outline,
-                            validator: _validatePassword,
+                            validator: PasswordValidators.validateNewPassword,
                             maxLength: _passwordMaxLength,
                             suffixIcon: IconButton(
                               onPressed: () {
@@ -248,16 +174,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             borderRadius: BorderRadius.circular(999),
                             child: LinearProgressIndicator(
                               minHeight: 8,
-                              value: score / 4,
-                              color: strengthColor,
+                              value: strength.score / 4,
+                              color: strength.color,
                               backgroundColor: const Color(0xFFE5E7EB),
                             ),
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            _passwordLabel(score),
+                            strength.label,
                             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  color: strengthColor,
+                                  color: strength.color,
                                   fontWeight: FontWeight.w700,
                                 ),
                           ),
@@ -266,7 +192,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             label: 'Cadastrar',
                             icon: Icons.person_add_alt_1,
                             isLoading: _isLoading,
-                            onPressed: _handleRegister,
+                            onPressed: _submitRegister,
                           ),
                         ],
                       ),

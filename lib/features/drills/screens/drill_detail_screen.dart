@@ -7,6 +7,7 @@ import '../../../widgets/section_title.dart';
 import '../models/drill.dart';
 import '../services/drills_service.dart';
 import '../widgets/drill_animation_view.dart';
+import '../widgets/drill_meta_chip.dart';
 
 class DrillDetailScreen extends StatefulWidget {
   const DrillDetailScreen({
@@ -120,10 +121,10 @@ class _DrillDetailScreenState extends State<DrillDetailScreen> {
                       spacing: 10,
                       runSpacing: 10,
                       children: [
-                        _MetaPill(label: 'Dificuldade', value: drill.difficulty),
-                        _MetaPill(label: 'Jogadores', value: '${drill.playersCount}'),
-                        _MetaPill(label: 'Duração', value: drill.duration),
-                        _MetaPill(label: 'Categoria', value: drill.category),
+                        DrillMetaChip(primaryText: 'Dificuldade', secondaryText: drill.difficulty),
+                        DrillMetaChip(primaryText: 'Jogadores', secondaryText: '${drill.playersCount}'),
+                        DrillMetaChip(primaryText: 'Duração', secondaryText: drill.duration),
+                        DrillMetaChip(primaryText: 'Categoria', secondaryText: drill.category),
                       ],
                     ),
                   ],
@@ -190,42 +191,6 @@ class _DrillDetailScreenState extends State<DrillDetailScreen> {
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _MetaPill extends StatelessWidget {
-  const _MetaPill({
-    required this.label,
-    required this.value,
-  });
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: AppTheme.lightGrayColor,
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            label,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 12),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700),
-          ),
-        ],
       ),
     );
   }

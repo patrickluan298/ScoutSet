@@ -148,34 +148,56 @@ class DrillsRepository {
   }
 
   Future<List<String>> _orderedSteps(String drillId) async {
-    final rows = await (_database.select(_database.drillSteps)
-          ..where((tbl) => tbl.drillId.equals(drillId))
-          ..orderBy([(tbl) => OrderingTerm(expression: tbl.sortOrder)]))
-        .get();
-    return rows.map((item) => item.textValue).toList();
+    return _orderedTextValues(
+      _database.drillSteps,
+      drillId: drillId,
+      textField: (row) => row.textValue,
+      drillIdField: (row) => row.drillId,
+      sortField: (row) => row.sortOrder,
+    );
   }
 
   Future<List<String>> _orderedTips(String drillId) async {
-    final rows = await (_database.select(_database.drillTips)
-          ..where((tbl) => tbl.drillId.equals(drillId))
-          ..orderBy([(tbl) => OrderingTerm(expression: tbl.sortOrder)]))
-        .get();
-    return rows.map((item) => item.textValue).toList();
+    return _orderedTextValues(
+      _database.drillTips,
+      drillId: drillId,
+      textField: (row) => row.textValue,
+      drillIdField: (row) => row.drillId,
+      sortField: (row) => row.sortOrder,
+    );
   }
 
   Future<List<String>> _orderedErrors(String drillId) async {
-    final rows = await (_database.select(_database.drillErrors)
-          ..where((tbl) => tbl.drillId.equals(drillId))
-          ..orderBy([(tbl) => OrderingTerm(expression: tbl.sortOrder)]))
-        .get();
-    return rows.map((item) => item.textValue).toList();
+    return _orderedTextValues(
+      _database.drillErrors,
+      drillId: drillId,
+      textField: (row) => row.textValue,
+      drillIdField: (row) => row.drillId,
+      sortField: (row) => row.sortOrder,
+    );
   }
 
   Future<List<String>> _orderedVariations(String drillId) async {
-    final rows = await (_database.select(_database.drillVariations)
-          ..where((tbl) => tbl.drillId.equals(drillId))
-          ..orderBy([(tbl) => OrderingTerm(expression: tbl.sortOrder)]))
+    return _orderedTextValues(
+      _database.drillVariations,
+      drillId: drillId,
+      textField: (row) => row.textValue,
+      drillIdField: (row) => row.drillId,
+      sortField: (row) => row.sortOrder,
+    );
+  }
+
+  Future<List<String>> _orderedTextValues<T extends Table, D>(
+    TableInfo<T, D> table, {
+    required String drillId,
+    required String Function(D row) textField,
+    required GeneratedColumn<String> Function(T row) drillIdField,
+    required GeneratedColumn<int> Function(T row) sortField,
+  }) async {
+    final rows = await (_database.select(table)
+          ..where((tbl) => drillIdField(tbl).equals(drillId))
+          ..orderBy([(tbl) => OrderingTerm(expression: sortField(tbl))]))
         .get();
-    return rows.map((item) => item.textValue).toList();
+    return rows.map(textField).toList();
   }
 }
