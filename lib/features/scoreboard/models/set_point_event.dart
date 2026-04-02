@@ -56,7 +56,8 @@ class SetPointEvent {
       pointOrigin: PointOrigin.fromValue(json['pointOrigin'] as String?),
       playerId: json['playerId'] as String?,
       playerName: json['playerName'] as String?,
-      recordedAt: DateTime.tryParse(json['recordedAt'] as String? ?? '') ?? DateTime.now(),
+      recordedAt: DateTime.tryParse(json['recordedAt'] as String? ?? '') ??
+          DateTime.now(),
     );
   }
 }

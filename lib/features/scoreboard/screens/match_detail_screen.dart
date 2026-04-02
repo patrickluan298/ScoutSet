@@ -124,7 +124,7 @@ class MatchDetailScreen extends StatelessWidget {
                   Align(
                     alignment: Alignment.center,
                     child: Text(
-                      'Jogadores vinculados',
+                      'Escalação dos Jogadores',
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.titleMedium,
                     ),

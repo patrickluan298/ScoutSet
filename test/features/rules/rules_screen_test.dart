@@ -118,6 +118,35 @@ void main() {
     expect(find.text('Sumário lateral'), findsNothing);
     expect(find.text('PARTE 3: DEFINIÇÕES'), findsWidgets);
   });
+
+  testWidgets('rules sidebar filters menu items while typing', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(900, 2200));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.theme,
+        home: RulesScreen(
+          showScaffold: false,
+          repository: _TestRulesCatalogRepository(),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.byKey(const Key('rules-menu-category-serve')), findsOneWidget);
+    expect(find.byKey(const Key('rules-menu-category-libero')), findsOneWidget);
+
+    await tester.enterText(find.byKey(const Key('rules-search-field')), 'líbero');
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.byKey(const Key('rules-menu-category-libero')), findsOneWidget);
+    expect(find.byKey(const Key('rules-menu-item-chapter-19')), findsOneWidget);
+    expect(find.byKey(const Key('rules-menu-category-serve')), findsNothing);
+    expect(find.byKey(const Key('rules-menu-item-chapter-12')), findsNothing);
+  });
 }
 
 class _TestRulesCatalogRepository extends RulesCatalogRepository {

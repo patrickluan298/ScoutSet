@@ -135,4 +135,49 @@ void main() {
       throwsA(isA<ArgumentError>()),
     );
   });
+
+  test('rejeita jogador com nome duplicado exato', () async {
+    await expectLater(
+      service.savePlayer(
+        name: 'Ana',
+        position: 'Levantadora',
+        level: PlayerLevel.iniciante,
+      ),
+      throwsA(
+        isA<ArgumentError>().having(
+          (error) => error.message,
+          'message',
+          'Já existe um jogador com esse nome.',
+        ),
+      ),
+    );
+  });
+
+  test('permite jogador com nome diferente mesmo começando igual', () async {
+    await service.savePlayer(
+      name: 'Ana Clara',
+      position: 'Levantadora',
+      level: PlayerLevel.iniciante,
+    );
+
+    final players = await service.listPlayers();
+    expect(players.any((player) => player.name == 'Ana Clara'), isTrue);
+  });
+
+  test('rejeita jogador com espaço no fim do nome', () async {
+    await expectLater(
+      service.savePlayer(
+        name: 'Lucas ',
+        position: 'Ponteiro',
+        level: PlayerLevel.intermediario,
+      ),
+      throwsA(
+        isA<ArgumentError>().having(
+          (error) => error.message,
+          'message',
+          'Remova espaços no início ou no final do nome.',
+        ),
+      ),
+    );
+  });
 }

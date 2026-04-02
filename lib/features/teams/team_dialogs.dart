@@ -41,11 +41,13 @@ Future<TeamPlayerDraft?> showAddPlayerDialog(
   BuildContext context, {
   required List<String> positions,
   required int maxPlayerNameLength,
+  Iterable<String> existingPlayerNames = const [],
 }) {
   final formKey = GlobalKey<FormState>();
   final nameController = TextEditingController();
   var selectedPosition = positions.first;
   var selectedLevel = PlayerLevel.intermediario;
+  final normalizedExistingNames = existingPlayerNames.map((name) => name.trim().toLowerCase()).toSet();
 
   return showDialog<TeamPlayerDraft>(
     context: context,
@@ -76,8 +78,16 @@ Future<TeamPlayerDraft?> showAddPlayerDialog(
                         helperText: 'Máximo de 10 caracteres',
                       ),
                       validator: (value) {
-                        if ((value ?? '').trim().isEmpty) {
+                        final rawValue = value ?? '';
+                        if (rawValue.trim().isEmpty) {
                           return 'Informe o nome do jogador.';
+                        }
+                        if (rawValue != rawValue.trim()) {
+                          return 'Remova espaços no início ou no final do nome.';
+                        }
+                        final normalizedName = rawValue.toLowerCase();
+                        if (normalizedExistingNames.contains(normalizedName)) {
+                          return 'Já existe um jogador com esse nome.';
                         }
                         return null;
                       },
@@ -137,7 +147,7 @@ Future<TeamPlayerDraft?> showAddPlayerDialog(
                       }
                       Navigator.of(context).pop(
                         TeamPlayerDraft(
-                          name: nameController.text.trim(),
+                          name: nameController.text,
                           position: selectedPosition,
                           level: selectedLevel,
                         ),
@@ -350,20 +360,30 @@ Future<TeamMatchupSelection?> showTeamsMatchupDialog(
           ],
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancelar'),
-          ),
-          ElevatedButton(
-            onPressed: firstIndex == secondIndex
-                ? null
-                : () => Navigator.of(context).pop(
-                    TeamMatchupSelection(
-                      teamA: teams[firstIndex],
-                      teamB: teams[secondIndex],
-                    ),
-                  ),
-            child: Text(confirmLabel),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ElevatedButton(
+                onPressed: firstIndex == secondIndex
+                    ? null
+                    : () => Navigator.of(context).pop(
+                        TeamMatchupSelection(
+                          teamA: teams[firstIndex],
+                          teamB: teams[secondIndex],
+                        ),
+                      ),
+                child: Text(confirmLabel),
+              ),
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.center,
+                child: TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Cancelar'),
+                ),
+              ),
+            ],
           ),
         ],
       ),

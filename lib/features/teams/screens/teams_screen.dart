@@ -81,6 +81,7 @@ class _TeamsScreenState extends State<TeamsScreen> {
       context,
       positions: _playerPositions,
       maxPlayerNameLength: _maxPlayerNameLength,
+      existingPlayerNames: _players.map((player) => player.name),
     );
 
     if (draft == null) {

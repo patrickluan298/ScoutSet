@@ -72,8 +72,8 @@ class _SavedTeamsScreenState extends State<SavedTeamsScreen> {
     final selection = await showTeamsMatchupDialog(
       context,
       teams: group.teams,
-      title: 'Escolha duas equipes',
-      confirmLabel: 'Confirmar',
+      title: 'Escolha o confronto',
+      confirmLabel: 'Usar times',
     );
     if (selection == null || !mounted) {
       return;

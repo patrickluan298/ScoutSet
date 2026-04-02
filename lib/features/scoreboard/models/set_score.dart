@@ -36,7 +36,10 @@ class SetScore {
     for (final event in pointEvents) {
       final playerId = event.playerId;
       final playerName = event.playerName;
-      if (playerId == null || playerId.isEmpty || playerName == null || playerName.isEmpty) {
+      if (playerId == null ||
+          playerId.isEmpty ||
+          playerName == null ||
+          playerName.isEmpty) {
         continue;
       }
 
@@ -89,7 +92,8 @@ class SetScore {
       targetPoints: json['targetPoints'] as int? ?? 0,
       durationSeconds: json['durationSeconds'] as int? ?? 0,
       pointEvents: (json['pointEvents'] as List<dynamic>? ?? const [])
-          .map((item) => SetPointEvent.fromJson(Map<String, dynamic>.from(item as Map)))
+          .map((item) =>
+              SetPointEvent.fromJson(Map<String, dynamic>.from(item as Map)))
           .toList(),
     );
   }

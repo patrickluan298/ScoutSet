@@ -199,52 +199,61 @@ class _RulesScreenState extends State<RulesScreen> {
     VoidCallback? onCategorySelected,
     VoidCallback? onItemSelected,
   }) {
-    final menuGroups = _buildMenuGroups(catalog);
+    final menuGroups = _buildVisibleMenuGroups(catalog);
     final body = Column(
       children: [
-        for (final group in menuGroups) ...[
-          _SidebarGroup(
-            key: Key('rules-menu-category-${group.id}'),
-            title: group.title,
-            icon: _categoryIcons[group.id] ?? Icons.menu_book_outlined,
-            isSelected:
-                _selectedCategoryId == group.id &&
-                _selectedChapterId == null &&
-                _selectedDocumentId == null,
-            onTap: () {
-              setState(() {
-                _selectedCategoryId = group.id;
-                _selectedChapterId = null;
-                _selectedDocumentId = null;
-              });
-              onCategorySelected?.call();
-            },
-            children: [
-              for (final item in group.items)
-                _SidebarItem(
-                  key: Key('rules-menu-item-${item.id}'),
-                  title: item.label,
-                  isSelected:
-                      (_selectedChapterId != null && _selectedChapterId == item.id) ||
-                      (_selectedDocumentId != null && _selectedDocumentId == item.id),
-                  onTap: () {
-                    setState(() {
-                      _selectedCategoryId = group.id;
-                      if (item.kind == _SidebarMenuItemKind.chapter) {
-                        _selectedChapterId = item.id;
-                        _selectedDocumentId = null;
-                      } else {
-                        _selectedDocumentId = item.id;
-                        _selectedChapterId = null;
-                      }
-                    });
-                    onItemSelected?.call();
-                  },
-                ),
-            ],
-          ),
-          const SizedBox(height: 10),
-        ],
+        if (menuGroups.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 24),
+            child: Text(
+              'Nenhum item do sumário corresponde à busca.',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+          )
+        else
+          for (final group in menuGroups) ...[
+            _SidebarGroup(
+              key: Key('rules-menu-category-${group.id}'),
+              title: group.title,
+              icon: _categoryIcons[group.id] ?? Icons.menu_book_outlined,
+              isSelected:
+                  _selectedCategoryId == group.id &&
+                  _selectedChapterId == null &&
+                  _selectedDocumentId == null,
+              onTap: () {
+                setState(() {
+                  _selectedCategoryId = group.id;
+                  _selectedChapterId = null;
+                  _selectedDocumentId = null;
+                });
+                onCategorySelected?.call();
+              },
+              children: [
+                for (final item in group.items)
+                  _SidebarItem(
+                    key: Key('rules-menu-item-${item.id}'),
+                    title: item.label,
+                    isSelected:
+                        (_selectedChapterId != null && _selectedChapterId == item.id) ||
+                        (_selectedDocumentId != null && _selectedDocumentId == item.id),
+                    onTap: () {
+                      setState(() {
+                        _selectedCategoryId = group.id;
+                        if (item.kind == _SidebarMenuItemKind.chapter) {
+                          _selectedChapterId = item.id;
+                          _selectedDocumentId = null;
+                        } else {
+                          _selectedDocumentId = item.id;
+                          _selectedChapterId = null;
+                        }
+                      });
+                      onItemSelected?.call();
+                    },
+                  ),
+              ],
+            ),
+            const SizedBox(height: 10),
+          ],
       ],
     );
 
@@ -396,6 +405,36 @@ class _RulesScreenState extends State<RulesScreen> {
         items: items,
       );
     }).toList(growable: false);
+  }
+
+  List<_SidebarMenuGroupData> _buildVisibleMenuGroups(RulesCatalog catalog) {
+    final menuGroups = _buildMenuGroups(catalog);
+    final normalizedQuery = _normalizeForSearch(_searchTerm.trim());
+    if (normalizedQuery.isEmpty) {
+      return menuGroups;
+    }
+
+    final visibleGroups = <_SidebarMenuGroupData>[];
+    for (final group in menuGroups) {
+      final groupMatches = _normalizeForSearch(group.title).contains(normalizedQuery);
+      final matchingItems = group.items.where((item) {
+        return _normalizeForSearch(item.label).contains(normalizedQuery);
+      }).toList(growable: false);
+
+      if (!groupMatches && matchingItems.isEmpty) {
+        continue;
+      }
+
+      visibleGroups.add(
+        _SidebarMenuGroupData(
+          id: group.id,
+          title: group.title,
+          items: groupMatches ? group.items : matchingItems,
+        ),
+      );
+    }
+
+    return visibleGroups;
   }
 
   Future<void> _openSidebarSheet(RulesCatalog catalog) async {

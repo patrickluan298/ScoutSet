@@ -38,7 +38,7 @@ class _TeamDrawResultScreenState extends State<TeamDrawResultScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Resultado da rodada')),
+      appBar: AppBar(title: const Text('Resultado do Sorteio')),
       body: ListView(
         padding: AppSpacing.screen,
         children: [
@@ -67,7 +67,7 @@ class _TeamDrawResultScreenState extends State<TeamDrawResultScreen> {
             runSpacing: 8,
             children: [
               AppButton(
-                label: 'Salvar Resultado',
+                label: 'Salvar Equipes',
                 icon: Icons.save_outlined,
                 onPressed: () => _save(context),
               ),
@@ -77,7 +77,7 @@ class _TeamDrawResultScreenState extends State<TeamDrawResultScreen> {
                 onPressed: () => _startMatch(context),
               ),
               AppButton(
-                label: 'Nova Rodada',
+                label: 'Novo Sorteio',
                 icon: Icons.refresh,
                 onPressed: () => Navigator.of(context).pop(),
               ),
@@ -141,7 +141,7 @@ class _TeamDrawResultScreenState extends State<TeamDrawResultScreen> {
     final selection = await showTeamsMatchupDialog(
       context,
       teams: _currentResult.teams,
-      title: 'Escolha o confronto',
+      title: 'Escolha o Confronto',
       confirmLabel: 'Usar times',
     );
     if (selection == null || !context.mounted) {

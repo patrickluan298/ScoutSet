@@ -31,6 +31,8 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
+    - assets/fonts/DejaVuSans.ttf
+    - assets/fonts/DejaVuSans-Bold.ttf
     - assets/images/logo_scoutset.png
     - assets/data/rules_official_catalog.json
 

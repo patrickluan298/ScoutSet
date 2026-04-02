@@ -49,7 +49,7 @@ class _TeamDrawScreenState extends State<TeamDrawScreen> {
   Future<void> _load() async {
     final players = await _service.listPlayers();
     final waitingQueue = await _service.listLatestWaitingPlayers();
-    final selectedIds = _selectedIds.isEmpty ? players.map((player) => player.id).take(6).toList() : _selectedIds;
+    final selectedIds = List<String>.from(_selectedIds);
     final selectedPlayers = players.where((player) => selectedIds.contains(player.id)).toList();
     final allowedCounts = _service.allowedTeamCounts(selectedPlayers.length);
     if (!mounted) {
@@ -63,6 +63,17 @@ class _TeamDrawScreenState extends State<TeamDrawScreen> {
           (allowedCounts.contains(_selectedTeamCount) ? _selectedTeamCount : allowedCounts.firstOrNull) ?? 2;
       _waitingQueue = waitingQueue;
       _isLoading = false;
+    });
+  }
+
+  void _selectAllPlayers() {
+    setState(() {
+      _selectedIds = _players.map((player) => player.id).toList();
+      final allowedCounts = _service.allowedTeamCounts(_selectedIds.length);
+      _allowedTeamCounts = allowedCounts.isEmpty ? const [2] : allowedCounts;
+      if (!_allowedTeamCounts.contains(_selectedTeamCount)) {
+        _selectedTeamCount = _allowedTeamCounts.first;
+      }
     });
   }
 
@@ -190,6 +201,7 @@ class _TeamDrawScreenState extends State<TeamDrawScreen> {
             players: _players,
             selectedIds: _selectedIds.toSet(),
             onChanged: _togglePlayer,
+            onSelectAll: _players.isEmpty ? null : _selectAllPlayers,
           ),
           AppSpacing.gapMedium,
           AppButton(
