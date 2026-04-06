@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:scoutset/data/local/database/app_services.dart';
+import 'package:scoutset/features/teams/models/draw_team.dart';
 import 'package:scoutset/features/teams/models/team_draw_player.dart';
 import 'package:scoutset/features/teams/models/team_draw_result.dart';
 import 'package:scoutset/features/teams/services/team_draw_service.dart';
@@ -134,5 +135,84 @@ void main() {
       ),
       throwsA(isA<ArgumentError>()),
     );
+  });
+
+  test('rejeita jogador com nome duplicado exato', () async {
+    await expectLater(
+      service.savePlayer(
+        name: 'Ana',
+        position: 'Levantadora',
+        level: PlayerLevel.iniciante,
+      ),
+      throwsA(
+        isA<ArgumentError>().having(
+          (error) => error.message,
+          'message',
+          'Já existe um jogador com esse nome.',
+        ),
+      ),
+    );
+  });
+
+  test('permite jogador com nome diferente mesmo começando igual', () async {
+    await service.savePlayer(
+      name: 'Ana Clara',
+      position: 'Levantadora',
+      level: PlayerLevel.iniciante,
+    );
+
+    final players = await service.listPlayers();
+    expect(players.any((player) => player.name == 'Ana Clara'), isTrue);
+  });
+
+  test('rejeita jogador com espaço no fim do nome', () async {
+    await expectLater(
+      service.savePlayer(
+        name: 'Lucas ',
+        position: 'Ponteiro',
+        level: PlayerLevel.intermediario,
+      ),
+      throwsA(
+        isA<ArgumentError>().having(
+          (error) => error.message,
+          'message',
+          'Remova espaços no início ou no final do nome.',
+        ),
+      ),
+    );
+  });
+
+  test('salva formacoes manuais com ids de equipe unicos', () async {
+    final players = await service.listPlayers();
+    final manualTeams = [
+      DrawTeam(
+        id: 'manual-team-0',
+        name: 'Time A',
+        players: [players[0], players[1], players[2]],
+      ),
+      DrawTeam(
+        id: 'manual-team-1',
+        name: 'Time B',
+        players: [players[3], players[4], players[5]],
+      ),
+    ];
+
+    final result = service.validateManualSetup(
+      selectedPlayers: players,
+      teams: manualTeams,
+      oddPlayerHandling: OddPlayerHandling.extraPlayerOnTeam,
+    );
+
+    final firstGroup = await service.saveResultAsGroup(
+      result: result,
+      title: 'Formacao 1',
+    );
+    final secondGroup = await service.saveResultAsGroup(
+      result: result,
+      title: 'Formacao 2',
+    );
+
+    expect(firstGroup.teams[0].id, isNot('manual-team-0'));
+    expect(secondGroup.teams[0].id, isNot(firstGroup.teams[0].id));
   });
 }

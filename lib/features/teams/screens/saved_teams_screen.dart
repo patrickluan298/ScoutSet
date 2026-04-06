@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../../../../config/app_routes.dart';
 import '../../../../utils/app_spacing.dart';
+import '../../../../utils/confirmation_dialogs.dart';
 import '../../scoreboard/models/match_score.dart';
 import '../../scoreboard/services/scoreboard_service.dart';
-import '../models/draw_team.dart';
+import '../team_dialogs.dart';
 import '../models/saved_team_group.dart';
 import '../services/saved_team_service.dart';
 import '../widgets/saved_team_card.dart';
@@ -40,52 +41,25 @@ class _SavedTeamsScreenState extends State<SavedTeamsScreen> {
   }
 
   Future<void> _renameGroup(SavedTeamGroup group) async {
-    final controller = TextEditingController(text: group.title);
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Renomear formação'),
-        content: TextField(
-          controller: controller,
-          decoration: const InputDecoration(labelText: 'Nome'),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancelar'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Salvar'),
-          ),
-        ],
-      ),
+    final title = await showRenameGroupDialog(
+      context,
+      initialValue: group.title,
     );
 
-    if (confirmed != true) {
+    if (title == null || title.isEmpty) {
       return;
     }
-    await _service.renameGroup(group.id, controller.text);
+    await _service.renameGroup(group.id, title);
     await _load();
   }
 
   Future<void> _deleteGroup(SavedTeamGroup group) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Excluir formação'),
-        content: Text('Deseja excluir "${group.title}"?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancelar'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Excluir'),
-          ),
-        ],
-      ),
+    final confirmed = await showConfirmationDialog(
+      context,
+      title: 'Excluir formação',
+      message: 'Deseja excluir "${group.title}"?',
+      confirmLabel: 'Excluir',
+      destructive: true,
     );
     if (confirmed != true) {
       return;
@@ -95,7 +69,12 @@ class _SavedTeamsScreenState extends State<SavedTeamsScreen> {
   }
 
   Future<void> _useInScoreboard(SavedTeamGroup group) async {
-    final selection = await _pickTeamsForMatch(group.teams);
+    final selection = await showTeamsMatchupDialog(
+      context,
+      teams: group.teams,
+      title: 'Escolha o confronto',
+      confirmLabel: 'Usar times',
+    );
     if (selection == null || !mounted) {
       return;
     }
@@ -103,15 +82,15 @@ class _SavedTeamsScreenState extends State<SavedTeamsScreen> {
     final scoreboardService = ScoreboardService.instance;
     scoreboardService.prepareForNewMatch();
     scoreboardService.startMatch(
-      teamAName: selection.$1.name,
-      teamBName: selection.$2.name,
+      teamAName: selection.teamA.name,
+      teamBName: selection.teamB.name,
       sourceType: MatchSourceType.savedTeamGroup,
       savedTeamGroupId: group.id,
       savedTeamGroupTitle: group.title,
-      teamAPlayers: selection.$1.players,
-      teamBPlayers: selection.$2.players,
-      teamAOriginTeamId: selection.$1.id,
-      teamBOriginTeamId: selection.$2.id,
+      teamAPlayers: selection.teamA.players,
+      teamBPlayers: selection.teamB.players,
+      teamAOriginTeamId: selection.teamA.id,
+      teamBOriginTeamId: selection.teamB.id,
       waitingPlayersSnapshot: group.waitingPlayers,
     );
 
@@ -119,75 +98,6 @@ class _SavedTeamsScreenState extends State<SavedTeamsScreen> {
       return;
     }
     Navigator.pushNamed(context, AppRoutes.scoreboard);
-  }
-
-  Future<(DrawTeam, DrawTeam)?> _pickTeamsForMatch(List<DrawTeam> teams) async {
-    if (teams.length == 2) {
-      return (teams[0], teams[1]);
-    }
-
-    var firstIndex = 0;
-    var secondIndex = 1;
-    return showDialog<(DrawTeam, DrawTeam)>(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          title: const Text('Escolha duas equipes'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              DropdownButtonFormField<int>(
-                initialValue: firstIndex,
-                decoration: const InputDecoration(labelText: 'Time A'),
-                items: List.generate(
-                  teams.length,
-                  (index) => DropdownMenuItem<int>(
-                    value: index,
-                    child: Text(teams[index].name),
-                  ),
-                ),
-                onChanged: (value) {
-                  if (value == null) {
-                    return;
-                  }
-                  setState(() => firstIndex = value);
-                },
-              ),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<int>(
-                initialValue: secondIndex,
-                decoration: const InputDecoration(labelText: 'Time B'),
-                items: List.generate(
-                  teams.length,
-                  (index) => DropdownMenuItem<int>(
-                    value: index,
-                    child: Text(teams[index].name),
-                  ),
-                ),
-                onChanged: (value) {
-                  if (value == null) {
-                    return;
-                  }
-                  setState(() => secondIndex = value);
-                },
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancelar'),
-            ),
-            ElevatedButton(
-              onPressed: firstIndex == secondIndex
-                  ? null
-                  : () => Navigator.of(context).pop((teams[firstIndex], teams[secondIndex])),
-              child: const Text('Confirmar'),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 
   @override
@@ -199,7 +109,7 @@ class _SavedTeamsScreenState extends State<SavedTeamsScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Equipes salvas')),
+      appBar: AppBar(title: const Text('Equipes Salvas')),
       body: _groups.isEmpty
           ? ListView(
               padding: AppSpacing.screen,
@@ -219,10 +129,6 @@ class _SavedTeamsScreenState extends State<SavedTeamsScreen> {
                 return SavedTeamCard(
                   group: group,
                   onUse: () => _useInScoreboard(group),
-                  onDuplicate: () async {
-                    await _service.duplicateGroup(group.id);
-                    await _load();
-                  },
                   onRename: () => _renameGroup(group),
                   onDelete: () => _deleteGroup(group),
                 );

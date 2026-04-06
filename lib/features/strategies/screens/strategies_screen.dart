@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '../../../utils/app_spacing.dart';
+import '../../../utils/confirmation_dialogs.dart';
+import '../../../utils/navigation_helpers.dart';
+import '../../../utils/ui_feedback.dart';
 import '../../../widgets/app_button.dart';
 import '../../../widgets/app_card.dart';
+import '../../../widgets/app_page_scaffold.dart';
 import '../../../widgets/section_title.dart';
 import '../models/player_position.dart';
 import '../models/strategy.dart';
@@ -45,52 +49,28 @@ class _StrategiesScreenState extends State<StrategiesScreen> {
   }
 
   Future<void> _openEditor([Strategy? strategy]) async {
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => StrategyEditorScreen(strategy: strategy),
-      ),
+    await pushPageAndReload(
+      context,
+      StrategyEditorScreen(strategy: strategy),
+      onReturn: _loadStrategies,
     );
-
-    if (!mounted) {
-      return;
-    }
-
-    await _loadStrategies();
   }
 
   Future<void> _openDetail(Strategy strategy) async {
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => StrategyDetailScreen(strategyId: strategy.id),
-      ),
+    await pushPageAndReload(
+      context,
+      StrategyDetailScreen(strategyId: strategy.id),
+      onReturn: _loadStrategies,
     );
-
-    if (!mounted) {
-      return;
-    }
-
-    await _loadStrategies();
   }
 
   Future<void> _deleteStrategy(Strategy strategy) async {
-    final shouldDelete = await showDialog<bool>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Excluir estratégia'),
-          content: Text('Deseja remover "${strategy.name}" da lista?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Cancelar'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Excluir'),
-            ),
-          ],
-        );
-      },
+    final shouldDelete = await showConfirmationDialog(
+      context,
+      title: 'Excluir estratégia',
+      message: 'Deseja remover "${strategy.name}" da lista?',
+      confirmLabel: 'Excluir',
+      destructive: true,
     );
 
     if (shouldDelete != true || !mounted) {
@@ -102,82 +82,74 @@ class _StrategiesScreenState extends State<StrategiesScreen> {
     if (!mounted) {
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Estratégia "${strategy.name}" removida.')),
-    );
+    showAppSnackBar(context, 'Estratégia "${strategy.name}" removida.');
   }
 
   @override
   Widget build(BuildContext context) {
-    final content = RefreshIndicator(
-      onRefresh: _loadStrategies,
-      child: ListView(
-        padding: AppSpacing.screen,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Expanded(
-                child: SectionTitle(
-                  title: 'Estratégias',
-                  subtitle: 'Monte formações, desenhe jogadas e organize cenários táticos para quadra e praia.',
-                ),
-              ),
-              const SizedBox(width: 12),
-              SizedBox(
-                width: 170,
-                child: AppButton(
-                  label: 'Nova estratégia',
-                  icon: Icons.add,
-                  onPressed: () => _openEditor(),
-                ),
-              ),
-            ],
-          ),
-          AppSpacing.gapMedium,
-          if (_isLoading)
-            const Center(
-              child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 32),
-                child: CircularProgressIndicator(),
-              ),
-            )
-          else
-          if (_strategies.isEmpty)
-            AppCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Sua área tática está pronta para começar.',
-                    style: Theme.of(context).textTheme.titleMedium,
+    return AppPageScaffold(
+      showScaffold: widget.showScaffold,
+      child: RefreshIndicator(
+        onRefresh: _loadStrategies,
+        child: ListView(
+          padding: AppSpacing.screen,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Expanded(
+                  child: SectionTitle(
+                    title: 'Estratégias',
+                    subtitle: 'Monte formações, desenhe jogadas e organize cenários táticos para quadra e praia.',
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Crie a primeira estratégia para posicionar atletas, desenhar movimentações e salvar modelos de jogo.',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                  const SizedBox(height: 20),
-                  AppButton(
-                    label: 'Criar primeira estratégia',
-                    icon: Icons.sports_volleyball,
+                ),
+                const SizedBox(width: 12),
+                SizedBox(
+                  width: 170,
+                  child: AppButton(
+                    label: 'Nova estratégia',
+                    icon: Icons.add,
                     onPressed: () => _openEditor(),
                   ),
-                ],
-              ),
-            )
-          else
-            ..._strategies.map(_buildStrategyCard),
-        ],
+                ),
+              ],
+            ),
+            AppSpacing.gapMedium,
+            if (_isLoading)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 32),
+                  child: CircularProgressIndicator(),
+                ),
+              )
+            else if (_strategies.isEmpty)
+              AppCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Sua área tática está pronta para começar.',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Crie a primeira estratégia para posicionar atletas, desenhar movimentações e salvar modelos de jogo.',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                    const SizedBox(height: 20),
+                    AppButton(
+                      label: 'Criar primeira estratégia',
+                      icon: Icons.sports_volleyball,
+                      onPressed: () => _openEditor(),
+                    ),
+                  ],
+                ),
+              )
+            else
+              ..._strategies.map(_buildStrategyCard),
+          ],
+        ),
       ),
-    );
-
-    if (!widget.showScaffold) {
-      return SafeArea(child: content);
-    }
-
-    return Scaffold(
-      body: SafeArea(child: content),
     );
   }
 

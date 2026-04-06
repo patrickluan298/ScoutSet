@@ -8,6 +8,7 @@ import '../../../widgets/dashboard_profile_bottom_navigation.dart';
 import '../../../widgets/section_title.dart';
 import '../models/drill.dart';
 import '../services/drills_service.dart';
+import '../widgets/drill_meta_chip.dart';
 
 enum _DrillFilter {
   all,
@@ -277,34 +278,13 @@ class _DrillLibraryCard extends StatelessWidget {
               spacing: 8,
               runSpacing: 8,
               children: [
-                _MetaTag(label: difficulty),
-                _MetaTag(label: '$playersCount jogadores'),
-                _MetaTag(label: duration),
+                DrillMetaChip(primaryText: difficulty, compact: true),
+                DrillMetaChip(primaryText: '$playersCount jogadores', compact: true),
+                DrillMetaChip(primaryText: duration, compact: true),
               ],
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _MetaTag extends StatelessWidget {
-  const _MetaTag({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      decoration: BoxDecoration(
-        color: AppTheme.lightGrayColor,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        label,
-        style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
       ),
     );
   }

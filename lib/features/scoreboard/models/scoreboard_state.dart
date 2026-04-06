@@ -1,4 +1,5 @@
 import 'match_score.dart';
+import 'set_point_event.dart';
 
 class ScoreboardSnapshot {
   const ScoreboardSnapshot({
@@ -6,12 +7,16 @@ class ScoreboardSnapshot {
     required this.teamBScore,
     required this.servingTeam,
     required this.statusMessage,
+    required this.currentSetStartedAt,
+    required this.currentSetPointEvents,
   });
 
   final int teamAScore;
   final int teamBScore;
   final TeamSide servingTeam;
   final String statusMessage;
+  final DateTime currentSetStartedAt;
+  final List<SetPointEvent> currentSetPointEvents;
 }
 
 class ScoreboardState {
@@ -21,6 +26,8 @@ class ScoreboardState {
     required this.canUndo,
     required this.currentTeamAScore,
     required this.currentTeamBScore,
+    required this.currentSetStartedAt,
+    required this.currentSetPointEvents,
     this.activeMatch,
     this.lastSnapshot,
   });
@@ -32,6 +39,8 @@ class ScoreboardState {
         canUndo = false,
         currentTeamAScore = 0,
         currentTeamBScore = 0,
+        currentSetStartedAt = null,
+        currentSetPointEvents = const [],
         lastSnapshot = null;
 
   final MatchScore? activeMatch;
@@ -40,6 +49,8 @@ class ScoreboardState {
   final bool canUndo;
   final int currentTeamAScore;
   final int currentTeamBScore;
+  final DateTime? currentSetStartedAt;
+  final List<SetPointEvent> currentSetPointEvents;
   final ScoreboardSnapshot? lastSnapshot;
 
   bool get hasActiveMatch => activeMatch != null;
@@ -62,6 +73,8 @@ class ScoreboardState {
     bool? canUndo,
     int? currentTeamAScore,
     int? currentTeamBScore,
+    Object? currentSetStartedAt = _sentinel,
+    List<SetPointEvent>? currentSetPointEvents,
     Object? lastSnapshot = _sentinel,
   }) {
     return ScoreboardState(
@@ -71,6 +84,10 @@ class ScoreboardState {
       canUndo: canUndo ?? this.canUndo,
       currentTeamAScore: currentTeamAScore ?? this.currentTeamAScore,
       currentTeamBScore: currentTeamBScore ?? this.currentTeamBScore,
+      currentSetStartedAt: currentSetStartedAt == _sentinel
+          ? this.currentSetStartedAt
+          : currentSetStartedAt as DateTime?,
+      currentSetPointEvents: currentSetPointEvents ?? this.currentSetPointEvents,
       lastSnapshot:
           lastSnapshot == _sentinel ? this.lastSnapshot : lastSnapshot as ScoreboardSnapshot?,
     );

@@ -149,6 +149,8 @@ class MatchSets extends Table {
   IntColumn get teamBScore => integer().named('team_b_score')();
   TextColumn get winnerTeamId => text().named('winner_team_id')();
   IntColumn get targetPoints => integer().named('target_points')();
+  IntColumn get durationSeconds => integer().named('duration_seconds').withDefault(const Constant(0))();
+  TextColumn get pointEventsJson => text().named('point_events_json').nullable()();
 
   @override
   Set<Column<Object>> get primaryKey => {id};
@@ -422,7 +424,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -458,6 +460,10 @@ class AppDatabase extends _$AppDatabase {
           }
           if (from < 4) {
             await TeamsSeed.cleanupLegacySeedData(this);
+          }
+          if (from < 5) {
+            await m.addColumn(matchSets, matchSets.durationSeconds);
+            await m.addColumn(matchSets, matchSets.pointEventsJson);
           }
         },
         beforeOpen: (details) async {

@@ -56,10 +56,17 @@ class SavedTeamGroup {
     required TeamDrawResult result,
     String? notes,
   }) {
+    final scopedTeams = List<DrawTeam>.generate(
+      result.teams.length,
+      (index) => result.teams[index].copyWith(
+        id: '$id-team-$index',
+      ),
+    );
+
     return SavedTeamGroup(
       id: id,
       title: title,
-      teams: result.teams,
+      teams: scopedTeams,
       waitingPlayers: result.waitingPlayers,
       createdAt: result.createdAt,
       sourceType: switch (result.drawMode) {

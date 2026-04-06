@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../../../../config/app_routes.dart';
 import '../../../../utils/app_spacing.dart';
+import '../../../../utils/confirmation_dialogs.dart';
+import '../../../../utils/navigation_helpers.dart';
+import '../../../../utils/ui_feedback.dart';
 import '../../../../widgets/app_button.dart';
 import '../../../../widgets/app_card.dart';
-import '../../../../widgets/dashboard_profile_bottom_navigation.dart';
+import '../../../../widgets/app_page_scaffold.dart';
+import '../team_dialogs.dart';
 import '../models/team_draw_player.dart';
 import '../services/saved_team_service.dart';
 import '../services/team_draw_service.dart';
@@ -74,138 +77,30 @@ class _TeamsScreenState extends State<TeamsScreen> {
   }
 
   Future<void> _openAddPlayerDialog() async {
-    final formKey = GlobalKey<FormState>();
-    final nameController = TextEditingController();
-    var selectedPosition = _playerPositions.first;
-    var selectedLevel = PlayerLevel.intermediario;
-
-    final created = await showDialog<bool>(
-      context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return AlertDialog(
-              title: const Align(
-                alignment: Alignment.center,
-                child: Text(
-                  'Novo Jogador',
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              content: SingleChildScrollView(
-                child: Form(
-                  key: formKey,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      TextFormField(
-                        controller: nameController,
-                        inputFormatters: [
-                          LengthLimitingTextInputFormatter(_maxPlayerNameLength),
-                        ],
-                        decoration: const InputDecoration(
-                          labelText: 'Nome',
-                          helperText: 'Máximo de 10 caracteres',
-                        ),
-                        validator: (value) {
-                          if ((value ?? '').trim().isEmpty) {
-                            return 'Informe o nome do jogador.';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 12),
-                      DropdownButtonFormField<String>(
-                        initialValue: selectedPosition,
-                        decoration: const InputDecoration(labelText: 'Posição'),
-                        items: _playerPositions
-                            .map(
-                              (position) => DropdownMenuItem<String>(
-                                value: position,
-                                child: Text(position),
-                              ),
-                            )
-                            .toList(),
-                        onChanged: (value) {
-                          if (value == null) {
-                            return;
-                          }
-                          setState(() => selectedPosition = value);
-                        },
-                      ),
-                      const SizedBox(height: 12),
-                      DropdownButtonFormField<PlayerLevel>(
-                        initialValue: selectedLevel,
-                        decoration: const InputDecoration(labelText: 'Nível'),
-                        items: PlayerLevel.values
-                            .map(
-                              (level) => DropdownMenuItem<PlayerLevel>(
-                                value: level,
-                                child: Text(level.label),
-                              ),
-                            )
-                            .toList(),
-                        onChanged: (value) {
-                          if (value == null) {
-                            return;
-                          }
-                          setState(() => selectedLevel = value);
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              actions: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    ElevatedButton(
-                      onPressed: () {
-                        final isValid = formKey.currentState?.validate() ?? false;
-                        if (!isValid) {
-                          return;
-                        }
-                        Navigator.of(context).pop(true);
-                      },
-                      child: const Text('Salvar'),
-                    ),
-                    const SizedBox(height: 8),
-                    Align(
-                      alignment: Alignment.center,
-                      child: TextButton(
-                        onPressed: () => Navigator.of(context).pop(false),
-                        child: const Text('Cancelar'),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            );
-          },
-        );
-      },
+    final draft = await showAddPlayerDialog(
+      context,
+      positions: _playerPositions,
+      maxPlayerNameLength: _maxPlayerNameLength,
+      existingPlayerNames: _players.map((player) => player.name),
     );
 
-    if (created != true) {
+    if (draft == null) {
       return;
     }
 
     try {
       await _drawService.savePlayer(
-        name: nameController.text,
-        position: selectedPosition,
-        level: selectedLevel,
+        name: draft.name,
+        position: draft.position,
+        level: draft.level,
       );
     } on ArgumentError catch (error) {
       if (!mounted) {
         return;
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(error.message?.toString() ?? 'Não foi possível salvar o jogador.'),
-        ),
+      showAppSnackBar(
+        context,
+        error.message?.toString() ?? 'Não foi possível salvar o jogador.',
       );
       return;
     }
@@ -213,45 +108,16 @@ class _TeamsScreenState extends State<TeamsScreen> {
   }
 
   Future<void> _goTo(Widget screen) async {
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (_) => screen),
-    );
-    await _load();
+    await pushPageAndReload(context, screen, onReturn: _load);
   }
 
   Future<void> _removePlayer(TeamDrawPlayer player) async {
-    final shouldRemove = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Align(
-          alignment: Alignment.center,
-          child: Text(
-            'Remover Jogador',
-            textAlign: TextAlign.center,
-          ),
-        ),
-        content: Text('Deseja remover "${player.name}" da lista de jogadores?'),
-        actions: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ElevatedButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                child: const Text('Sim'),
-              ),
-              const SizedBox(height: 8),
-              Align(
-                alignment: Alignment.center,
-                child: TextButton(
-                  onPressed: () => Navigator.of(context).pop(false),
-                  child: const Text('Cancelar'),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
+    final shouldRemove = await showConfirmationDialog(
+      context,
+      title: 'Remover Jogador',
+      message: 'Deseja remover "${player.name}" da lista de jogadores?',
+      confirmLabel: 'Sim',
+      centerTitle: true,
     );
 
     if (shouldRemove != true) {
@@ -263,25 +129,17 @@ class _TeamsScreenState extends State<TeamsScreen> {
     if (!mounted) {
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Jogador "${player.name}" removido.')),
-    );
+    showAppSnackBar(context, 'Jogador "${player.name}" removido.');
   }
 
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
       final loading = const Center(child: CircularProgressIndicator());
-
-      if (!widget.showScaffold) {
-        return SafeArea(child: loading);
-      }
-
-      return Scaffold(
-        body: SafeArea(child: loading),
-        bottomNavigationBar: const DashboardProfileBottomNavigation(
-          currentRoute: AppRoutes.teams,
-        ),
+      return AppPageScaffold(
+        showScaffold: widget.showScaffold,
+        currentRoute: AppRoutes.teams,
+        child: loading,
       );
     }
 
@@ -360,7 +218,7 @@ class _TeamsScreenState extends State<TeamsScreen> {
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: const Icon(Icons.save_outlined),
-                title: const Text('Equipes salvas'),
+                title: const Text('Equipes Salvas'),
                 subtitle: Text(_latestGroupTitle ?? 'Nenhuma formação salva ainda.'),
                 onTap: () => _goTo(const SavedTeamsScreen()),
               ),
@@ -423,15 +281,10 @@ class _TeamsScreenState extends State<TeamsScreen> {
       ],
     );
 
-    if (!widget.showScaffold) {
-      return SafeArea(child: content);
-    }
-
-    return Scaffold(
-      body: SafeArea(child: content),
-      bottomNavigationBar: const DashboardProfileBottomNavigation(
-        currentRoute: AppRoutes.teams,
-      ),
+    return AppPageScaffold(
+      showScaffold: widget.showScaffold,
+      currentRoute: AppRoutes.teams,
+      child: content,
     );
   }
 }

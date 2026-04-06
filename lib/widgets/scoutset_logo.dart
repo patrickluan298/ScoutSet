@@ -34,7 +34,7 @@ class ScoutSetLogo extends StatelessWidget {
         if (showTagline) ...[
           const SizedBox(height: 10),
           Text(
-            'Vôlei, estratégia e leitura de jogo',
+            'Onde a estratégia encontra a quadra',
             textAlign: center ? TextAlign.center : TextAlign.start,
             style: taglineStyle,
           ),

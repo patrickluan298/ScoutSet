@@ -35,6 +35,17 @@ class TeamDrawService {
     if (normalizedName.isEmpty) {
       throw ArgumentError('Informe o nome do jogador.');
     }
+    if (name != normalizedName) {
+      throw ArgumentError('Remova espaços no início ou no final do nome.');
+    }
+
+    final existingPlayers = await _repository.listPlayers();
+    final duplicateExists = existingPlayers.any(
+      (player) => player.name.trim().toLowerCase() == normalizedName.toLowerCase() && player.id != id,
+    );
+    if (duplicateExists) {
+      throw ArgumentError('Já existe um jogador com esse nome.');
+    }
 
     await _repository.savePlayer(
       TeamDrawPlayer(

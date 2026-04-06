@@ -6,6 +6,7 @@ import '../../teams/models/team_draw_player.dart';
 import '../../teams/models/waiting_player.dart';
 import '../models/match_score.dart';
 import '../models/scoreboard_state.dart';
+import '../models/set_point_event.dart';
 import '../models/set_score.dart';
 
 class ScoreboardService {
@@ -40,6 +41,8 @@ class ScoreboardService {
         canUndo: stateNotifier.value.canUndo,
         currentTeamAScore: stateNotifier.value.currentTeamAScore,
         currentTeamBScore: stateNotifier.value.currentTeamBScore,
+        currentSetStartedAt: stateNotifier.value.currentSetStartedAt,
+        currentSetPointEvents: stateNotifier.value.currentSetPointEvents,
         lastSnapshot: stateNotifier.value.lastSnapshot,
       ),
     );
@@ -63,6 +66,7 @@ class ScoreboardService {
     String? teamBOriginTeamId,
     List<WaitingPlayer> waitingPlayersSnapshot = const [],
   }) {
+    final startedAt = DateTime.now();
     final normalizedTeamA = teamAName.trim().toUpperCase();
     final normalizedTeamB = teamBName.trim().toUpperCase();
     if (normalizedTeamA.isEmpty || normalizedTeamB.isEmpty) {
@@ -88,7 +92,7 @@ class ScoreboardService {
       matchStatus: MatchStatus.inProgress,
       sourceType: sourceType,
       winnerTeam: null,
-      createdAt: DateTime.now(),
+      createdAt: startedAt,
       finishedAt: null,
       savedTeamGroupId: savedTeamGroupId,
       savedTeamGroupTitle: savedTeamGroupTitle,
@@ -107,6 +111,8 @@ class ScoreboardService {
         canUndo: false,
         currentTeamAScore: 0,
         currentTeamBScore: 0,
+        currentSetStartedAt: startedAt,
+        currentSetPointEvents: const [],
         lastSnapshot: null,
       ),
     );
@@ -114,9 +120,19 @@ class ScoreboardService {
     return match;
   }
 
-  Future<ScoreboardState> addPointToTeamA() => _addPoint(TeamSide.teamA);
+  Future<ScoreboardState> addPointToTeamA() =>
+      addPoint(team: TeamSide.teamA, pointOrigin: PointOrigin.other);
 
-  Future<ScoreboardState> addPointToTeamB() => _addPoint(TeamSide.teamB);
+  Future<ScoreboardState> addPointToTeamB() =>
+      addPoint(team: TeamSide.teamB, pointOrigin: PointOrigin.other);
+
+  Future<ScoreboardState> addPoint({
+    required TeamSide team,
+    required PointOrigin pointOrigin,
+    TeamDrawPlayer? player,
+  }) async {
+    return _addPoint(team, pointOrigin: pointOrigin, player: player);
+  }
 
   ScoreboardState undoLastPoint() {
     final state = stateNotifier.value;
@@ -133,6 +149,8 @@ class ScoreboardService {
         canUndo: false,
         currentTeamAScore: snapshot.teamAScore,
         currentTeamBScore: snapshot.teamBScore,
+        currentSetStartedAt: snapshot.currentSetStartedAt,
+        currentSetPointEvents: snapshot.currentSetPointEvents,
         lastSnapshot: null,
       ),
     );
@@ -163,6 +181,8 @@ class ScoreboardService {
         canUndo: false,
         currentTeamAScore: 0,
         currentTeamBScore: 0,
+        currentSetStartedAt: DateTime.now(),
+        currentSetPointEvents: const [],
         lastSnapshot: null,
       ),
     );
@@ -181,16 +201,17 @@ class ScoreboardService {
     var displayTeamAScore = state.currentTeamAScore;
     var displayTeamBScore = state.currentTeamBScore;
 
-    final setHasScore = state.currentTeamAScore > 0 || state.currentTeamBScore > 0;
+    final setHasScore = state.currentTeamAScore > 0 ||
+        state.currentTeamBScore > 0 ||
+        state.currentSetPointEvents.isNotEmpty;
     if (setHasScore) {
-      final finalizedSet = SetScore(
+      final finalizedSet = _buildCompletedSet(
         setNumber: match.currentSet,
         teamAScore: state.currentTeamAScore,
         teamBScore: state.currentTeamBScore,
-        winnerTeamId: state.currentTeamAScore == state.currentTeamBScore
-            ? ''
-            : (state.currentTeamAScore > state.currentTeamBScore ? TeamSide.teamA.value : TeamSide.teamB.value),
-        targetPoints: _targetPointsForSet(match.currentSet),
+        pointEvents: state.currentSetPointEvents,
+        startedAt: state.currentSetStartedAt ?? match.createdAt,
+        finishedAt: DateTime.now(),
       );
       updatedMatch = _applyFinishedSet(updatedMatch, finalizedSet);
     } else if (updatedMatch.sets.isNotEmpty) {
@@ -219,6 +240,8 @@ class ScoreboardService {
         canUndo: false,
         currentTeamAScore: 0,
         currentTeamBScore: 0,
+        currentSetStartedAt: null,
+        currentSetPointEvents: const [],
         lastSnapshot: null,
       ),
     );
@@ -244,11 +267,24 @@ class ScoreboardService {
     _setState(const ScoreboardState.initial());
   }
 
-  Future<ScoreboardState> _addPoint(TeamSide team) async {
+  Future<ScoreboardState> _addPoint(
+    TeamSide team, {
+    required PointOrigin pointOrigin,
+    TeamDrawPlayer? player,
+  }) async {
     final state = stateNotifier.value;
     final match = state.activeMatch;
     if (match == null || match.isFinished) {
       return state;
+    }
+
+    final availablePlayers = team == TeamSide.teamA ? match.teamAPlayers : match.teamBPlayers;
+    final requiresPlayerSelection = availablePlayers.isNotEmpty && pointOrigin.requiresPlayer;
+    if (requiresPlayerSelection && player == null) {
+      throw ArgumentError('Selecione o jogador que marcou o ponto.');
+    }
+    if (player != null && player.id.isEmpty) {
+      throw ArgumentError('Jogador inválido para registrar o ponto.');
     }
 
     final snapshot = ScoreboardSnapshot(
@@ -256,6 +292,8 @@ class ScoreboardService {
       teamBScore: state.currentTeamBScore,
       servingTeam: match.servingTeam,
       statusMessage: state.statusMessage,
+      currentSetStartedAt: state.currentSetStartedAt ?? match.createdAt,
+      currentSetPointEvents: List<SetPointEvent>.from(state.currentSetPointEvents),
     );
 
     var teamAScore = state.currentTeamAScore;
@@ -266,8 +304,25 @@ class ScoreboardService {
       teamBScore += 1;
     }
 
+    final startedAt = state.currentSetStartedAt ?? match.createdAt;
+    final pointEvent = SetPointEvent(
+      sequence: state.currentSetPointEvents.length + 1,
+      scoringTeam: team,
+      pointOrigin: pointOrigin,
+      playerId: player?.id,
+      playerName: player?.name,
+      recordedAt: DateTime.now(),
+    );
+    final nextPointEvents = [...state.currentSetPointEvents, pointEvent];
+
     final updatedMatch = match.copyWith(servingTeam: team);
-    final completedSet = _tryCloseSet(updatedMatch.currentSet, teamAScore, teamBScore);
+    final completedSet = _tryCloseSet(
+      updatedMatch.currentSet,
+      teamAScore,
+      teamBScore,
+      startedAt: startedAt,
+      pointEvents: nextPointEvents,
+    );
 
     if (completedSet == null) {
       _setState(
@@ -277,6 +332,8 @@ class ScoreboardService {
           canUndo: true,
           currentTeamAScore: teamAScore,
           currentTeamBScore: teamBScore,
+          currentSetStartedAt: startedAt,
+          currentSetPointEvents: nextPointEvents,
           lastSnapshot: snapshot,
         ),
       );
@@ -303,17 +360,25 @@ class ScoreboardService {
       state.copyWith(
         activeMatch: progressedMatch,
         statusMessage:
-            '$setWinnerName venceu o set ${completedSet.setNumber}. ${_inProgressSetLabel(progressedMatch.currentSet)}',
+            '$setWinnerName venceu o ${completedSet.setNumber}º set.\n${_inProgressSetLabel(progressedMatch.currentSet)}',
         canUndo: false,
         currentTeamAScore: 0,
         currentTeamBScore: 0,
+        currentSetStartedAt: DateTime.now(),
+        currentSetPointEvents: const [],
         lastSnapshot: null,
       ),
     );
     return stateNotifier.value;
   }
 
-  SetScore? _tryCloseSet(int setNumber, int teamAScore, int teamBScore) {
+  SetScore? _tryCloseSet(
+    int setNumber,
+    int teamAScore,
+    int teamBScore, {
+    required DateTime startedAt,
+    required List<SetPointEvent> pointEvents,
+  }) {
     final targetPoints = _targetPointsForSet(setNumber);
     final hasReachedTarget = teamAScore >= targetPoints || teamBScore >= targetPoints;
     final hasRequiredLead = (teamAScore - teamBScore).abs() >= 2;
@@ -321,13 +386,35 @@ class ScoreboardService {
       return null;
     }
 
-    final winner = teamAScore > teamBScore ? TeamSide.teamA : TeamSide.teamB;
+    return _buildCompletedSet(
+      setNumber: setNumber,
+      teamAScore: teamAScore,
+      teamBScore: teamBScore,
+      pointEvents: pointEvents,
+      startedAt: startedAt,
+      finishedAt: DateTime.now(),
+    );
+  }
+
+  SetScore _buildCompletedSet({
+    required int setNumber,
+    required int teamAScore,
+    required int teamBScore,
+    required List<SetPointEvent> pointEvents,
+    required DateTime startedAt,
+    required DateTime finishedAt,
+  }) {
+    final winner = teamAScore == teamBScore
+        ? null
+        : (teamAScore > teamBScore ? TeamSide.teamA : TeamSide.teamB);
     return SetScore(
       setNumber: setNumber,
       teamAScore: teamAScore,
       teamBScore: teamBScore,
-      winnerTeamId: winner.value,
-      targetPoints: targetPoints,
+      winnerTeamId: winner?.value ?? '',
+      targetPoints: _targetPointsForSet(setNumber),
+      durationSeconds: finishedAt.difference(startedAt).inSeconds.clamp(0, 86400),
+      pointEvents: pointEvents,
     );
   }
 
@@ -377,6 +464,8 @@ class ScoreboardService {
         canUndo: false,
         currentTeamAScore: currentTeamAScore,
         currentTeamBScore: currentTeamBScore,
+        currentSetStartedAt: null,
+        currentSetPointEvents: const [],
         lastSnapshot: null,
       ),
     );
@@ -393,7 +482,7 @@ class ScoreboardService {
     }
 
     final winner = match.winnerTeam == TeamSide.teamA.value ? match.teamAName : match.teamBName;
-    return 'Partida encerrada. $winner venceu por ${match.teamASetsWon}x${match.teamBSetsWon}.';
+    return 'Partida encerrada.\n$winner venceu por ${match.teamASetsWon}x${match.teamBSetsWon}.';
   }
 
   String _nextId() {

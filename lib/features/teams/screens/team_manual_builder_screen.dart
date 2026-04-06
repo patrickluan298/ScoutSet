@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 
 import '../../../../utils/app_spacing.dart';
+import '../../../../utils/navigation_helpers.dart';
+import '../../../../utils/ui_feedback.dart';
 import '../../../../widgets/app_button.dart';
 import '../../../../widgets/app_card.dart';
+import '../team_draw_flow.dart';
 import '../models/draw_team.dart';
 import '../models/team_draw_player.dart';
 import '../models/team_draw_result.dart';
 import '../services/team_draw_service.dart';
-import '../widgets/draw_options_sheet.dart';
 import '../widgets/manual_team_builder.dart';
 import '../widgets/player_selection_list.dart';
 import 'team_draw_result_screen.dart';
@@ -36,13 +38,12 @@ class _TeamManualBuilderScreenState extends State<TeamManualBuilderScreen> {
 
   Future<void> _load() async {
     final players = await _service.listPlayers();
-    final selectedIds = players.map((player) => player.id).take(6).toList();
     if (!mounted) {
       return;
     }
     setState(() {
       _players = players;
-      _selectedIds = selectedIds;
+      _selectedIds = [];
       _teams = _buildEmptyTeams(_teamCount);
       _isLoading = false;
     });
@@ -70,6 +71,27 @@ class _TeamManualBuilderScreenState extends State<TeamManualBuilderScreen> {
     });
   }
 
+  void _selectAllPlayers() {
+    setState(() {
+      _selectedIds = _players.map((player) => player.id).toList();
+    });
+  }
+
+  void _clearAllPlayers() {
+    setState(() {
+      _selectedIds = [];
+      _teams = _buildEmptyTeams(_teamCount);
+    });
+  }
+
+  void _toggleAllPlayers() {
+    if (_selectedIds.length == _players.length) {
+      _clearAllPlayers();
+      return;
+    }
+    _selectAllPlayers();
+  }
+
   void _removePlayerFromTeams(String playerId) {
     _teams = [
       for (final team in _teams)
@@ -82,11 +104,7 @@ class _TeamManualBuilderScreenState extends State<TeamManualBuilderScreen> {
   void _assignPlayer(String playerId, int teamIndex) {
     final player = _players.firstWhere((item) => item.id == playerId);
     if (_teams[teamIndex].players.length >= TeamDrawService.maxPlayersPerTeam) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Cada equipe pode ter no máximo 6 jogadores.'),
-        ),
-      );
+      showAppSnackBar(context, 'Cada equipe pode ter no máximo 6 jogadores.');
       return;
     }
     setState(() {
@@ -104,13 +122,9 @@ class _TeamManualBuilderScreenState extends State<TeamManualBuilderScreen> {
 
   Future<void> _fillAutomatically(DrawMode mode) async {
     final selectedPlayers = _players.where((player) => _selectedIds.contains(player.id)).toList();
-    var oddHandling = OddPlayerHandling.extraPlayerOnTeam;
-    if (selectedPlayers.length.isOdd) {
-      final selection = await DrawOptionsSheet.show(context);
-      if (selection == null) {
-        return;
-      }
-      oddHandling = selection;
+    final oddHandling = await resolveOddPlayerHandling(context, selectedPlayers.length);
+    if (oddHandling == null) {
+      return;
     }
     try {
       final result = await _service.createDraw(
@@ -129,21 +143,18 @@ class _TeamManualBuilderScreenState extends State<TeamManualBuilderScreen> {
       if (!mounted) {
         return;
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.message?.toString() ?? 'Não foi possível preencher as equipes.')),
+      showAppSnackBar(
+        context,
+        error.message?.toString() ?? 'Não foi possível preencher as equipes.',
       );
     }
   }
 
   Future<void> _saveManual() async {
     final selectedPlayers = _players.where((player) => _selectedIds.contains(player.id)).toList();
-    var oddHandling = OddPlayerHandling.extraPlayerOnTeam;
-    if (selectedPlayers.length.isOdd) {
-      final selection = await DrawOptionsSheet.show(context);
-      if (selection == null) {
-        return;
-      }
-      oddHandling = selection;
+    final oddHandling = await resolveOddPlayerHandling(context, selectedPlayers.length);
+    if (oddHandling == null) {
+      return;
     }
     try {
       final result = _service.validateManualSetup(
@@ -155,17 +166,14 @@ class _TeamManualBuilderScreenState extends State<TeamManualBuilderScreen> {
       if (!mounted) {
         return;
       }
-      await Navigator.of(context).push(
-        MaterialPageRoute<void>(
-          builder: (_) => TeamDrawResultScreen(result: result),
-        ),
-      );
+      await pushPage(context, TeamDrawResultScreen(result: result));
     } on ArgumentError catch (error) {
       if (!mounted) {
         return;
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.message?.toString() ?? 'Formação manual inválida.')),
+      showAppSnackBar(
+        context,
+        error.message?.toString() ?? 'Formação manual inválida.',
       );
     }
   }
@@ -226,6 +234,9 @@ class _TeamManualBuilderScreenState extends State<TeamManualBuilderScreen> {
             players: _players,
             selectedIds: _selectedIds.toSet(),
             onChanged: _togglePlayer,
+            onToggleAll: _players.isEmpty ? null : _toggleAllPlayers,
+            toggleAllLabel:
+                _selectedIds.length == _players.length ? 'Desmarcar todos' : 'Selecionar todos',
             title: 'Jogadores Participantes',
           ),
           AppSpacing.gapMedium,

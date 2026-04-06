@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 
+import '../auth_validators.dart';
 import '../../../services/auth_service.dart';
 import '../../../utils/app_spacing.dart';
+import '../../../utils/ui_feedback.dart';
 import '../../../widgets/app_button.dart';
 import '../../../widgets/app_card.dart';
 import '../../../widgets/app_text_field.dart';
+import '../../../widgets/scoutset_logo.dart';
 import '../../../widgets/section_title.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -56,38 +59,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return null;
   }
 
-  String? _validateEmail(String? value) {
-    final email = value?.trim() ?? '';
-    if (email.isEmpty) {
-      return 'Informe seu e-mail.';
-    }
-    if (!_authService.isValidEmail(email)) {
-      return 'Digite um e-mail válido.';
-    }
-    return null;
-  }
-
-  String? _validatePassword(String? value) {
-    final password = value?.trim() ?? '';
-    if (password.isEmpty) {
-      return 'Crie uma senha.';
-    }
-    if (password.length < 8) {
-      return 'A senha deve ter ao menos 8 caracteres.';
-    }
-    if (!_hasUppercase(password)) {
-      return 'Use ao menos uma letra maiuscula.';
-    }
-    if (!_hasNumber(password)) {
-      return 'Use ao menos um numero.';
-    }
-    if (!_hasSpecial(password)) {
-      return 'Use ao menos um caractere especial.';
-    }
-    return null;
-  }
-
-  Future<void> _handleRegister() async {
+  Future<void> _submitRegister() async {
     final isValid = _formKey.currentState?.validate() ?? false;
     if (!isValid) {
       return;
@@ -111,9 +83,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (!mounted) {
         return;
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.message.toString())),
-      );
+      showAppSnackBar(context, error.message.toString());
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -121,144 +91,113 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
   }
 
-  bool _hasUppercase(String value) => value.contains(RegExp(r'[A-Z]'));
-  bool _hasNumber(String value) => value.contains(RegExp(r'[0-9]'));
-  bool _hasSpecial(String value) => value.contains(RegExp(r'[^A-Za-z0-9]'));
-
-  int _passwordScore(String password) {
-    var score = 0;
-    if (password.length >= 8) {
-      score++;
-    }
-    if (_hasUppercase(password)) {
-      score++;
-    }
-    if (_hasNumber(password)) {
-      score++;
-    }
-    if (_hasSpecial(password)) {
-      score++;
-    }
-    return score;
-  }
-
-  Color _passwordColor(int score) {
-    if (score <= 1) {
-      return const Color(0xFFDC2626);
-    }
-    if (score <= 3) {
-      return const Color(0xFFF59E0B);
-    }
-    return const Color(0xFF16A34A);
-  }
-
-  String _passwordLabel(int score) {
-    if (score <= 1) {
-      return 'Senha fraca';
-    }
-    if (score <= 3) {
-      return 'Senha media';
-    }
-    return 'Senha forte';
-  }
-
   @override
   Widget build(BuildContext context) {
-    final password = _passwordController.text;
-    final score = _passwordScore(password);
-    final strengthColor = _passwordColor(score);
+    final strength = PasswordValidators.evaluate(_passwordController.text);
 
     return Scaffold(
+      backgroundColor: const Color(0xFF081426),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: AppSpacing.screen,
-          child: Center(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: AppSpacing.screen,
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 440),
               child: Form(
                 key: _formKey,
-                child: AppCard(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SectionTitle(
-                        title: 'Cadastro de Usuário',
-                        subtitle: 'Crie sua conta. Depois do cadastro, você retorna ao login para entrar no app.',
-                        centered: true,
-                      ),
-                      AppSpacing.gapLarge,
-                      AppTextField(
-                        label: 'Nome',
-                        hintText: 'Como deseja ser identificado',
-                        controller: _nameController,
-                        prefixIcon: Icons.person_outline,
-                        validator: _validateName,
-                        maxLength: _nameMaxLength,
-                      ),
-                      AppSpacing.gapSmall,
-                      AppTextField(
-                        label: 'E-mail',
-                        hintText: 'usuario@exemplo.com',
-                        controller: _emailController,
-                        keyboardType: TextInputType.emailAddress,
-                        prefixIcon: Icons.mail_outline,
-                        validator: _validateEmail,
-                        maxLength: _emailMaxLength,
-                      ),
-                      AppSpacing.gapSmall,
-                      AppTextField(
-                        label: 'Senha',
-                        hintText: 'Crie uma senha segura',
-                        controller: _passwordController,
-                        obscureText: _obscurePassword,
-                        prefixIcon: Icons.lock_outline,
-                        validator: _validatePassword,
-                        maxLength: _passwordMaxLength,
-                        suffixIcon: IconButton(
-                          onPressed: () {
-                            setState(() {
-                              _obscurePassword = !_obscurePassword;
-                            });
-                          },
-                          icon: Icon(
-                            _obscurePassword
-                                ? Icons.visibility_outlined
-                                : Icons.visibility_off_outlined,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const Center(
+                      child: ScoutSetLogo(showTagline: true, center: true),
+                    ),
+                    AppSpacing.gapLarge,
+                    AppCard(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Align(
+                            alignment: Alignment.center,
+                            child: SectionTitle(
+                              title: 'Cadastro de Usuário',
+                              centered: true,
+                            ),
                           ),
-                        ),
+                          AppSpacing.gapLarge,
+                          AppTextField(
+                            label: 'Nome',
+                            hintText: 'Como deseja ser identificado',
+                            controller: _nameController,
+                            prefixIcon: Icons.person_outline,
+                            validator: _validateName,
+                            maxLength: _nameMaxLength,
+                          ),
+                          AppSpacing.gapSmall,
+                          AppTextField(
+                            label: 'E-mail',
+                            hintText: 'usuario@exemplo.com',
+                            controller: _emailController,
+                            keyboardType: TextInputType.emailAddress,
+                            prefixIcon: Icons.mail_outline,
+                            validator: AuthValidators.validateEmail,
+                            maxLength: _emailMaxLength,
+                          ),
+                          AppSpacing.gapSmall,
+                          AppTextField(
+                            label: 'Senha',
+                            hintText: 'Crie uma senha segura',
+                            controller: _passwordController,
+                            obscureText: _obscurePassword,
+                            prefixIcon: Icons.lock_outline,
+                            validator: PasswordValidators.validateNewPassword,
+                            maxLength: _passwordMaxLength,
+                            suffixIcon: IconButton(
+                              onPressed: () {
+                                setState(() {
+                                  _obscurePassword = !_obscurePassword;
+                                });
+                              },
+                              icon: Icon(
+                                _obscurePassword
+                                    ? Icons.visibility_outlined
+                                    : Icons.visibility_off_outlined,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Use 8+ caracteres, pelo menos 1 número, 1 maiúscula e 1 caractere especial.',
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                          const SizedBox(height: 10),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(999),
+                            child: LinearProgressIndicator(
+                              minHeight: 8,
+                              value: strength.score / 4,
+                              color: strength.color,
+                              backgroundColor: const Color(0xFFE5E7EB),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            strength.label,
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                  color: strength.color,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                          ),
+                          AppSpacing.gapMedium,
+                          AppButton(
+                            label: 'Cadastrar',
+                            icon: Icons.person_add_alt_1,
+                            isLoading: _isLoading,
+                            onPressed: _submitRegister,
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Use 8+ caracteres, 1 numero, 1 maiuscula e 1 caractere especial.',
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                      const SizedBox(height: 10),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(999),
-                        child: LinearProgressIndicator(
-                          minHeight: 8,
-                          value: score / 4,
-                          color: strengthColor,
-                          backgroundColor: const Color(0xFFE5E7EB),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        _passwordLabel(score),
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: strengthColor,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      AppSpacing.gapMedium,
-                      AppButton(
-                        label: 'Cadastrar',
-                        icon: Icons.person_add_alt_1,
-                        isLoading: _isLoading,
-                        onPressed: _handleRegister,
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),

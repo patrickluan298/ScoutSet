@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:drift/drift.dart';
 
 import '../../../features/scoreboard/models/match_score.dart' as scoreboard_model;
+import '../../../features/scoreboard/models/set_point_event.dart';
 import '../../../features/scoreboard/models/set_score.dart';
 import '../../../features/teams/models/team_draw_player.dart' as team_models;
 import '../../../features/teams/models/waiting_player.dart' as team_models;
@@ -87,6 +88,8 @@ class MatchesRepository {
               teamBScore: set.teamBScore,
               winnerTeamId: set.winnerTeamId,
               targetPoints: set.targetPoints,
+              durationSeconds: Value(set.durationSeconds),
+              pointEventsJson: Value(_encodePointEvents(set.pointEvents)),
             ),
           );
         }
@@ -138,40 +141,64 @@ class MatchesRepository {
       teamBScore: row.teamBScore,
       winnerTeamId: row.winnerTeamId,
       targetPoints: row.targetPoints,
+      durationSeconds: row.durationSeconds,
+      pointEvents: _decodePointEvents(row.pointEventsJson),
     );
   }
 
   String? _encodePlayers(List<team_models.TeamDrawPlayer> players) {
-    if (players.isEmpty) {
-      return null;
-    }
-    return jsonEncode(players.map((player) => player.toJson()).toList());
+    return _encodeJsonList(players, (player) => player.toJson());
   }
 
   List<team_models.TeamDrawPlayer> _decodePlayers(String? source) {
-    if (source == null || source.isEmpty) {
-      return const [];
-    }
-    final decoded = jsonDecode(source) as List<dynamic>;
-    return decoded
-        .map((item) => team_models.TeamDrawPlayer.fromJson(Map<String, dynamic>.from(item as Map)))
-        .toList();
+    return _decodeJsonList(
+      source,
+      (item) => team_models.TeamDrawPlayer.fromJson(Map<String, dynamic>.from(item)),
+    );
   }
 
   String? _encodeWaitingPlayers(List<team_models.WaitingPlayer> players) {
-    if (players.isEmpty) {
-      return null;
-    }
-    return jsonEncode(players.map((player) => player.toJson()).toList());
+    return _encodeJsonList(players, (player) => player.toJson());
   }
 
   List<team_models.WaitingPlayer> _decodeWaitingPlayers(String? source) {
+    return _decodeJsonList(
+      source,
+      (item) => team_models.WaitingPlayer.fromJson(Map<String, dynamic>.from(item)),
+    );
+  }
+
+  String? _encodePointEvents(List<SetPointEvent> pointEvents) {
+    return _encodeJsonList(pointEvents, (event) => event.toJson());
+  }
+
+  List<SetPointEvent> _decodePointEvents(String? source) {
+    return _decodeJsonList(
+      source,
+      (item) => SetPointEvent.fromJson(Map<String, dynamic>.from(item)),
+    );
+  }
+
+  String? _encodeJsonList<T>(
+    List<T> values,
+    Map<String, dynamic> Function(T value) toJson,
+  ) {
+    if (values.isEmpty) {
+      return null;
+    }
+    return jsonEncode(values.map(toJson).toList());
+  }
+
+  List<T> _decodeJsonList<T>(
+    String? source,
+    T Function(Map<String, dynamic> json) fromJson,
+  ) {
     if (source == null || source.isEmpty) {
       return const [];
     }
     final decoded = jsonDecode(source) as List<dynamic>;
     return decoded
-        .map((item) => team_models.WaitingPlayer.fromJson(Map<String, dynamic>.from(item as Map)))
+        .map((item) => fromJson(Map<String, dynamic>.from(item as Map)))
         .toList();
   }
 }

@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:scoutset/core/theme/app_theme.dart';
 import 'package:scoutset/data/local/database/app_services.dart';
+import 'package:scoutset/features/scoreboard/models/set_score.dart';
 import 'package:scoutset/features/scoreboard/screens/scoreboard_screen.dart';
 import 'package:scoutset/features/scoreboard/services/scoreboard_service.dart';
+import 'package:scoutset/features/scoreboard/widgets/set_score_table.dart';
+import 'package:scoutset/features/teams/models/team_draw_player.dart';
 
 void main() {
   late ScoreboardService service;
@@ -24,6 +27,23 @@ void main() {
   Future<void> pumpScoreboard(WidgetTester tester) async {
     await tester.pumpWidget(buildTestable(const ScoreboardScreen()));
     await tester.pumpAndSettle();
+  }
+
+  Future<void> addPoints(ScoreboardService service, {required int teamA, required int teamB}) async {
+    final sharedPoints = teamA < teamB ? teamA : teamB;
+
+    for (var i = 0; i < sharedPoints; i++) {
+      await service.addPointToTeamA();
+      await service.addPointToTeamB();
+    }
+
+    for (var i = sharedPoints; i < teamA; i++) {
+      await service.addPointToTeamA();
+    }
+
+    for (var i = sharedPoints; i < teamB; i++) {
+      await service.addPointToTeamB();
+    }
   }
 
   testWidgets('shows setup card before a match starts', (tester) async {
@@ -154,5 +174,124 @@ void main() {
 
     expect(find.text('Detalhes da Partida'), findsOneWidget);
     expect(find.textContaining('Vencedor:'), findsWidgets);
+  });
+
+  testWidgets('opens point origin sheet and player picker for roster matches', (tester) async {
+    const player = TeamDrawPlayer(
+      id: 'p1',
+      name: 'Joao',
+      position: 'Ponteiro',
+      level: PlayerLevel.avancado,
+    );
+    service.startMatch(
+      teamAName: 'A',
+      teamBName: 'B',
+      teamAPlayers: const [player],
+    );
+
+    await pumpScoreboard(tester);
+    await tester.tap(find.widgetWithText(ElevatedButton, '+1 A').first);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Ataque'), findsOneWidget);
+    expect(find.text('Erro adversário'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('point-origin-team_a-attack')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Quem marcou por A?'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('point-player-p1')));
+    await tester.pumpAndSettle();
+
+    expect(service.getState().currentTeamAScore, 1);
+  });
+
+  testWidgets('manual match scores directly without opening point category sheet', (tester) async {
+    service.startMatch(teamAName: 'A', teamBName: 'B');
+
+    await pumpScoreboard(tester);
+    await tester.tap(find.widgetWithText(ElevatedButton, '+1 A').first);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Registrar ponto para A'), findsNothing);
+    expect(find.text('Erro adversário'), findsNothing);
+    expect(service.getState().currentTeamAScore, 1);
+  });
+
+  testWidgets('finished match keeps next set summary at zero', (tester) async {
+    await tester.pumpWidget(
+      buildTestable(
+        const SetScoreTable(
+          finishedSets: [
+            SetScore(
+              setNumber: 1,
+              teamAScore: 25,
+              teamBScore: 20,
+              winnerTeamId: 'team_a',
+              targetPoints: 25,
+            ),
+          ],
+          currentSet: 2,
+          currentTeamAScore: 25,
+          currentTeamBScore: 20,
+          currentTargetPoints: 25,
+          isMatchFinished: true,
+        ),
+      ),
+    );
+
+    expect(find.text('0'), findsNWidgets(2));
+    expect(find.text('Set 2'), findsOneWidget);
+  });
+
+  testWidgets('shows red match point alert when next point can end the match', (tester) async {
+    service.startMatch(teamAName: 'A', teamBName: 'B');
+    await addPoints(service, teamA: 25, teamB: 10);
+    await addPoints(service, teamA: 24, teamB: 20);
+
+    await pumpScoreboard(tester);
+
+    expect(find.text('MATCH POINT PARA A'), findsOneWidget);
+    expect(find.byIcon(Icons.warning_amber_rounded), findsOneWidget);
+  });
+
+  testWidgets('shows red match point alert in the deciding set', (tester) async {
+    service.startMatch(teamAName: 'A', teamBName: 'B');
+    await addPoints(service, teamA: 25, teamB: 10);
+    await addPoints(service, teamA: 20, teamB: 25);
+    await addPoints(service, teamA: 14, teamB: 12);
+
+    await pumpScoreboard(tester);
+
+    expect(find.text('MATCH POINT PARA A'), findsOneWidget);
+  });
+
+  testWidgets('shows yellow set point alert in the first set', (tester) async {
+    service.startMatch(teamAName: 'A', teamBName: 'B');
+    await addPoints(service, teamA: 24, teamB: 20);
+
+    await pumpScoreboard(tester);
+
+    expect(find.text('SET POINT PARA A'), findsOneWidget);
+    expect(find.byIcon(Icons.notification_important_outlined), findsOneWidget);
+    expect(find.text('MATCH POINT PARA A'), findsNothing);
+  });
+
+  testWidgets('keeps match point only for the tie-break after the game reaches 1x1', (tester) async {
+    service.startMatch(teamAName: 'A', teamBName: 'B');
+    await addPoints(service, teamA: 25, teamB: 10);
+    await addPoints(service, teamA: 20, teamB: 24);
+
+    await pumpScoreboard(tester);
+
+    expect(find.text('MATCH POINT PARA B'), findsNothing);
+    expect(find.text('SET POINT PARA B'), findsOneWidget);
+
+    await service.addPointToTeamB();
+    await addPoints(service, teamA: 14, teamB: 12);
+    await tester.pumpWidget(buildTestable(const ScoreboardScreen()));
+    await tester.pumpAndSettle();
+
+    expect(find.text('MATCH POINT PARA A'), findsOneWidget);
   });
 }

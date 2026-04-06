@@ -12,7 +12,7 @@ const List<Drill> kInitialDrills = [
     objective: 'Melhorar leitura do saque, estabilidade de manchete e transição para levantamento.',
     difficulty: 'Intermediário',
     duration: '12 min',
-    isFavorite: true,
+    isFavorite: false,
     players: [
       DrillPlayer(id: 'a', label: 'A', role: 'Passadora', colorHex: _teamBlue),
       DrillPlayer(id: 'b', label: 'B', role: 'Levantadora', colorHex: _teamOrange),
@@ -225,7 +225,7 @@ const List<Drill> kInitialDrills = [
     objective: 'Desenvolver precisão no saque com foco em alvos específicos da quadra.',
     difficulty: 'Intermediário',
     duration: '10 min',
-    isFavorite: true,
+    isFavorite: false,
     players: [
       DrillPlayer(id: 'server', label: 'S', role: 'Sacadora', colorHex: _teamBlue),
       DrillPlayer(id: 'target', label: 'T', role: 'Alvo', colorHex: _teamOrange),

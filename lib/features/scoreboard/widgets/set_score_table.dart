@@ -11,6 +11,7 @@ class SetScoreTable extends StatelessWidget {
     required this.currentTeamAScore,
     required this.currentTeamBScore,
     required this.currentTargetPoints,
+    this.isMatchFinished = false,
     super.key,
   });
 
@@ -19,6 +20,7 @@ class SetScoreTable extends StatelessWidget {
   final int currentTeamAScore;
   final int currentTeamBScore;
   final int currentTargetPoints;
+  final bool isMatchFinished;
 
   @override
   Widget build(BuildContext context) {
@@ -49,6 +51,7 @@ class SetScoreTable extends StatelessWidget {
                   _HeaderCell(label: 'Time A'),
                   _HeaderCell(label: 'Time B'),
                   _HeaderCell(label: 'Meta'),
+                  _HeaderCell(label: 'Duração'),
                 ],
               ),
               for (var setNumber = 1; setNumber <= 3; setNumber++) _buildSetRow(setNumber),
@@ -62,8 +65,10 @@ class SetScoreTable extends StatelessWidget {
   TableRow _buildSetRow(int setNumber) {
     final finishedSet = _findSet(setNumber);
     final isCurrent = setNumber == currentSet && finishedSet == null;
-    final teamAScore = finishedSet?.teamAScore ?? (isCurrent ? currentTeamAScore : null);
-    final teamBScore = finishedSet?.teamBScore ?? (isCurrent ? currentTeamBScore : null);
+    final inProgressTeamAScore = isMatchFinished ? 0 : currentTeamAScore;
+    final inProgressTeamBScore = isMatchFinished ? 0 : currentTeamBScore;
+    final teamAScore = finishedSet?.teamAScore ?? (isCurrent ? inProgressTeamAScore : null);
+    final teamBScore = finishedSet?.teamBScore ?? (isCurrent ? inProgressTeamBScore : null);
     final targetPoints = finishedSet?.targetPoints ??
         (setNumber == currentSet ? currentTargetPoints : (setNumber == 3 ? 15 : 25));
     final rowColor = finishedSet != null
@@ -82,6 +87,10 @@ class SetScoreTable extends StatelessWidget {
         _ValueCell(label: teamAScore?.toString() ?? '-', isHighlighted: isCurrent),
         _ValueCell(label: teamBScore?.toString() ?? '-', isHighlighted: isCurrent),
         _ValueCell(label: '$targetPoints pts', isHighlighted: false),
+        _ValueCell(
+          label: finishedSet == null ? '-' : _formatDuration(finishedSet.durationSeconds),
+          isHighlighted: false,
+        ),
       ],
     );
   }
@@ -93,6 +102,21 @@ class SetScoreTable extends StatelessWidget {
       }
     }
     return null;
+  }
+
+  String _formatDuration(int durationSeconds) {
+    if (durationSeconds <= 0) {
+      return '-';
+    }
+
+    final duration = Duration(seconds: durationSeconds);
+    final hours = duration.inHours;
+    final minutes = duration.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final seconds = duration.inSeconds.remainder(60).toString().padLeft(2, '0');
+    if (hours > 0) {
+      return '${hours.toString().padLeft(2, '0')}:$minutes:$seconds';
+    }
+    return '${duration.inMinutes.toString().padLeft(2, '0')}:$seconds';
   }
 }
 

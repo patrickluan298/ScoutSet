@@ -50,7 +50,7 @@ class _AppShellScreenState extends State<AppShellScreen> {
     final currentRoute = _routes[_currentIndex];
 
     return Scaffold(
-      body: SafeArea(child: _pages[_currentIndex]),
+      body: _pages[_currentIndex],
       bottomNavigationBar: DashboardProfileBottomNavigation(currentRoute: currentRoute),
     );
   }

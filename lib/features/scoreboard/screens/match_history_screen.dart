@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../utils/app_spacing.dart';
+import '../../../utils/ui_feedback.dart';
 import '../../../widgets/app_card.dart';
 import '../models/match_score.dart';
 import '../services/match_pdf_service.dart';
@@ -107,21 +108,16 @@ class MatchHistoryScreen extends StatelessWidget {
                                 if (!context.mounted) {
                                   return;
                                 }
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('PDF salvo em ${file.path}')),
-                                );
+                                showAppSnackBar(context, 'PDF salvo em ${file.path}');
                               } on FileSystemException catch (error) {
                                 if (!context.mounted) {
                                   return;
                                 }
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      error.message.isEmpty
-                                          ? 'Não foi possível salvar o PDF nos downloads do dispositivo.'
-                                          : error.message,
-                                    ),
-                                  ),
+                                showAppSnackBar(
+                                  context,
+                                  error.message.isEmpty
+                                      ? 'Não foi possível salvar o PDF nos downloads do dispositivo.'
+                                      : error.message,
                                 );
                               }
                             },
@@ -140,14 +136,11 @@ class MatchHistoryScreen extends StatelessWidget {
                                 if (!context.mounted) {
                                   return;
                                 }
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      error.message.isEmpty
-                                          ? 'Não foi possível preparar o PDF para compartilhamento.'
-                                          : error.message,
-                                    ),
-                                  ),
+                                showAppSnackBar(
+                                  context,
+                                  error.message.isEmpty
+                                      ? 'Não foi possível preparar o PDF para compartilhamento.'
+                                      : error.message,
                                 );
                               }
                             },

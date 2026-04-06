@@ -1,0 +1,45 @@
+import 'dart:io';
+
+import 'package:flutter_test/flutter_test.dart';
+import 'package:scoutset/features/rules/data/rules_catalog_repository.dart';
+
+void main() {
+  test('rules catalog preserves official sections from the local PDF extraction', () {
+    final jsonString = File(RulesCatalogRepository.assetPath).readAsStringSync();
+    final catalog = const RulesCatalogRepository().loadFromString(jsonString);
+
+    expect(
+      catalog.categories.map((category) => category.title),
+      containsAll(<String>[
+        'Sistema de Pontuação',
+        'Estrutura do Jogo',
+        'Rodízio e Posições',
+        'Toques na Bola',
+        'Rede e Invasões',
+        'Ataque',
+        'Bloqueio',
+        'Saque',
+        'Líbero',
+        'Faltas e Penalidades',
+      ]),
+    );
+
+    final chapter12 = catalog.chapters.firstWhere((chapter) => chapter.officialNumber == '12');
+    final section124 = chapter12.sections.firstWhere((section) => section.officialNumber == '12.4');
+    expect(section124.officialTitle, 'EXECUÇÃO DO SERVIÇO');
+    expect(
+      section124.content,
+      contains('12.4.1 A bola deve ser golpeada com uma das mãos ou qualquer parte do braço'),
+    );
+
+    final chapter19 = catalog.chapters.firstWhere((chapter) => chapter.officialNumber == '19');
+    final section193 = chapter19.sections.firstWhere((section) => section.officialNumber == '19.3');
+    expect(section193.officialTitle, 'AÇÕES ENVOLVENDO O LÍBERO');
+
+    final chapter21 = catalog.chapters.firstWhere((chapter) => chapter.officialNumber == '21');
+    final section213 = chapter21.sections.firstWhere((section) => section.officialNumber == '21.3');
+    expect(section213.officialTitle, 'ESCALA DE SANÇÕES');
+
+    expect(catalog.documents.map((document) => document.officialTitle), contains('PARTE 3: DEFINIÇÕES'));
+  });
+}

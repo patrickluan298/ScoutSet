@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../../../../config/app_routes.dart';
 import '../../../../utils/app_spacing.dart';
+import '../../../../utils/ui_feedback.dart';
 import '../../../../widgets/app_button.dart';
 import '../../../../widgets/app_card.dart';
-import '../../../../widgets/app_text_field.dart';
 import '../../scoreboard/models/match_score.dart';
 import '../../scoreboard/services/scoreboard_service.dart';
+import '../team_dialogs.dart';
 import '../models/draw_team.dart';
 import '../models/team_draw_result.dart';
 import '../services/team_draw_service.dart';
@@ -20,11 +20,6 @@ class TeamDrawResultScreen extends StatefulWidget {
     required this.result,
     super.key,
   });
-
-  static const int _maxTeamNameLength = 10;
-  static final RegExp _allowedTeamNameCharacters = RegExp(r'[A-Za-z0-9À-ÖØ-öø-ÿ ]');
-  static final RegExp _allowedTeamNamePattern = RegExp(r'^[A-Za-z0-9À-ÖØ-öø-ÿ ]+$');
-
   final TeamDrawResult result;
 
   @override
@@ -43,7 +38,7 @@ class _TeamDrawResultScreenState extends State<TeamDrawResultScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Resultado da rodada')),
+      appBar: AppBar(title: const Text('Resultado do Sorteio')),
       body: ListView(
         padding: AppSpacing.screen,
         children: [
@@ -72,7 +67,7 @@ class _TeamDrawResultScreenState extends State<TeamDrawResultScreen> {
             runSpacing: 8,
             children: [
               AppButton(
-                label: 'Salvar Resultado',
+                label: 'Salvar Equipes',
                 icon: Icons.save_outlined,
                 onPressed: () => _save(context),
               ),
@@ -82,7 +77,7 @@ class _TeamDrawResultScreenState extends State<TeamDrawResultScreen> {
                 onPressed: () => _startMatch(context),
               ),
               AppButton(
-                label: 'Nova Rodada',
+                label: 'Novo Sorteio',
                 icon: Icons.refresh,
                 onPressed: () => Navigator.of(context).pop(),
               ),
@@ -101,103 +96,19 @@ class _TeamDrawResultScreenState extends State<TeamDrawResultScreen> {
   }
 
   Future<void> _save(BuildContext context) async {
-    final formKey = GlobalKey<FormState>();
-    final formationController = TextEditingController();
-    final teamControllers = List<TextEditingController>.generate(
-      _currentResult.teams.length,
-      (index) => TextEditingController(text: _currentResult.teams[index].name),
-    );
-    final shouldSave = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Align(
-          alignment: Alignment.center,
-          child: Text(
-            'Salvar Formação',
-            textAlign: TextAlign.center,
-          ),
-        ),
-        content: Form(
-          key: formKey,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                AppTextField(
-                  label: 'Nome da formação',
-                  controller: formationController,
-                  hintText: 'Ex.: Treino de hoje',
-                  validator: (value) {
-                    if ((value ?? '').trim().isEmpty) {
-                      return 'Informe o nome da formação.';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 12),
-                ...List.generate(
-                  _currentResult.teams.length,
-                  (index) => Padding(
-                    padding: EdgeInsets.only(bottom: index == _currentResult.teams.length - 1 ? 0 : 12),
-                    child: TextFormField(
-                      controller: teamControllers[index],
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(TeamDrawResultScreen._allowedTeamNameCharacters),
-                        LengthLimitingTextInputFormatter(TeamDrawResultScreen._maxTeamNameLength),
-                      ],
-                      decoration: InputDecoration(
-                        labelText: 'Nome da equipe ${index + 1}',
-                        hintText: 'Ex.: Time ${String.fromCharCode(65 + index)}',
-                      ),
-                      validator: (value) => _validateTeamName(
-                        value,
-                        index,
-                        teamControllers,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        actions: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ElevatedButton(
-                onPressed: () {
-                  final isValid = formKey.currentState?.validate() ?? false;
-                  if (!isValid) {
-                    return;
-                  }
-                  Navigator.of(context).pop(true);
-                },
-                child: const Text('Salvar'),
-              ),
-              const SizedBox(height: 8),
-              Align(
-                alignment: Alignment.center,
-                child: TextButton(
-                  onPressed: () => Navigator.of(context).pop(false),
-                  child: const Text('Cancelar'),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
+    final draft = await showSaveTeamsDialog(
+      context,
+      initialTeamNames: _currentResult.teams.map((team) => team.name).toList(),
     );
 
-    if (shouldSave != true || !context.mounted) {
+    if (draft == null || !context.mounted) {
       return;
     }
 
     final renamedTeams = List<DrawTeam>.generate(
       _currentResult.teams.length,
       (index) => _currentResult.teams[index].copyWith(
-        name: teamControllers[index].text.trim().toUpperCase(),
+        name: draft.teamNames[index],
       ),
     );
     final renamedResult = TeamDrawResult(
@@ -214,7 +125,7 @@ class _TeamDrawResultScreenState extends State<TeamDrawResultScreen> {
 
     await TeamDrawService.instance.saveResultAsGroup(
       result: renamedResult,
-      title: formationController.text.trim(),
+      title: draft.title,
     );
 
     if (!context.mounted) {
@@ -223,38 +134,16 @@ class _TeamDrawResultScreenState extends State<TeamDrawResultScreen> {
     setState(() {
       _currentResult = renamedResult;
     });
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Formação salva com sucesso.')),
-    );
-  }
-
-  String? _validateTeamName(
-    String? value,
-    int index,
-    List<TextEditingController> controllers,
-  ) {
-    final normalizedValue = (value ?? '').trim();
-    if (normalizedValue.isEmpty) {
-      return 'Informe o nome da equipe ${index + 1}.';
-    }
-    if (!TeamDrawResultScreen._allowedTeamNamePattern.hasMatch(normalizedValue)) {
-      return 'Use apenas letras, numeros e espacos.';
-    }
-
-    final normalizedNames = controllers
-        .map((controller) => controller.text.trim().toLowerCase())
-        .where((name) => name.isNotEmpty)
-        .toList();
-    final currentName = normalizedValue.toLowerCase();
-    final duplicates = normalizedNames.where((name) => name == currentName).length;
-    if (duplicates > 1) {
-      return 'Os nomes das equipes precisam ser diferentes.';
-    }
-    return null;
+    showAppSnackBar(context, 'Formação salva com sucesso.');
   }
 
   Future<void> _startMatch(BuildContext context) async {
-    final selection = await _pickTeamsForMatch(context, _currentResult.teams);
+    final selection = await showTeamsMatchupDialog(
+      context,
+      teams: _currentResult.teams,
+      title: 'Escolha o Confronto',
+      confirmLabel: 'Usar times',
+    );
     if (selection == null || !context.mounted) {
       return;
     }
@@ -262,14 +151,14 @@ class _TeamDrawResultScreenState extends State<TeamDrawResultScreen> {
     final scoreboardService = ScoreboardService.instance;
     scoreboardService.prepareForNewMatch();
     scoreboardService.startMatch(
-      teamAName: selection.$1.name,
-      teamBName: selection.$2.name,
+      teamAName: selection.teamA.name,
+      teamBName: selection.teamB.name,
       sourceType: MatchSourceType.savedTeamGroup,
       savedTeamGroupTitle: 'Rodada ${_currentResult.createdAt.day}/${_currentResult.createdAt.month}',
-      teamAPlayers: selection.$1.players,
-      teamBPlayers: selection.$2.players,
-      teamAOriginTeamId: selection.$1.id,
-      teamBOriginTeamId: selection.$2.id,
+      teamAPlayers: selection.teamA.players,
+      teamBPlayers: selection.teamB.players,
+      teamAOriginTeamId: selection.teamA.id,
+      teamBOriginTeamId: selection.teamB.id,
       waitingPlayersSnapshot: _currentResult.waitingPlayers,
     );
 
@@ -277,77 +166,6 @@ class _TeamDrawResultScreenState extends State<TeamDrawResultScreen> {
       context,
       AppRoutes.scoreboard,
       (route) => route.isFirst,
-    );
-  }
-
-  Future<(DrawTeam, DrawTeam)?> _pickTeamsForMatch(BuildContext context, List<DrawTeam> teams) async {
-    if (teams.length == 2) {
-      return (teams[0], teams[1]);
-    }
-
-    var firstIndex = 0;
-    var secondIndex = 1;
-    return showDialog<(DrawTeam, DrawTeam)>(
-      context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) => AlertDialog(
-            title: const Text('Escolha o confronto'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                DropdownButtonFormField<int>(
-                  initialValue: firstIndex,
-                  decoration: const InputDecoration(labelText: 'Time A'),
-                  items: List.generate(
-                    teams.length,
-                    (index) => DropdownMenuItem<int>(
-                      value: index,
-                      child: Text(teams[index].name),
-                    ),
-                  ),
-                  onChanged: (value) {
-                    if (value == null) {
-                      return;
-                    }
-                    setState(() => firstIndex = value);
-                  },
-                ),
-                const SizedBox(height: 12),
-                DropdownButtonFormField<int>(
-                  initialValue: secondIndex,
-                  decoration: const InputDecoration(labelText: 'Time B'),
-                  items: List.generate(
-                    teams.length,
-                    (index) => DropdownMenuItem<int>(
-                      value: index,
-                      child: Text(teams[index].name),
-                    ),
-                  ),
-                  onChanged: (value) {
-                    if (value == null) {
-                      return;
-                    }
-                    setState(() => secondIndex = value);
-                  },
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Cancelar'),
-              ),
-              ElevatedButton(
-                onPressed: firstIndex == secondIndex
-                    ? null
-                    : () => Navigator.of(context).pop((teams[firstIndex], teams[secondIndex])),
-                child: const Text('Usar times'),
-              ),
-            ],
-          ),
-        );
-      },
     );
   }
 

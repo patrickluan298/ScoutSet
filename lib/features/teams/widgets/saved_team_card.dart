@@ -7,7 +7,6 @@ class SavedTeamCard extends StatelessWidget {
   const SavedTeamCard({
     required this.group,
     required this.onUse,
-    required this.onDuplicate,
     required this.onRename,
     required this.onDelete,
     super.key,
@@ -15,7 +14,6 @@ class SavedTeamCard extends StatelessWidget {
 
   final SavedTeamGroup group;
   final VoidCallback onUse;
-  final VoidCallback onDuplicate;
   final VoidCallback onRename;
   final VoidCallback onDelete;
 
@@ -62,11 +60,6 @@ class SavedTeamCard extends StatelessWidget {
                 onPressed: onRename,
                 icon: const Icon(Icons.edit_outlined),
                 label: const Text('Renomear'),
-              ),
-              OutlinedButton.icon(
-                onPressed: onDuplicate,
-                icon: const Icon(Icons.copy_outlined),
-                label: const Text('Duplicar'),
               ),
               OutlinedButton.icon(
                 onPressed: onDelete,

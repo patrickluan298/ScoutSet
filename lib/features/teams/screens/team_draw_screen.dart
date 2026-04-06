@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 
 import '../../../../utils/app_spacing.dart';
+import '../../../../utils/navigation_helpers.dart';
+import '../../../../utils/ui_feedback.dart';
 import '../../../../widgets/app_button.dart';
 import '../../../../widgets/app_card.dart';
+import '../team_draw_flow.dart';
 import '../models/team_draw_player.dart';
 import '../models/team_draw_result.dart';
 import '../models/waiting_player.dart';
 import '../services/team_draw_service.dart';
-import '../widgets/draw_options_sheet.dart';
 import '../widgets/player_selection_list.dart';
 import '../widgets/waiting_queue_banner.dart';
 import 'team_draw_result_screen.dart';
@@ -47,7 +49,7 @@ class _TeamDrawScreenState extends State<TeamDrawScreen> {
   Future<void> _load() async {
     final players = await _service.listPlayers();
     final waitingQueue = await _service.listLatestWaitingPlayers();
-    final selectedIds = _selectedIds.isEmpty ? players.map((player) => player.id).take(6).toList() : _selectedIds;
+    final selectedIds = List<String>.from(_selectedIds);
     final selectedPlayers = players.where((player) => selectedIds.contains(player.id)).toList();
     final allowedCounts = _service.allowedTeamCounts(selectedPlayers.length);
     if (!mounted) {
@@ -64,6 +66,28 @@ class _TeamDrawScreenState extends State<TeamDrawScreen> {
     });
   }
 
+  void _selectAllPlayers() {
+    setState(() {
+      _selectedIds = _players.map((player) => player.id).toList();
+      _syncAllowedTeamCounts();
+    });
+  }
+
+  void _clearAllPlayers() {
+    setState(() {
+      _selectedIds = [];
+      _syncAllowedTeamCounts();
+    });
+  }
+
+  void _toggleAllPlayers() {
+    if (_selectedIds.length == _players.length) {
+      _clearAllPlayers();
+      return;
+    }
+    _selectAllPlayers();
+  }
+
   void _togglePlayer(String playerId) {
     setState(() {
       if (_selectedIds.contains(playerId)) {
@@ -71,23 +95,23 @@ class _TeamDrawScreenState extends State<TeamDrawScreen> {
       } else {
         _selectedIds.add(playerId);
       }
-      final allowedCounts = _service.allowedTeamCounts(_selectedIds.length);
-      _allowedTeamCounts = allowedCounts.isEmpty ? const [2] : allowedCounts;
-      if (!_allowedTeamCounts.contains(_selectedTeamCount)) {
-        _selectedTeamCount = _allowedTeamCounts.first;
-      }
+      _syncAllowedTeamCounts();
     });
+  }
+
+  void _syncAllowedTeamCounts() {
+    final allowedCounts = _service.allowedTeamCounts(_selectedIds.length);
+    _allowedTeamCounts = allowedCounts.isEmpty ? const [2] : allowedCounts;
+    if (!_allowedTeamCounts.contains(_selectedTeamCount)) {
+      _selectedTeamCount = _allowedTeamCounts.first;
+    }
   }
 
   Future<void> _runDraw() async {
     final selectedPlayers = _players.where((player) => _selectedIds.contains(player.id)).toList();
-    var oddHandling = OddPlayerHandling.extraPlayerOnTeam;
-    if (selectedPlayers.length.isOdd) {
-      final selection = await DrawOptionsSheet.show(context);
-      if (selection == null) {
-        return;
-      }
-      oddHandling = selection;
+    final oddHandling = await resolveOddPlayerHandling(context, selectedPlayers.length);
+    if (oddHandling == null) {
+      return;
     }
 
     setState(() => _isSubmitting = true);
@@ -102,18 +126,18 @@ class _TeamDrawScreenState extends State<TeamDrawScreen> {
       if (!mounted) {
         return;
       }
-      await Navigator.of(context).push(
-        MaterialPageRoute<void>(
-          builder: (_) => TeamDrawResultScreen(result: result),
-        ),
+      await pushPageAndReload(
+        context,
+        TeamDrawResultScreen(result: result),
+        onReturn: _load,
       );
-      await _load();
     } on ArgumentError catch (error) {
       if (!mounted) {
         return;
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.message?.toString() ?? 'Não foi possível sortear os times.')),
+      showAppSnackBar(
+        context,
+        error.message?.toString() ?? 'Não foi possível sortear os times.',
       );
     } finally {
       if (mounted) {
@@ -192,6 +216,9 @@ class _TeamDrawScreenState extends State<TeamDrawScreen> {
             players: _players,
             selectedIds: _selectedIds.toSet(),
             onChanged: _togglePlayer,
+            onToggleAll: _players.isEmpty ? null : _toggleAllPlayers,
+            toggleAllLabel:
+                _selectedIds.length == _players.length ? 'Desmarcar todos' : 'Selecionar todos',
           ),
           AppSpacing.gapMedium,
           AppButton(

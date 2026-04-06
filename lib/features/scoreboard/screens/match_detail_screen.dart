@@ -4,6 +4,8 @@ import '../../../core/theme/app_theme.dart';
 import '../../../utils/app_spacing.dart';
 import '../../../widgets/app_card.dart';
 import '../models/match_score.dart';
+import '../models/set_point_event.dart';
+import '../models/set_score.dart';
 import '../widgets/match_status_banner.dart';
 import '../widgets/scoreboard_header.dart';
 import '../widgets/set_score_table.dart';
@@ -35,7 +37,7 @@ class MatchDetailScreen extends StatelessWidget {
         children: [
           ScoreboardHeader(
             title: '${match.teamAName} x ${match.teamBName}',
-            subtitle: 'Resultado final em sets: ${match.teamASetsWon} x ${match.teamBSetsWon}',
+            subtitle: 'Resultado final: ${match.teamASetsWon} x ${match.teamBSetsWon}',
             statusLabel: 'Status: ${match.matchStatus.label}',
           ),
           AppSpacing.gapMedium,
@@ -65,10 +67,24 @@ class MatchDetailScreen extends StatelessWidget {
           SetScoreTable(
             finishedSets: match.sets,
             currentSet: match.currentSet,
-            currentTeamAScore: lastSet?.teamAScore ?? 0,
-            currentTeamBScore: lastSet?.teamBScore ?? 0,
-            currentTargetPoints: lastSet?.targetPoints ?? 25,
+            currentTeamAScore: 0,
+            currentTeamBScore: 0,
+            currentTargetPoints: match.currentSet == 3 ? 15 : 25,
+            isMatchFinished: match.isFinished,
           ),
+          if (match.sets.isNotEmpty) ...[
+            AppSpacing.gapMedium,
+            ...match.sets.map(
+              (set) => Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: _SetBreakdownCard(
+                  match: match,
+                  set: set,
+                  formatDuration: _formatDuration,
+                ),
+              ),
+            ),
+          ],
           AppSpacing.gapMedium,
           AppCard(
             child: Column(
@@ -92,7 +108,7 @@ class MatchDetailScreen extends StatelessWidget {
                 _DetailRow(label: 'Status', value: match.matchStatus.label),
                 _DetailRow(
                   label: 'Origem',
-                  value: match.sourceType == MatchSourceType.manual ? 'Times digitados manualmente' : 'Equipes salvas',
+                  value: match.sourceType == MatchSourceType.manual ? 'Times digitados manualmente' : 'Equipes Salvas',
                 ),
                 if (match.savedTeamGroupTitle != null)
                   _DetailRow(label: 'Formação', value: match.savedTeamGroupTitle!),
@@ -108,7 +124,7 @@ class MatchDetailScreen extends StatelessWidget {
                   Align(
                     alignment: Alignment.center,
                     child: Text(
-                      'Jogadores vinculados',
+                      'Escalação dos Jogadores',
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
@@ -154,6 +170,120 @@ class MatchDetailScreen extends StatelessWidget {
     final hour = value.hour.toString().padLeft(2, '0');
     final minute = value.minute.toString().padLeft(2, '0');
     return '$day/$month/${value.year} $hour:$minute';
+  }
+
+  String _formatDuration(int durationSeconds) {
+    if (durationSeconds <= 0) {
+      return '-';
+    }
+
+    final duration = Duration(seconds: durationSeconds);
+    final hours = duration.inHours;
+    final minutes = duration.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final seconds = duration.inSeconds.remainder(60).toString().padLeft(2, '0');
+    if (hours > 0) {
+      return '${hours.toString().padLeft(2, '0')}:$minutes:$seconds';
+    }
+    return '${duration.inMinutes.toString().padLeft(2, '0')}:$seconds';
+  }
+}
+
+class _SetBreakdownCard extends StatelessWidget {
+  const _SetBreakdownCard({
+    required this.match,
+    required this.set,
+    required this.formatDuration,
+  });
+
+  final MatchScore match;
+  final SetScore set;
+  final String Function(int durationSeconds) formatDuration;
+
+  @override
+  Widget build(BuildContext context) {
+    final originTotals = set.pointsByOrigin;
+    final teamAStats = set.playerPointStats.where((stat) => stat.teamSide == TeamSide.teamA).toList();
+    final teamBStats = set.playerPointStats.where((stat) => stat.teamSide == TeamSide.teamB).toList();
+
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Set ${set.setNumber}',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 12),
+          _DetailRow(label: 'Placar', value: '${set.teamAScore} x ${set.teamBScore}'),
+          _DetailRow(label: 'Duração', value: formatDuration(set.durationSeconds)),
+          _DetailRow(
+            label: 'Origens',
+            value: originTotals.isEmpty
+                ? 'Sem eventos registrados'
+                : PointOrigin.values
+                    .where((origin) => originTotals.containsKey(origin))
+                    .map((origin) => '${origin.label} ${originTotals[origin]}')
+                    .join(' • '),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Pontuação individual',
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 8),
+          if (teamAStats.isEmpty && teamBStats.isEmpty)
+            Text(
+              'Sem pontuação individual registrada neste set.',
+              style: Theme.of(context).textTheme.bodyMedium,
+            )
+          else ...[
+            _PlayerStatsBlock(teamName: match.teamAName, stats: teamAStats),
+            const SizedBox(height: 12),
+            _PlayerStatsBlock(teamName: match.teamBName, stats: teamBStats),
+          ],
+          if ((originTotals[PointOrigin.opponentError] ?? 0) > 0) ...[
+            const SizedBox(height: 12),
+            Text(
+              'Pontos por erro adversário: ${originTotals[PointOrigin.opponentError]}',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppTheme.primaryColor,
+                    fontWeight: FontWeight.w700,
+                  ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _PlayerStatsBlock extends StatelessWidget {
+  const _PlayerStatsBlock({
+    required this.teamName,
+    required this.stats,
+  });
+
+  final String teamName;
+  final List<PlayerPointStat> stats;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          teamName,
+          style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w800),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          stats.isEmpty
+              ? 'Sem pontuação individual registrada.'
+              : stats.map((stat) => '${stat.playerName} ${stat.points}').join(' • '),
+          style: Theme.of(context).textTheme.bodyMedium,
+        ),
+      ],
+    );
   }
 }
 
