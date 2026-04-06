@@ -69,12 +69,23 @@ class _TeamDrawScreenState extends State<TeamDrawScreen> {
   void _selectAllPlayers() {
     setState(() {
       _selectedIds = _players.map((player) => player.id).toList();
-      final allowedCounts = _service.allowedTeamCounts(_selectedIds.length);
-      _allowedTeamCounts = allowedCounts.isEmpty ? const [2] : allowedCounts;
-      if (!_allowedTeamCounts.contains(_selectedTeamCount)) {
-        _selectedTeamCount = _allowedTeamCounts.first;
-      }
+      _syncAllowedTeamCounts();
     });
+  }
+
+  void _clearAllPlayers() {
+    setState(() {
+      _selectedIds = [];
+      _syncAllowedTeamCounts();
+    });
+  }
+
+  void _toggleAllPlayers() {
+    if (_selectedIds.length == _players.length) {
+      _clearAllPlayers();
+      return;
+    }
+    _selectAllPlayers();
   }
 
   void _togglePlayer(String playerId) {
@@ -84,12 +95,16 @@ class _TeamDrawScreenState extends State<TeamDrawScreen> {
       } else {
         _selectedIds.add(playerId);
       }
-      final allowedCounts = _service.allowedTeamCounts(_selectedIds.length);
-      _allowedTeamCounts = allowedCounts.isEmpty ? const [2] : allowedCounts;
-      if (!_allowedTeamCounts.contains(_selectedTeamCount)) {
-        _selectedTeamCount = _allowedTeamCounts.first;
-      }
+      _syncAllowedTeamCounts();
     });
+  }
+
+  void _syncAllowedTeamCounts() {
+    final allowedCounts = _service.allowedTeamCounts(_selectedIds.length);
+    _allowedTeamCounts = allowedCounts.isEmpty ? const [2] : allowedCounts;
+    if (!_allowedTeamCounts.contains(_selectedTeamCount)) {
+      _selectedTeamCount = _allowedTeamCounts.first;
+    }
   }
 
   Future<void> _runDraw() async {
@@ -201,7 +216,9 @@ class _TeamDrawScreenState extends State<TeamDrawScreen> {
             players: _players,
             selectedIds: _selectedIds.toSet(),
             onChanged: _togglePlayer,
-            onSelectAll: _players.isEmpty ? null : _selectAllPlayers,
+            onToggleAll: _players.isEmpty ? null : _toggleAllPlayers,
+            toggleAllLabel:
+                _selectedIds.length == _players.length ? 'Desmarcar todos' : 'Selecionar todos',
           ),
           AppSpacing.gapMedium,
           AppButton(

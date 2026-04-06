@@ -206,6 +206,18 @@ void main() {
     expect(service.getState().currentTeamAScore, 1);
   });
 
+  testWidgets('manual match scores directly without opening point category sheet', (tester) async {
+    service.startMatch(teamAName: 'A', teamBName: 'B');
+
+    await pumpScoreboard(tester);
+    await tester.tap(find.widgetWithText(ElevatedButton, '+1 A').first);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Registrar ponto para A'), findsNothing);
+    expect(find.text('Erro adversário'), findsNothing);
+    expect(service.getState().currentTeamAScore, 1);
+  });
+
   testWidgets('finished match keeps next set summary at zero', (tester) async {
     await tester.pumpWidget(
       buildTestable(

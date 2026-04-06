@@ -175,7 +175,7 @@ class MatchPdfService {
             'Origem',
             match.sourceType == MatchSourceType.manual
                 ? 'Manual'
-                : 'Equipes salvas'),
+                : 'Equipes Salvas'),
         if (match.savedTeamGroupTitle != null)
           _detailRow('Formação', match.savedTeamGroupTitle!),
         _detailRow(

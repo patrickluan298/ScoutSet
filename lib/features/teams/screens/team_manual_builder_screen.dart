@@ -38,13 +38,12 @@ class _TeamManualBuilderScreenState extends State<TeamManualBuilderScreen> {
 
   Future<void> _load() async {
     final players = await _service.listPlayers();
-    final selectedIds = players.map((player) => player.id).take(6).toList();
     if (!mounted) {
       return;
     }
     setState(() {
       _players = players;
-      _selectedIds = selectedIds;
+      _selectedIds = [];
       _teams = _buildEmptyTeams(_teamCount);
       _isLoading = false;
     });
@@ -70,6 +69,27 @@ class _TeamManualBuilderScreenState extends State<TeamManualBuilderScreen> {
         _selectedIds.add(playerId);
       }
     });
+  }
+
+  void _selectAllPlayers() {
+    setState(() {
+      _selectedIds = _players.map((player) => player.id).toList();
+    });
+  }
+
+  void _clearAllPlayers() {
+    setState(() {
+      _selectedIds = [];
+      _teams = _buildEmptyTeams(_teamCount);
+    });
+  }
+
+  void _toggleAllPlayers() {
+    if (_selectedIds.length == _players.length) {
+      _clearAllPlayers();
+      return;
+    }
+    _selectAllPlayers();
   }
 
   void _removePlayerFromTeams(String playerId) {
@@ -214,6 +234,9 @@ class _TeamManualBuilderScreenState extends State<TeamManualBuilderScreen> {
             players: _players,
             selectedIds: _selectedIds.toSet(),
             onChanged: _togglePlayer,
+            onToggleAll: _players.isEmpty ? null : _toggleAllPlayers,
+            toggleAllLabel:
+                _selectedIds.length == _players.length ? 'Desmarcar todos' : 'Selecionar todos',
             title: 'Jogadores Participantes',
           ),
           AppSpacing.gapMedium,

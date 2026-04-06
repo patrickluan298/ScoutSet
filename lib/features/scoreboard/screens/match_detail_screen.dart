@@ -108,7 +108,7 @@ class MatchDetailScreen extends StatelessWidget {
                 _DetailRow(label: 'Status', value: match.matchStatus.label),
                 _DetailRow(
                   label: 'Origem',
-                  value: match.sourceType == MatchSourceType.manual ? 'Times digitados manualmente' : 'Equipes salvas',
+                  value: match.sourceType == MatchSourceType.manual ? 'Times digitados manualmente' : 'Equipes Salvas',
                 ),
                 if (match.savedTeamGroupTitle != null)
                   _DetailRow(label: 'Formação', value: match.savedTeamGroupTitle!),

@@ -189,7 +189,7 @@ void main() {
     final text = await extractPdfText(match);
 
     expect(text, contains('Formação Não Oficial'));
-    expect(text, contains('Equipes salvas'));
+    expect(text, contains('Equipes Salvas'));
     expect(text, contains('Líbero'));
     expect(text, contains('Sem eventos detalhados registrados para este set.'));
   });

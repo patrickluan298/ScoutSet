@@ -181,19 +181,29 @@ Future<String?> showRenameGroupDialog(
   return showDialog<String>(
     context: context,
     builder: (context) => AlertDialog(
-      title: const Text('Renomear formação'),
+      title: const Text('Renomear Formação'),
       content: TextField(
         controller: controller,
         decoration: const InputDecoration(labelText: 'Nome'),
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancelar'),
-        ),
-        ElevatedButton(
-          onPressed: () => Navigator.of(context).pop(controller.text.trim()),
-          child: const Text('Salvar'),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(controller.text.trim()),
+              child: const Text('Salvar'),
+            ),
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.center,
+              child: TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Cancelar'),
+              ),
+            ),
+          ],
         ),
       ],
     ),

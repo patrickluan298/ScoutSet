@@ -10,7 +10,8 @@ class PlayerSelectionList extends StatelessWidget {
     required this.selectedIds,
     required this.onChanged,
     super.key,
-    this.onSelectAll,
+    this.onToggleAll,
+    this.toggleAllLabel = 'Selecionar todos',
     this.showPriorityBadge = true,
     this.title = 'Jogadores',
   });
@@ -18,7 +19,8 @@ class PlayerSelectionList extends StatelessWidget {
   final List<TeamDrawPlayer> players;
   final Set<String> selectedIds;
   final ValueChanged<String> onChanged;
-  final VoidCallback? onSelectAll;
+  final VoidCallback? onToggleAll;
+  final String toggleAllLabel;
   final bool showPriorityBadge;
   final String title;
 
@@ -33,10 +35,10 @@ class PlayerSelectionList extends StatelessWidget {
               Expanded(
                 child: Text(title, style: Theme.of(context).textTheme.titleMedium),
               ),
-              if (players.isNotEmpty && onSelectAll != null)
+              if (players.isNotEmpty && onToggleAll != null)
                 TextButton(
-                  onPressed: onSelectAll,
-                  child: const Text('Selecionar todos'),
+                  onPressed: onToggleAll,
+                  child: Text(toggleAllLabel),
                 ),
             ],
           ),

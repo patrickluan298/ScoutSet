@@ -66,13 +66,24 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
       return;
     }
 
-    final selection = await _selectPointForTeam(team: team, match: match);
-    if (selection == null) {
-      return;
-    }
+    final players = team == TeamSide.teamA ? match.teamAPlayers : match.teamBPlayers;
 
     setState(() => _isSavingPoint = true);
     try {
+      if (players.isEmpty) {
+        if (team == TeamSide.teamA) {
+          await _service.addPointToTeamA();
+        } else {
+          await _service.addPointToTeamB();
+        }
+        return;
+      }
+
+      final selection = await _selectPointForTeam(team: team, match: match);
+      if (selection == null) {
+        return;
+      }
+
       await _service.addPoint(
         team: team,
         pointOrigin: selection.pointOrigin,
@@ -142,8 +153,13 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
     final players = team == TeamSide.teamA ? match.teamAPlayers : match.teamBPlayers;
     final canAssignPlayers = players.isNotEmpty;
     final availableOrigins = canAssignPlayers
-        ? PointOrigin.values
-        : const [PointOrigin.opponentError, PointOrigin.other];
+        ? const [
+            PointOrigin.attack,
+            PointOrigin.block,
+            PointOrigin.serve,
+            PointOrigin.opponentError,
+          ]
+        : const [PointOrigin.opponentError];
 
     return showModalBottomSheet<_PointSelection>(
       context: context,
@@ -164,7 +180,7 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
                 Text(
                   canAssignPlayers
                       ? 'Escolha a origem do ponto e, quando necessário, o jogador responsável.'
-                      : 'Esta partida não tem elenco vinculado. Você pode registrar erro adversário ou outro lance.',
+                      : 'Esta partida não tem elenco vinculado. Você pode registrar ponto por erro adversário.',
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
                 const SizedBox(height: 20),

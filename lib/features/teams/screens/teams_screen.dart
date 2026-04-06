@@ -218,7 +218,7 @@ class _TeamsScreenState extends State<TeamsScreen> {
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: const Icon(Icons.save_outlined),
-                title: const Text('Equipes salvas'),
+                title: const Text('Equipes Salvas'),
                 subtitle: Text(_latestGroupTitle ?? 'Nenhuma formação salva ainda.'),
                 onTap: () => _goTo(const SavedTeamsScreen()),
               ),

@@ -109,7 +109,7 @@ class _SavedTeamsScreenState extends State<SavedTeamsScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Equipes salvas')),
+      appBar: AppBar(title: const Text('Equipes Salvas')),
       body: _groups.isEmpty
           ? ListView(
               padding: AppSpacing.screen,
@@ -129,10 +129,6 @@ class _SavedTeamsScreenState extends State<SavedTeamsScreen> {
                 return SavedTeamCard(
                   group: group,
                   onUse: () => _useInScoreboard(group),
-                  onDuplicate: () async {
-                    await _service.duplicateGroup(group.id);
-                    await _load();
-                  },
                   onRename: () => _renameGroup(group),
                   onDelete: () => _deleteGroup(group),
                 );
