@@ -6,7 +6,6 @@ import '../../../core/theme/app_theme.dart';
 import '../../../utils/app_spacing.dart';
 import '../../../widgets/app_card.dart';
 import '../../../widgets/app_page_scaffold.dart';
-import '../../../widgets/section_title.dart';
 import '../data/rules_catalog_repository.dart';
 import '../models/rules_models.dart';
 import '../widgets/rules_section_panel.dart';
@@ -31,7 +30,6 @@ class _RulesScreenState extends State<RulesScreen> {
   late final Future<RulesCatalog> _catalogFuture;
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  final Map<String, GlobalKey> _sectionKeys = <String, GlobalKey>{};
   final Set<String> _expandedIds = <String>{};
 
   String _selectedCategoryId = 'system-points';
@@ -123,9 +121,12 @@ class _RulesScreenState extends State<RulesScreen> {
                   controller: _scrollController,
                   children: [
                     _buildHeroHeader(context, catalog, showSidebar),
-                    const SizedBox(height: 18),
-                    _buildControlsPanel(context, catalog, showSidebar),
-                    AppSpacing.gapMedium,
+                    if (!showSidebar) ...[
+                      const SizedBox(height: 16),
+                      _buildControlsPanel(context, catalog),
+                      AppSpacing.gapMedium,
+                    ] else
+                      const SizedBox(height: 18),
                     if (display.chapters.isNotEmpty)
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 6),
@@ -172,7 +173,7 @@ class _RulesScreenState extends State<RulesScreen> {
                             const SizedBox(height: 10),
                             for (final document in display.documents) ...[
                               RulesSectionPanel(
-                                key: _sectionKey(document.id),
+                                key: ValueKey<String>(document.id),
                                 title: document.officialTitle,
                                 content: document.content,
                                 expanded: _expandedIds.contains(document.id),
@@ -511,7 +512,7 @@ class _RulesScreenState extends State<RulesScreen> {
           const SizedBox(height: 16),
           for (final section in chapter.sections) ...[
             RulesSectionPanel(
-              key: _sectionKey(section.id),
+              key: ValueKey<String>(section.id),
               label: section.officialNumber,
               title: section.officialTitle,
               subtitle: chapter.officialTitle,
@@ -598,8 +599,6 @@ class _RulesScreenState extends State<RulesScreen> {
       return _VisibleContent.from(
         chapters: const [],
         documents: [document],
-        title: document.officialTitle,
-        subtitle: 'Documento oficial selecionado no menu lateral.',
       );
     }
 
@@ -614,8 +613,6 @@ class _RulesScreenState extends State<RulesScreen> {
         ),
       ],
       documents: const [],
-      title: '${chapter.officialNumber} ${chapter.officialTitle}',
-      subtitle: 'Capítulo oficial selecionado no menu lateral.',
     );
   }
 
@@ -665,10 +662,6 @@ class _RulesScreenState extends State<RulesScreen> {
     });
   }
 
-  Key _sectionKey(String id) {
-    return _sectionKeys.putIfAbsent(id, () => GlobalKey());
-  }
-
   String _normalizeForSearch(String value) {
     return removeDiacritics(value).toLowerCase();
   }
@@ -693,23 +686,9 @@ class _RulesScreenState extends State<RulesScreen> {
           ],
         ),
       ),
-      child: Stack(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Positioned(
-            right: -16,
-            top: -4,
-            child: Text(
-              'FIVB',
-              style: theme.textTheme.headlineMedium?.copyWith(
-                fontSize: 64,
-                fontWeight: FontWeight.w900,
-                color: Colors.white.withValues(alpha: 0.08),
-              ),
-            ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
               Row(
                 children: [
                   Container(
@@ -730,7 +709,7 @@ class _RulesScreenState extends State<RulesScreen> {
               ),
               const SizedBox(height: 18),
               Text(
-                'Regras Oficiais\ndo Vôlei',
+                'Regras Oficiais',
                 style: theme.textTheme.headlineMedium?.copyWith(
                   color: AppTheme.whiteColor,
                   fontSize: 34,
@@ -762,42 +741,65 @@ class _RulesScreenState extends State<RulesScreen> {
                   ),
                 ],
               ),
-            ],
-          ),
         ],
       ),
     );
   }
 
-  Widget _buildControlsPanel(
-    BuildContext context,
-    RulesCatalog catalog,
-    bool showSidebar,
-  ) {
-    return AppCard(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SectionTitle(
-            title: 'Ferramentas de Navegação',
-            subtitle: 'Use o sumário oficial para buscar e navegar pelo conteúdo literal do documento.',
+  Widget _buildControlsPanel(BuildContext context, RulesCatalog catalog) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: AppTheme.whiteColor,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: AppTheme.secondaryBlueColor.withValues(alpha: 0.16),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.primaryColor.withValues(alpha: 0.03),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
           ),
-          if (!showSidebar) ...[
-            const SizedBox(height: 18),
-            OutlinedButton.icon(
-              key: const Key('rules-open-sidebar'),
-              onPressed: () => _openSidebarSheet(catalog),
-              style: OutlinedButton.styleFrom(
-                backgroundColor: AppTheme.secondaryBlueColor,
-                foregroundColor: AppTheme.whiteColor,
-                side: const BorderSide(color: AppTheme.secondaryBlueColor),
-              ),
-              icon: const Icon(Icons.menu_open),
-              label: const Text('Abrir sumário lateral'),
-            ),
-          ],
         ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          key: const Key('rules-open-sidebar'),
+          onTap: () => _openSidebarSheet(catalog),
+          borderRadius: BorderRadius.circular(18),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            child: Row(
+              children: [
+                Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: AppTheme.secondaryBlueColor.withValues(alpha: 0.10),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.menu_open,
+                    size: 20,
+                    color: AppTheme.secondaryBlueColor,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Abrir sumário lateral',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: AppTheme.primaryColor,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 16,
+                        ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -808,42 +810,20 @@ class _VisibleContent {
   const _VisibleContent({
     required this.chapters,
     required this.documents,
-    required this.indexEntries,
-    required this.title,
-    required this.subtitle,
   });
 
   factory _VisibleContent.from({
     required List<_VisibleChapter> chapters,
     required List<RulesDocument> documents,
-    String? title,
-    String? subtitle,
   }) {
-    final indexEntries = <_IndexEntry>[
-      for (final chapter in chapters)
-        for (final section in chapter.sections)
-          _IndexEntry(
-            id: section.id,
-            label: '${section.officialNumber} ${section.officialTitle}',
-          ),
-      for (final document in documents)
-        _IndexEntry(id: document.id, label: document.officialTitle),
-    ];
-
     return _VisibleContent(
       chapters: chapters,
       documents: documents,
-      indexEntries: indexEntries,
-      title: title ?? '',
-      subtitle: subtitle ?? '',
     );
   }
 
   final List<_VisibleChapter> chapters;
   final List<RulesDocument> documents;
-  final List<_IndexEntry> indexEntries;
-  final String title;
-  final String subtitle;
 }
 
 class _VisibleChapter {
@@ -858,16 +838,6 @@ class _VisibleChapter {
   final String officialNumber;
   final String officialTitle;
   final List<RulesSection> sections;
-}
-
-class _IndexEntry {
-  const _IndexEntry({
-    required this.id,
-    required this.label,
-  });
-
-  final String id;
-  final String label;
 }
 
 class _SidebarMenuGroupData {

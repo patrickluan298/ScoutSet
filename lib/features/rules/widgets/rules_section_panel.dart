@@ -26,7 +26,6 @@ class RulesSectionPanel extends StatelessWidget {
     final blocks = content
         .trim()
         .split(RegExp(r'\n\s*\n'))
-        .map(_normalizeBlock)
         .where((block) => block.trim().isNotEmpty)
         .toList(growable: false);
 
@@ -155,44 +154,6 @@ class RulesSectionPanel extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  String _normalizeBlock(String block) {
-    final cleanedLines = block
-        .split('\n')
-        .map((line) => _removeTrailingReferenceColumn(line).trim())
-        .where((line) => line.isNotEmpty)
-        .where((line) => !_isReferenceOnlyLine(line))
-        .where((line) => !_isStructuralHeaderLine(line))
-        .toList(growable: false);
-
-    return cleanedLines.join(' ').replaceAll(RegExp(r'\s{2,}'), ' ').trim();
-  }
-
-  String _removeTrailingReferenceColumn(String line) {
-    return line.replaceFirst(
-      RegExp(
-        r'\s{3,}(?:(?:\d+[.,]\d+(?:[.,]\d+)?[a-z]?|D\d+(?:\s*\(\d+\))?|[a-z]|e|,|\(|\)|\.)\s*)+$',
-        caseSensitive: false,
-      ),
-      '',
-    );
-  }
-
-  bool _isReferenceOnlyLine(String line) {
-    final normalized = line.trim();
-    return RegExp(
-      r'^(?:(?:\d+[.,]\d+(?:[.,]\d+)?[a-z]?|D\d+(?:\s*\(\d+\))?|[a-z]|e|,|\(|\)|\.)\s*)+$',
-      caseSensitive: false,
-    ).hasMatch(normalized);
-  }
-
-  bool _isStructuralHeaderLine(String line) {
-    final normalized = line.trim();
-    return RegExp(
-      r'^(PARTE\s+\d+\s*-\s*SEÇÃO\s+\d+\s*:\s*.+|CAPÍTULO\s+\d+.*|REGRAS OFICIAIS DE VÔLEI.*)$',
-      caseSensitive: false,
-    ).hasMatch(normalized);
   }
 
   Widget _buildContentBlock(

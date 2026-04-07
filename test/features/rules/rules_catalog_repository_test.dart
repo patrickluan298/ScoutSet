@@ -40,6 +40,19 @@ void main() {
     final section213 = chapter21.sections.firstWhere((section) => section.officialNumber == '21.3');
     expect(section213.officialTitle, 'ESCALA DE SANÇÕES');
 
+    final chapter1 = catalog.chapters.firstWhere((chapter) => chapter.officialNumber == '1');
+    final section11 = chapter1.sections.firstWhere((section) => section.officialNumber == '1.1');
+    expect(
+      section11.content,
+      contains('A quadra de jogo é um retângulo de 18 x 9 m, cercado por uma zona livre com largura mínima de 3 m em todos os lados.'),
+    );
+    expect(
+      section11.content,
+      contains('largura a partir das linhas laterais e 6,5 m de profundidade a partir das linhas de fundo.'),
+    );
+    expect(section11.content, isNot(contains('largura\n')));
+    expect(section11.content, isNot(contains('fundo.\n')));
+
     expect(catalog.documents.map((document) => document.officialTitle), contains('PARTE 3: DEFINIÇÕES'));
   });
 }
