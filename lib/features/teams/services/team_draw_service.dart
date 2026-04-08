@@ -118,13 +118,20 @@ class TeamDrawService {
 
     _validateTeamBalance(teams);
 
+    final scopedTeams = List<DrawTeam>.generate(
+      teams.length,
+      (index) => teams[index].copyWith(
+        id: _buildId('manual-team-$index'),
+      ),
+    );
+
     return TeamDrawResult(
       id: _buildId('draw'),
       contextKey: buildContextKey(normalizedPlayers.map((player) => player.id)),
       createdAt: DateTime.now(),
       totalPlayers: normalizedPlayers.length,
       numberOfTeams: teams.length,
-      teams: teams,
+      teams: scopedTeams,
       waitingPlayers: waitingCandidates.isEmpty
           ? const []
           : [
