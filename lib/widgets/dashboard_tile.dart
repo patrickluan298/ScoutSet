@@ -20,23 +20,27 @@ class DashboardTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
-      child: AppCard(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            CircleAvatar(
-              radius: 24,
-              backgroundColor: theme.colorScheme.secondary.withValues(alpha: 0.12),
-              child: Icon(icon, color: theme.colorScheme.secondary),
-            ),
-            const Spacer(),
-            Text(title, style: theme.textTheme.titleMedium),
-            const SizedBox(height: 6),
-            Text(subtitle, style: theme.textTheme.bodyMedium),
-          ],
+    return AppCard(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CircleAvatar(
+                radius: 24,
+                backgroundColor:
+                    theme.colorScheme.secondary.withValues(alpha: 0.12),
+                child: Icon(icon, color: theme.colorScheme.secondary),
+              ),
+              const Spacer(),
+              Text(title, style: theme.textTheme.titleMedium),
+              const SizedBox(height: 6),
+              Text(subtitle, style: theme.textTheme.bodyMedium),
+            ],
+          ),
         ),
       ),
     );

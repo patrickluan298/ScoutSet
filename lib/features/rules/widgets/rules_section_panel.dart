@@ -23,40 +23,47 @@ class RulesSectionPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colors = AppTheme.colorsOf(context);
     final blocks = content
         .trim()
         .split(RegExp(r'\n\s*\n'))
         .where((block) => block.trim().isNotEmpty)
         .toList(growable: false);
 
-    final accentColor = expanded
-        ? AppTheme.accentColor
-        : AppTheme.secondaryBlueColor.withValues(alpha: 0.18);
-    final surfaceColor = expanded
-        ? AppTheme.primaryColor.withValues(alpha: 0.02)
-        : Colors.white;
+    final accentColor =
+        expanded ? colors.accent : colors.primaryDetail.withValues(alpha: 0.28);
+    final surfaceColor =
+        expanded ? colors.surfaceContainer : colors.panelBackground;
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 180),
       curve: Curves.easeOutCubic,
       decoration: BoxDecoration(
         color: surfaceColor,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: expanded ? accentColor : const Color(0xFFD9E2EC),
+          color: expanded ? colors.accent : colors.subtleBorder,
           width: expanded ? 1.3 : 1,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: colors.surface.withValues(
+                alpha: theme.brightness == Brightness.dark ? 0.18 : 0.03),
+            blurRadius: 22,
+            offset: const Offset(0, 10),
+          ),
+        ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(20),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             AnimatedContainer(
               duration: const Duration(milliseconds: 180),
               curve: Curves.easeOutCubic,
-              width: 3,
-              height: expanded ? null : 82,
+              width: 4,
+              height: expanded ? null : 90,
               color: accentColor,
             ),
             Expanded(
@@ -66,34 +73,42 @@ class RulesSectionPanel extends StatelessWidget {
                   key: PageStorageKey<String>('rules-panel-${label ?? title}'),
                   initiallyExpanded: expanded,
                   onExpansionChanged: onChanged,
-                  tilePadding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
-                  childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  tilePadding: const EdgeInsets.fromLTRB(18, 14, 18, 12),
+                  childrenPadding: const EdgeInsets.fromLTRB(18, 0, 18, 18),
                   collapsedShape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(18),
+                    borderRadius: BorderRadius.circular(20),
                   ),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(18),
+                    borderRadius: BorderRadius.circular(20),
                   ),
-                  iconColor: AppTheme.accentColor,
-                  collapsedIconColor: AppTheme.mediumGrayColor,
+                  iconColor: colors.accent,
+                  collapsedIconColor: colors.onSurfaceVariant,
                   title: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       if (label != null) ...[
                         Container(
                           constraints: const BoxConstraints(minWidth: 54),
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 7),
                           decoration: BoxDecoration(
                             color: expanded
-                                ? AppTheme.primaryColor
-                                : AppTheme.primaryColor.withValues(alpha: 0.06),
+                                ? colors.accent
+                                : colors.chipBackground,
                             borderRadius: BorderRadius.circular(999),
+                            border: Border.all(
+                              color: expanded
+                                  ? colors.accent
+                                  : colors.subtleBorder,
+                            ),
                           ),
                           child: Text(
                             label!,
                             textAlign: TextAlign.center,
                             style: theme.textTheme.bodyMedium?.copyWith(
-                              color: expanded ? AppTheme.whiteColor : AppTheme.primaryColor,
+                              color: expanded
+                                  ? colors.surface
+                                  : colors.chipForeground,
                               fontWeight: FontWeight.w800,
                               fontSize: 13,
                               height: 1.1,
@@ -106,11 +121,12 @@ class RulesSectionPanel extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            if (subtitle != null && subtitle!.trim().isNotEmpty) ...[
+                            if (subtitle != null &&
+                                subtitle!.trim().isNotEmpty) ...[
                               Text(
                                 subtitle!,
                                 style: theme.textTheme.bodyMedium?.copyWith(
-                                  color: AppTheme.mediumGrayColor,
+                                  color: colors.onSurfaceVariant,
                                   fontWeight: FontWeight.w700,
                                   letterSpacing: 0.2,
                                   fontSize: 12,
@@ -122,6 +138,7 @@ class RulesSectionPanel extends StatelessWidget {
                             Text(
                               title,
                               style: theme.textTheme.titleMedium?.copyWith(
+                                color: colors.onSurface,
                                 fontWeight: FontWeight.w800,
                                 fontSize: 16,
                                 height: 1.15,
@@ -136,7 +153,7 @@ class RulesSectionPanel extends StatelessWidget {
                     Container(
                       height: 1,
                       margin: const EdgeInsets.only(bottom: 12),
-                      color: AppTheme.primaryColor.withValues(alpha: 0.08),
+                      color: colors.divider,
                     ),
                     for (var index = 0; index < blocks.length; index++) ...[
                       _buildContentBlock(
@@ -162,30 +179,23 @@ class RulesSectionPanel extends StatelessWidget {
     required int index,
   }) {
     final theme = Theme.of(context);
+    final colors = AppTheme.colorsOf(context);
     final numberMatch = RegExp(r'^(\d+[.,]\d+(?:[.,]\d+)*)').firstMatch(block);
     final leadingNumber = numberMatch?.group(1);
     final isBullet = block.startsWith('–') || block.startsWith('-');
-    final displayText = leadingNumber == null ? block : block.replaceFirst(RegExp(r'^\d+[.,]\d+(?:[.,]\d+)*\s*'), '');
-    final backgroundColor = index.isEven
-        ? AppTheme.lightGrayColor.withValues(alpha: 0.74)
-        : Colors.white;
+    final displayText = leadingNumber == null
+        ? block
+        : block.replaceFirst(RegExp(r'^\d+[.,]\d+(?:[.,]\d+)*\s*'), '');
+    final backgroundColor =
+        index.isEven ? colors.panelAlternate : colors.panelBackground;
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
         color: backgroundColor,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: AppTheme.primaryColor.withValues(alpha: 0.05),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.primaryColor.withValues(alpha: 0.03),
-            blurRadius: 14,
-            offset: const Offset(0, 6),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: colors.subtleBorder),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -200,21 +210,31 @@ class RulesSectionPanel extends StatelessWidget {
                 children: [
                   if (leadingNumber != null)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 5),
                       decoration: BoxDecoration(
-                        color: AppTheme.primaryColor,
+                        color: colors.primaryDetail,
                         borderRadius: BorderRadius.circular(999),
                       ),
                       child: Text(
                         leadingNumber,
                         style: theme.textTheme.bodyMedium?.copyWith(
-                          color: AppTheme.whiteColor,
+                          color: colors.surface,
                           fontWeight: FontWeight.w800,
                           fontSize: 12,
                           height: 1,
                         ),
-                        ),
                       ),
+                    ),
+                  if (isBullet)
+                    Container(
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: colors.accent,
+                        borderRadius: BorderRadius.circular(99),
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -222,8 +242,9 @@ class RulesSectionPanel extends StatelessWidget {
             displayText.trimRight(),
             style: theme.textTheme.bodyLarge?.copyWith(
               height: 1.58,
-              color: AppTheme.textColor.withValues(alpha: 0.95),
-              fontWeight: leadingNumber != null ? FontWeight.w500 : FontWeight.w400,
+              color: colors.onSurface.withValues(alpha: 0.96),
+              fontWeight:
+                  leadingNumber != null ? FontWeight.w500 : FontWeight.w400,
             ),
           ),
         ],

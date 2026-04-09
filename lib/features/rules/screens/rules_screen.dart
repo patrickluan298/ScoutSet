@@ -79,7 +79,8 @@ class _RulesScreenState extends State<RulesScreen> {
 
         if (snapshot.hasError || !snapshot.hasData) {
           return _RulesErrorState(
-            message: 'Não foi possível carregar o catálogo local das regras oficiais.',
+            message:
+                'Não foi possível carregar o catálogo local das regras oficiais.',
           );
         }
 
@@ -98,6 +99,7 @@ class _RulesScreenState extends State<RulesScreen> {
 
   Widget _buildCatalogView(BuildContext context, RulesCatalog catalog) {
     final display = _buildCurrentDisplay(catalog);
+    final colors = AppTheme.colorsOf(context);
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -135,15 +137,18 @@ class _RulesScreenState extends State<RulesScreen> {
                             Container(
                               width: 34,
                               height: 2,
-                              color: AppTheme.accentColor,
+                              color: colors.accent,
                             ),
                             const SizedBox(width: 10),
                             Text(
                               _searchTerm.trim().isNotEmpty
                                   ? 'LEITURA FILTRADA'
                                   : 'CAPÍTULOS OFICIAIS',
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    color: AppTheme.mediumGrayColor,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(
+                                    color: colors.onSurfaceVariant,
                                     fontWeight: FontWeight.w800,
                                     letterSpacing: 1.1,
                                   ),
@@ -164,8 +169,11 @@ class _RulesScreenState extends State<RulesScreen> {
                           children: [
                             Text(
                               'DOCUMENTOS OFICIAIS',
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    color: AppTheme.mediumGrayColor,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(
+                                    color: colors.onSurfaceVariant,
                                     fontWeight: FontWeight.w800,
                                     letterSpacing: 1.1,
                                   ),
@@ -177,7 +185,8 @@ class _RulesScreenState extends State<RulesScreen> {
                                 title: document.officialTitle,
                                 content: document.content,
                                 expanded: _expandedIds.contains(document.id),
-                                onChanged: (expanded) => _handleExpansion(document.id, expanded),
+                                onChanged: (expanded) =>
+                                    _handleExpansion(document.id, expanded),
                               ),
                               const SizedBox(height: 12),
                             ],
@@ -200,6 +209,7 @@ class _RulesScreenState extends State<RulesScreen> {
     VoidCallback? onCategorySelected,
     VoidCallback? onItemSelected,
   }) {
+    final colors = AppTheme.colorsOf(context);
     final menuGroups = _buildVisibleMenuGroups(catalog);
     final body = Column(
       children: [
@@ -217,8 +227,7 @@ class _RulesScreenState extends State<RulesScreen> {
               key: Key('rules-menu-category-${group.id}'),
               title: group.title,
               icon: _categoryIcons[group.id] ?? Icons.menu_book_outlined,
-              isSelected:
-                  _selectedCategoryId == group.id &&
+              isSelected: _selectedCategoryId == group.id &&
                   _selectedChapterId == null &&
                   _selectedDocumentId == null,
               onTap: () {
@@ -234,9 +243,10 @@ class _RulesScreenState extends State<RulesScreen> {
                   _SidebarItem(
                     key: Key('rules-menu-item-${item.id}'),
                     title: item.label,
-                    isSelected:
-                        (_selectedChapterId != null && _selectedChapterId == item.id) ||
-                        (_selectedDocumentId != null && _selectedDocumentId == item.id),
+                    isSelected: (_selectedChapterId != null &&
+                            _selectedChapterId == item.id) ||
+                        (_selectedDocumentId != null &&
+                            _selectedDocumentId == item.id),
                     onTap: () {
                       setState(() {
                         _selectedCategoryId = group.id;
@@ -267,8 +277,9 @@ class _RulesScreenState extends State<RulesScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             decoration: BoxDecoration(
-              color: AppTheme.primaryColor,
+              color: colors.surface,
               borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: colors.subtleBorder),
             ),
             child: Row(
               children: [
@@ -276,12 +287,12 @@ class _RulesScreenState extends State<RulesScreen> {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.1),
+                    color: colors.chipBackground,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.menu_book_outlined,
-                    color: AppTheme.accentColor,
+                    color: colors.accent,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -292,7 +303,7 @@ class _RulesScreenState extends State<RulesScreen> {
                       Text(
                         'ÍNDICE OFICIAL',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: AppTheme.accentColor,
+                              color: colors.accent,
                               fontWeight: FontWeight.w800,
                               letterSpacing: 1.1,
                             ),
@@ -300,10 +311,11 @@ class _RulesScreenState extends State<RulesScreen> {
                       const SizedBox(height: 2),
                       Text(
                         'Sumário lateral',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              color: AppTheme.whiteColor,
-                              fontWeight: FontWeight.w800,
-                            ),
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  color: colors.onSurface,
+                                  fontWeight: FontWeight.w800,
+                                ),
                       ),
                     ],
                   ),
@@ -331,14 +343,14 @@ class _RulesScreenState extends State<RulesScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          const Text(
+          Text(
             'CONTEÚDO',
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 1.2,
-              color: AppTheme.mediumGrayColor,
-            ),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1.2,
+                  color: colors.onSurfaceVariant,
+                ),
           ),
           const SizedBox(height: 16),
           if (scrollableWithinCard)
@@ -355,7 +367,8 @@ class _RulesScreenState extends State<RulesScreen> {
       final items = <_SidebarMenuItemData>[];
 
       if (category.id == 'rotation-positions') {
-        final chapter = catalog.chapters.firstWhere((item) => item.officialNumber == '7');
+        final chapter =
+            catalog.chapters.firstWhere((item) => item.officialNumber == '7');
         items.add(
           _SidebarMenuItemData(
             id: chapter.id,
@@ -376,7 +389,8 @@ class _RulesScreenState extends State<RulesScreen> {
           );
         }
       } else {
-        for (final chapter in catalog.chapters.where((item) => item.categoryId == category.id)) {
+        for (final chapter in catalog.chapters
+            .where((item) => item.categoryId == category.id)) {
           items.add(
             _SidebarMenuItemData(
               id: chapter.id,
@@ -388,7 +402,8 @@ class _RulesScreenState extends State<RulesScreen> {
       }
 
       if (category.id == 'supplemental') {
-        for (final document in catalog.documents.where((item) => item.categoryId == category.id)) {
+        for (final document in catalog.documents
+            .where((item) => item.categoryId == category.id)) {
           items.insert(
             items.length.clamp(0, items.length),
             _SidebarMenuItemData(
@@ -417,7 +432,8 @@ class _RulesScreenState extends State<RulesScreen> {
 
     final visibleGroups = <_SidebarMenuGroupData>[];
     for (final group in menuGroups) {
-      final groupMatches = _normalizeForSearch(group.title).contains(normalizedQuery);
+      final groupMatches =
+          _normalizeForSearch(group.title).contains(normalizedQuery);
       final matchingItems = group.items.where((item) {
         return _normalizeForSearch(item.label).contains(normalizedQuery);
       }).toList(growable: false);
@@ -443,6 +459,7 @@ class _RulesScreenState extends State<RulesScreen> {
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
+      backgroundColor: AppTheme.colorsOf(context).surfaceContainer,
       builder: (context) {
         return SafeArea(
           child: SingleChildScrollView(
@@ -461,6 +478,7 @@ class _RulesScreenState extends State<RulesScreen> {
 
   Widget _buildChapterBlock(_VisibleChapter chapter) {
     final theme = Theme.of(context);
+    final colors = AppTheme.colorsOf(context);
 
     return AppCard(
       padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
@@ -469,12 +487,12 @@ class _RulesScreenState extends State<RulesScreen> {
         children: [
           Container(
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
+              gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  AppTheme.primaryColor,
-                  AppTheme.secondaryBlueColor,
+                  colors.heroStart,
+                  colors.heroEnd,
                 ],
               ),
               borderRadius: BorderRadius.circular(20),
@@ -484,15 +502,17 @@ class _RulesScreenState extends State<RulesScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.12),
+                    color: colors.chipBackground,
                     borderRadius: BorderRadius.circular(999),
+                    border: Border.all(color: colors.subtleBorder),
                   ),
                   child: Text(
                     chapter.officialNumber,
                     style: theme.textTheme.bodyMedium?.copyWith(
-                      color: AppTheme.whiteColor,
+                      color: colors.onSurface,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
@@ -502,7 +522,7 @@ class _RulesScreenState extends State<RulesScreen> {
                   child: Text(
                     chapter.officialTitle,
                     style: theme.textTheme.titleLarge?.copyWith(
-                      color: AppTheme.whiteColor,
+                      color: colors.onSurface,
                     ),
                   ),
                 ),
@@ -527,26 +547,32 @@ class _RulesScreenState extends State<RulesScreen> {
     );
   }
 
-  _VisibleContent _buildCategoryDisplay(RulesCatalog catalog, String categoryId) {
+  _VisibleContent _buildCategoryDisplay(
+      RulesCatalog catalog, String categoryId) {
     final chapters = <_VisibleChapter>[];
     final documents = <RulesDocument>[];
-    final supplementalChapters = catalog.chapters.where((chapter) => chapter.categoryId == categoryId);
+    final supplementalChapters =
+        catalog.chapters.where((chapter) => chapter.categoryId == categoryId);
 
     if (categoryId == 'rotation-positions') {
-      final chapter = catalog.chapters.firstWhere((item) => item.officialNumber == '7');
+      final chapter =
+          catalog.chapters.firstWhere((item) => item.officialNumber == '7');
       chapters.add(
         _VisibleChapter(
           id: chapter.id,
           officialNumber: chapter.officialNumber,
           officialTitle: chapter.officialTitle,
           sections: chapter.sections.where((section) {
-            return const {'7.4', '7,5', '7.6', '7,7'}.contains(section.officialNumber);
+            return const {'7.4', '7,5', '7.6', '7,7'}
+                .contains(section.officialNumber);
           }).toList(growable: false),
         ),
       );
     } else if (categoryId == 'game-structure') {
-      final chapter7 = catalog.chapters.firstWhere((item) => item.officialNumber == '7');
-      final chapter8 = catalog.chapters.firstWhere((item) => item.officialNumber == '8');
+      final chapter7 =
+          catalog.chapters.firstWhere((item) => item.officialNumber == '7');
+      final chapter8 =
+          catalog.chapters.firstWhere((item) => item.officialNumber == '8');
       chapters.add(
         _VisibleChapter(
           id: chapter7.id,
@@ -579,7 +605,8 @@ class _RulesScreenState extends State<RulesScreen> {
     }
 
     if (categoryId == 'supplemental') {
-      documents.addAll(catalog.documents.where((document) => document.categoryId == categoryId));
+      documents.addAll(catalog.documents
+          .where((document) => document.categoryId == categoryId));
     }
 
     return _VisibleContent.from(chapters: chapters, documents: documents);
@@ -595,14 +622,16 @@ class _RulesScreenState extends State<RulesScreen> {
         return _buildCategoryDisplay(catalog, _selectedCategoryId);
       }
 
-      final document = catalog.documents.firstWhere((item) => item.id == _selectedDocumentId);
+      final document = catalog.documents
+          .firstWhere((item) => item.id == _selectedDocumentId);
       return _VisibleContent.from(
         chapters: const [],
         documents: [document],
       );
     }
 
-    final chapter = catalog.chapters.firstWhere((item) => item.id == _selectedChapterId);
+    final chapter =
+        catalog.chapters.firstWhere((item) => item.id == _selectedChapterId);
     return _VisibleContent.from(
       chapters: [
         _VisibleChapter(
@@ -672,91 +701,105 @@ class _RulesScreenState extends State<RulesScreen> {
     bool showSidebar,
   ) {
     final theme = Theme.of(context);
+    final colors = AppTheme.colorsOf(context);
 
     return Container(
       padding: const EdgeInsets.fromLTRB(22, 22, 22, 24),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(28),
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppTheme.primaryColor,
-            AppTheme.secondaryBlueColor,
+            colors.heroStart,
+            colors.heroEnd,
           ],
         ),
+        border: Border.all(color: colors.subtleBorder),
+        boxShadow: [
+          BoxShadow(
+            color: colors.surface.withValues(
+                alpha: theme.brightness == Brightness.dark ? 0.16 : 0.04),
+            blurRadius: 24,
+            offset: const Offset(0, 12),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-              Row(
-                children: [
-                  Container(
-                    width: 34,
-                    height: 2,
-                    color: AppTheme.accentColor,
-                  ),
-                  const SizedBox(width: 10),
-                  Text(
-                    'MANUAL TÉCNICO',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: AppTheme.accentColor,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 1.5,
-                    ),
-                  ),
-                ],
+          Row(
+            children: [
+              Container(
+                width: 34,
+                height: 2,
+                color: colors.accent,
               ),
-              const SizedBox(height: 18),
+              const SizedBox(width: 10),
               Text(
-                'Regras Oficiais',
-                style: theme.textTheme.headlineMedium?.copyWith(
-                  color: AppTheme.whiteColor,
-                  fontSize: 34,
-                  height: 1.05,
+                'MANUAL TÉCNICO',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: colors.accent,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1.5,
                 ),
               ),
-              const SizedBox(height: 12),
-              ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 640),
-                child: Text(
-                  'Aprovado no 39º Congresso Mundial da FIVB de 2024.',
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    color: AppTheme.whiteColor.withValues(alpha: 0.88),
-                  ),
-                ),
+            ],
+          ),
+          const SizedBox(height: 18),
+          Text(
+            'Regras Oficiais',
+            style: theme.textTheme.headlineMedium?.copyWith(
+              color: colors.onSurface,
+              fontSize: 34,
+              height: 1.05,
+            ),
+          ),
+          const SizedBox(height: 12),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 640),
+            child: Text(
+              'Aprovado no 39º Congresso Mundial da FIVB de 2024.',
+              style: theme.textTheme.bodyLarge?.copyWith(
+                color: colors.onSurface.withValues(alpha: 0.88),
               ),
-              const SizedBox(height: 18),
-              Wrap(
-                spacing: 10,
-                runSpacing: 10,
-                children: [
-                  _HeroStatChip(
-                    label: catalog.sourceTitle,
-                    icon: Icons.verified_outlined,
-                  ),
-                  _HeroStatChip(
-                    label: '${catalog.chapters.length} capítulos',
-                    icon: Icons.view_agenda_outlined,
-                  ),
-                ],
+            ),
+          ),
+          const SizedBox(height: 18),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: [
+              _HeroStatChip(
+                label: catalog.sourceTitle,
+                icon: Icons.verified_outlined,
               ),
+              _HeroStatChip(
+                label: '${catalog.chapters.length} capítulos',
+                icon: Icons.view_agenda_outlined,
+              ),
+            ],
+          ),
         ],
       ),
     );
   }
 
   Widget _buildControlsPanel(BuildContext context, RulesCatalog catalog) {
+    final colors = AppTheme.colorsOf(context);
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: AppTheme.whiteColor,
+        color: colors.surfaceContainer,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: AppTheme.secondaryBlueColor.withValues(alpha: 0.16),
+          color: colors.subtleBorder,
         ),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.primaryColor.withValues(alpha: 0.03),
+            color: colors.surface.withValues(
+                alpha: Theme.of(context).brightness == Brightness.dark
+                    ? 0.12
+                    : 0.03),
             blurRadius: 18,
             offset: const Offset(0, 8),
           ),
@@ -776,13 +819,13 @@ class _RulesScreenState extends State<RulesScreen> {
                   width: 38,
                   height: 38,
                   decoration: BoxDecoration(
-                    color: AppTheme.secondaryBlueColor.withValues(alpha: 0.10),
+                    color: colors.chipBackground,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.menu_open,
                     size: 20,
-                    color: AppTheme.secondaryBlueColor,
+                    color: colors.primaryDetail,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -790,7 +833,7 @@ class _RulesScreenState extends State<RulesScreen> {
                   child: Text(
                     'Abrir sumário lateral',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: AppTheme.primaryColor,
+                          color: colors.onSurface,
                           fontWeight: FontWeight.w700,
                           fontSize: 16,
                         ),
@@ -803,7 +846,6 @@ class _RulesScreenState extends State<RulesScreen> {
       ),
     );
   }
-
 }
 
 class _VisibleContent {
@@ -887,12 +929,14 @@ class _SidebarGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppTheme.colorsOf(context);
     return Container(
       decoration: BoxDecoration(
-        color: isSelected ? AppTheme.primaryColor.withValues(alpha: 0.03) : AppTheme.lightGrayColor,
+        color:
+            isSelected ? colors.surfaceContainer : colors.surfaceContainerLow,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isSelected ? AppTheme.accentColor : const Color(0xFFD9E2EC),
+          color: isSelected ? colors.accent : colors.subtleBorder,
           width: isSelected ? 1.4 : 1,
         ),
       ),
@@ -912,19 +956,22 @@ class _SidebarGroup extends StatelessWidget {
                       height: 34,
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? AppTheme.accentColor.withValues(alpha: 0.18)
-                            : Colors.white,
+                            ? colors.chipBackground
+                            : colors.panelBackground,
                         borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: colors.subtleBorder),
                       ),
-                      child: Icon(icon, color: AppTheme.primaryColor, size: 18),
+                      child: Icon(icon, color: colors.primaryDetail, size: 18),
                     ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
                         title,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w800,
-                            ),
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  color: colors.onSurface,
+                                  fontWeight: FontWeight.w800,
+                                ),
                       ),
                     ),
                   ],
@@ -957,19 +1004,21 @@ class _SidebarItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppTheme.colorsOf(context);
     return Align(
       alignment: Alignment.centerLeft,
       child: TextButton.icon(
         onPressed: onTap,
         style: TextButton.styleFrom(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          foregroundColor: isSelected ? AppTheme.primaryColor : AppTheme.textColor,
-          backgroundColor: isSelected
-              ? AppTheme.accentColor.withValues(alpha: 0.18)
-              : Colors.white,
+          foregroundColor: isSelected ? colors.primaryDetail : colors.onSurface,
+          backgroundColor:
+              isSelected ? colors.chipBackground : colors.panelBackground,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
+          side: BorderSide(
+              color: isSelected ? colors.accent : colors.subtleBorder),
         ),
         icon: Icon(
           isSelected ? Icons.arrow_right_alt : Icons.subdirectory_arrow_right,
@@ -999,17 +1048,19 @@ class _HeroStatChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppTheme.colorsOf(context);
     return Container(
       constraints: const BoxConstraints(maxWidth: 260),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.12),
+        color: colors.chipBackground,
         borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: colors.subtleBorder),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 16, color: AppTheme.accentColor),
+          Icon(icon, size: 16, color: colors.accent),
           const SizedBox(width: 8),
           Flexible(
             child: Text(
@@ -1017,7 +1068,7 @@ class _HeroStatChip extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppTheme.whiteColor,
+                    color: colors.onSurface,
                     fontWeight: FontWeight.w700,
                   ),
             ),
