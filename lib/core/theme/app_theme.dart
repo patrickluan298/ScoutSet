@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   const AppTheme._();
 
   static const Color primaryColor = Color(0xFF081426);
-  static const Color accentColor = Color(0xFFF5BE00);
+  static const Color accentColor = Color(0xFFF6BF03);
   static const Color secondaryBlueColor = Color(0xFF0F58B5);
   static const Color whiteColor = Color(0xFFFFFFFF);
   static const Color lightGrayColor = Color(0xFFF2F5FA);
@@ -27,7 +28,7 @@ class AppTheme {
         ).copyWith(
           primary: const Color(0xFF264F8F),
           onPrimary: Colors.white,
-          secondary: const Color(0xFFF5BE00),
+          secondary: accentColor,
           onSecondary: const Color(0xFF081426),
           surface: const Color(0xFFF4F7FC),
           onSurface: const Color(0xFF10233B),
@@ -37,7 +38,7 @@ class AppTheme {
           surface: Color(0xFFFFFFFF),
           surfaceContainer: Color(0xFFE6EDF8),
           surfaceContainerLow: Color(0xFFF8FAFE),
-          accent: Color(0xFFF5BE00),
+          accent: Color(0xFFF6BF03),
           primaryDetail: Color(0xFF264F8F),
           onSurface: Color(0xFF10233B),
           onSurfaceVariant: Color(0xFF5A6778),
@@ -120,6 +121,49 @@ class AppTheme {
     final onSurface = tokens.onSurface;
     final onSurfaceVariant = tokens.onSurfaceVariant;
     final isDark = brightness == Brightness.dark;
+    final baseTextTheme = GoogleFonts.manropeTextTheme(base.textTheme);
+    final textTheme = baseTextTheme.copyWith(
+      headlineMedium: GoogleFonts.spaceGrotesk(
+        fontSize: 28,
+        fontWeight: FontWeight.w800,
+        color: onSurface,
+      ),
+      titleLarge: GoogleFonts.spaceGrotesk(
+        fontSize: 22,
+        fontWeight: FontWeight.w800,
+        color: onSurface,
+      ),
+      titleMedium: GoogleFonts.spaceGrotesk(
+        fontSize: 18,
+        fontWeight: FontWeight.w700,
+        color: onSurface,
+      ),
+      bodyLarge: GoogleFonts.manrope(
+        fontSize: 16,
+        color: onSurface,
+        height: 1.5,
+      ),
+      bodyMedium: GoogleFonts.manrope(
+        fontSize: 14,
+        color: onSurfaceVariant,
+        height: 1.4,
+      ),
+      labelLarge: GoogleFonts.manrope(
+        fontSize: 14,
+        fontWeight: FontWeight.w700,
+        color: onSurface,
+      ),
+      labelMedium: GoogleFonts.manrope(
+        fontSize: 12,
+        fontWeight: FontWeight.w700,
+        color: onSurfaceVariant,
+      ),
+      labelSmall: GoogleFonts.manrope(
+        fontSize: 10,
+        fontWeight: FontWeight.w800,
+        color: onSurfaceVariant,
+      ),
+    );
 
     return base.copyWith(
       appBarTheme: AppBarTheme(
@@ -130,33 +174,7 @@ class AppTheme {
         scrolledUnderElevation: 0,
         centerTitle: false,
       ),
-      textTheme: base.textTheme.copyWith(
-        headlineMedium: TextStyle(
-          fontSize: 28,
-          fontWeight: FontWeight.w800,
-          color: onSurface,
-        ),
-        titleLarge: TextStyle(
-          fontSize: 22,
-          fontWeight: FontWeight.w800,
-          color: onSurface,
-        ),
-        titleMedium: TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.w700,
-          color: onSurface,
-        ),
-        bodyLarge: TextStyle(
-          fontSize: 16,
-          color: onSurface,
-          height: 1.5,
-        ),
-        bodyMedium: TextStyle(
-          fontSize: 14,
-          color: onSurfaceVariant,
-          height: 1.4,
-        ),
-      ),
+      textTheme: textTheme,
       listTileTheme: ListTileThemeData(
         tileColor: tokens.surfaceContainerLow,
         iconColor: tokens.primaryDetail,
@@ -184,7 +202,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
           ),
-          textStyle: const TextStyle(
+          textStyle: GoogleFonts.manrope(
             fontSize: 16,
             fontWeight: FontWeight.w700,
           ),

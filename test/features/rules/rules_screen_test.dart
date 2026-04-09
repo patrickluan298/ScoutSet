@@ -8,7 +8,7 @@ import 'package:scoutset/features/rules/models/rules_models.dart';
 import 'package:scoutset/features/rules/screens/rules_screen.dart';
 
 void main() {
-  testWidgets('rules screen renders search results from the local catalog',
+  testWidgets('rules screen renders manual tecnico header and search results',
       (tester) async {
     await tester.binding.setSurfaceSize(const Size(900, 2200));
     addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -26,14 +26,15 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
-    expect(find.text('Resultados da busca'), findsNothing);
-    expect(find.text('19 O JOGADOR LÍBERO'), findsWidgets);
-    expect(find.textContaining('LÍBERO'), findsWidgets);
+    expect(find.text('Manual Técnico'), findsOneWidget);
+    expect(find.text('Resultados da busca'), findsOneWidget);
+    expect(find.byType(RulesScreen), findsOneWidget);
   });
 
-  testWidgets('rules screen renders lateral menu and expands official sections',
+  testWidgets(
+      'rules screen renders desktop side nav and expands official sections',
       (tester) async {
-    await tester.binding.setSurfaceSize(const Size(900, 2200));
+    await tester.binding.setSurfaceSize(const Size(1320, 2200));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
     await tester.pumpWidget(
@@ -48,15 +49,11 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
-    expect(find.text('Sumário lateral'), findsOneWidget);
+    expect(find.text('Índice de Regras'), findsWidgets);
     expect(find.byKey(const Key('rules-menu-category-system-points')),
         findsOneWidget);
     expect(find.byKey(const Key('rules-menu-category-serve')), findsOneWidget);
     expect(find.byKey(const Key('rules-menu-category-libero')), findsOneWidget);
-    expect(
-        find.text(
-            'Espaço reservado para referência rápida de regras, interpretações e observações do jogo.'),
-        findsNothing);
 
     await tester
         .ensureVisible(find.byKey(const Key('rules-menu-item-chapter-12')));
@@ -65,34 +62,28 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
-    expect(find.text('12 SERVIÇO'), findsWidgets);
-    expect(find.text('12.4'), findsOneWidget);
+    expect(find.textContaining('Capítulo 12'), findsWidgets);
+    expect(find.text('REGRA 12.4'), findsOneWidget);
     expect(find.text('EXECUÇÃO DO SERVIÇO'), findsOneWidget);
 
     expect(
       find.textContaining(
-          '12.4.1 A bola deve ser golpeada com uma das mãos ou qualquer parte do braço'),
+          'A bola deve ser golpeada com uma das mãos ou qualquer parte do braço'),
       findsNothing,
     );
+
     await tester.tap(find.text('EXECUÇÃO DO SERVIÇO'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
+
     expect(
       find.textContaining(
           'A bola deve ser golpeada com uma das mãos ou qualquer parte do braço'),
       findsOneWidget,
     );
-
-    await tester
-        .ensureVisible(find.byKey(const Key('rules-menu-item-definitions')));
-    await tester.tap(find.byKey(const Key('rules-menu-item-definitions')));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 300));
-
-    expect(find.text('PARTE 3: DEFINIÇÕES'), findsWidgets);
   });
 
-  testWidgets('rules screen opens lateral menu from mobile button',
+  testWidgets('rules screen opens document index from mobile button',
       (tester) async {
     await tester.binding.setSurfaceSize(const Size(420, 900));
     addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -117,23 +108,23 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
-    expect(find.text('Sumário lateral'), findsOneWidget);
-    expect(
-        find.byKey(const Key('rules-menu-item-definitions')), findsOneWidget);
+    expect(find.text('Índice de Regras'), findsWidgets);
+    expect(find.byKey(const Key('rules-menu-category-system-points')),
+        findsOneWidget);
 
-    await tester
-        .ensureVisible(find.byKey(const Key('rules-menu-item-definitions')));
+    await tester.ensureVisible(
+        find.byKey(const Key('rules-menu-category-system-points')));
     await tester.pump();
-    await tester.tap(find.byKey(const Key('rules-menu-item-definitions')));
+    await tester
+        .tap(find.byKey(const Key('rules-menu-category-system-points')));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
-    expect(find.text('Sumário lateral'), findsNothing);
-    expect(find.text('PARTE 3: DEFINIÇÕES'), findsWidgets);
+    expect(find.text('Sistema de Pontuação'), findsWidgets);
   });
 
-  testWidgets('rules sidebar filters menu items while typing', (tester) async {
-    await tester.binding.setSurfaceSize(const Size(900, 2200));
+  testWidgets('rules side nav filters menu items while typing', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(1320, 2200));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
     await tester.pumpWidget(
@@ -162,9 +153,152 @@ void main() {
     expect(find.byKey(const Key('rules-menu-item-chapter-12')), findsNothing);
   });
 
+  testWidgets('rules screen orders serve and arbitration sections as expected',
+      (tester) async {
+    await tester.binding.setSurfaceSize(const Size(1320, 4000));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.lightTheme,
+        home: RulesScreen(
+          showScaffold: false,
+          repository: _TestRulesCatalogRepository(),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    final serveTop = tester
+        .getTopLeft(find.byKey(const Key('rules-menu-category-serve')))
+        .dy;
+    final attackTop = tester
+        .getTopLeft(find.byKey(const Key('rules-menu-category-attack')))
+        .dy;
+
+    expect(serveTop, lessThan(attackTop));
+
+    final arbitrationTop = tester
+        .getTopLeft(find.byKey(const Key('rules-menu-category-arbitration')))
+        .dy;
+    final supplementalTop = tester
+        .getTopLeft(find.byKey(const Key('rules-menu-category-supplemental')))
+        .dy;
+
+    expect(arbitrationTop, lessThan(supplementalTop));
+  });
+
+  testWidgets('rules screen groups arbitration chapters in a dedicated section',
+      (tester) async {
+    await tester.binding.setSurfaceSize(const Size(1320, 2200));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.lightTheme,
+        home: RulesScreen(
+          showScaffold: false,
+          repository: _TestRulesCatalogRepository(),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.text('Conteúdo Complementar'), findsWidgets);
+    expect(find.text('Capítulo 22: EQUIPE DE ARBITRAGEM E PROCEDIMENTOS'),
+        findsNothing);
+
+    await tester.enterText(
+        find.byKey(const Key('rules-search-field')), 'arbitragem');
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.byKey(const Key('rules-menu-category-arbitration')),
+        findsOneWidget);
+    expect(find.byKey(const Key('rules-menu-item-chapter-22')), findsOneWidget);
+    expect(find.byKey(const Key('rules-menu-item-chapter-30')), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('rules-menu-category-arbitration')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    await tester.enterText(find.byKey(const Key('rules-search-field')), '');
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.text('Arbitragem'), findsWidgets);
+    expect(find.text('Capítulo 22: EQUIPE DE ARBITRAGEM E PROCEDIMENTOS'),
+        findsOneWidget);
+  });
+
+  testWidgets(
+      'rules screen keeps chapter headers visible when selecting from filtered search results',
+      (tester) async {
+    await tester.binding.setSurfaceSize(const Size(1320, 2200));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.lightTheme,
+        home: RulesScreen(
+          showScaffold: false,
+          repository: _TestRulesCatalogRepository(),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    await tester.enterText(find.byKey(const Key('rules-search-field')), 'árbitro');
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.text('Resultados da busca'), findsOneWidget);
+    expect(find.byKey(const Key('rules-menu-item-chapter-23')), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('rules-menu-item-chapter-23')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.text('Resultados da busca'), findsOneWidget);
+    expect(find.textContaining('1º ÁRBITRO'), findsOneWidget);
+  });
+
+  testWidgets('rules screen shows accent border and media for expanded panel',
+      (tester) async {
+    await tester.binding.setSurfaceSize(const Size(1320, 2200));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.lightTheme,
+        home: RulesScreen(
+          showScaffold: false,
+          repository: _TestRulesCatalogRepository(),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    await tester.tap(find.text('DIMENSÕES'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.text('Fig 1. Dimensões da quadra'), findsOneWidget);
+
+    final accentFinder = find.byKey(const Key('rules-panel-accent-1.1'));
+    expect(accentFinder, findsOneWidget);
+    final accent = tester.widget<AnimatedContainer>(accentFinder);
+    final decoration = accent.decoration! as BoxDecoration;
+    expect(decoration.color, const Color(0xFFF6BF03));
+  });
+
   testWidgets('rules screen renders with dark theme tokens applied',
       (tester) async {
-    await tester.binding.setSurfaceSize(const Size(900, 2200));
+    await tester.binding.setSurfaceSize(const Size(1320, 2200));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
     await tester.pumpWidget(
@@ -183,8 +317,8 @@ void main() {
 
     final context = tester.element(find.text('Regras Oficiais'));
     expect(Theme.of(context).scaffoldBackgroundColor, const Color(0xFF071325));
-    expect(find.text('Regras Oficiais'), findsOneWidget);
-    expect(find.text('Sumário lateral'), findsOneWidget);
+    expect(find.text('Manual Técnico'), findsOneWidget);
+    expect(find.text('Índice de Regras'), findsOneWidget);
   });
 }
 

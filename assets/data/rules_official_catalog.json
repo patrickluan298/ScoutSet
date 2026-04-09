@@ -70,7 +70,11 @@
           "id": "section-1-1",
           "officialNumber": "1.1",
           "officialTitle": "DIMENSÕES",
-          "content": "A quadra de jogo é um retângulo de 18 x 9 m, cercado por uma zona livre com largura mínima de 3 m em todos os lados.\n\nO espaço livre de jogo é a área acima da linha de jogo que está livre de quaisquer obstruções. O espaço livre de jogo deve ter uma altura mínima de 7 metros a partir da superfície de jogo.\n\nPara competições da FIVB, Mundiais e Oficiais, a zona livre deverá ter 5 m de largura a partir das linhas laterais e 6,5 m de profundidade a partir das linhas de fundo. O espaço livre para jogo deverá ter uma altura mínima de 12,5 m a partir da superfície de jogo."
+          "content": "A quadra de jogo é um retângulo de 18 x 9 m, cercado por uma zona livre com largura mínima de 3 m em todos os lados.\n\nO espaço livre de jogo é a área acima da linha de jogo que está livre de quaisquer obstruções. O espaço livre de jogo deve ter uma altura mínima de 7 metros a partir da superfície de jogo.\n\nPara competições da FIVB, Mundiais e Oficiais, a zona livre deverá ter 5 m de largura a partir das linhas laterais e 6,5 m de profundidade a partir das linhas de fundo. O espaço livre para jogo deverá ter uma altura mínima de 12,5 m a partir da superfície de jogo.",
+          "media": {
+            "caption": "Fig 1. Dimensões da quadra",
+            "alt": "Vista esquemática da quadra de vôlei"
+          }
         },
         {
           "id": "section-1-2",

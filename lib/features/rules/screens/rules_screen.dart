@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart';
 import 'package:diacritic/diacritic.dart';
+import 'package:flutter/material.dart';
 
 import '../../../config/app_routes.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../utils/app_spacing.dart';
-import '../../../widgets/app_card.dart';
 import '../../../widgets/app_page_scaffold.dart';
+import '../../../widgets/dashboard_profile_bottom_navigation.dart';
 import '../data/rules_catalog_repository.dart';
 import '../models/rules_models.dart';
 import '../widgets/rules_section_panel.dart';
@@ -27,12 +27,39 @@ class RulesScreen extends StatefulWidget {
 }
 
 class _RulesScreenState extends State<RulesScreen> {
+  static const String _arbitrationCategoryId = 'arbitration';
+  static const List<String> _categoryOrder = [
+    'system-points',
+    'game-structure',
+    'rotation-positions',
+    'ball-contacts',
+    'net-invasions',
+    'serve',
+    'attack',
+    'block',
+    'libero',
+    'penalties',
+    _arbitrationCategoryId,
+    'supplemental',
+  ];
+  static const Set<String> _arbitrationChapterNumbers = {
+    '22',
+    '23',
+    '24',
+    '25',
+    '26',
+    '27',
+    '28',
+    '29',
+    '30',
+  };
+
   late final Future<RulesCatalog> _catalogFuture;
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final Set<String> _expandedIds = <String>{};
 
-  String _selectedCategoryId = 'system-points';
+  String _selectedCategoryId = 'supplemental';
   String? _selectedChapterId;
   String? _selectedDocumentId;
   String _searchTerm = '';
@@ -48,6 +75,7 @@ class _RulesScreenState extends State<RulesScreen> {
     'serve': Icons.sports_handball_outlined,
     'libero': Icons.person_outline,
     'penalties': Icons.gavel_outlined,
+    'arbitration': Icons.gavel_outlined,
     'supplemental': Icons.menu_book_outlined,
   };
 
@@ -78,7 +106,7 @@ class _RulesScreenState extends State<RulesScreen> {
         }
 
         if (snapshot.hasError || !snapshot.hasData) {
-          return _RulesErrorState(
+          return const _RulesErrorState(
             message:
                 'Não foi possível carregar o catálogo local das regras oficiais.',
           );
@@ -93,106 +121,77 @@ class _RulesScreenState extends State<RulesScreen> {
     return AppPageScaffold(
       showScaffold: widget.showScaffold,
       currentRoute: AppRoutes.rules,
+      backgroundColor: AppTheme.colorsOf(context).surface,
+      bottomNavigationBar: widget.showScaffold
+          ? const DashboardProfileBottomNavigation(
+              currentRoute: AppRoutes.rules,
+            )
+          : null,
       child: content,
     );
   }
 
   Widget _buildCatalogView(BuildContext context, RulesCatalog catalog) {
     final display = _buildCurrentDisplay(catalog);
-    final colors = AppTheme.colorsOf(context);
+    final isShowingSelectedChapter =
+        _searchTerm.trim().isEmpty && _selectedChapterId != null;
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final showSidebar = constraints.maxWidth >= 900;
+        final showSidebar = constraints.maxWidth >= 1120;
 
-        return Padding(
-          padding: AppSpacing.screen,
+        return DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                AppTheme.colorsOf(context).surface,
+                AppTheme.colorsOf(context).surfaceContainerLow,
+              ],
+            ),
+          ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (showSidebar) ...[
+              if (showSidebar)
                 SizedBox(
-                  width: 280,
+                  width: 288,
                   height: constraints.maxHeight,
-                  child: _buildSidebar(catalog, scrollableWithinCard: true),
+                  child: _buildSideNav(catalog),
                 ),
-                const SizedBox(width: 20),
-              ],
               Expanded(
                 child: ListView(
                   controller: _scrollController,
+                  padding: EdgeInsets.fromLTRB(
+                    showSidebar ? 28 : 20,
+                    showSidebar ? 18 : 12,
+                    showSidebar ? 28 : 20,
+                    showSidebar ? 40 : 104,
+                  ),
                   children: [
+                    if (showSidebar) _buildDesktopTopNav(),
                     _buildHeroHeader(context, catalog, showSidebar),
                     if (!showSidebar) ...[
                       const SizedBox(height: 16),
                       _buildControlsPanel(context, catalog),
-                      AppSpacing.gapMedium,
-                    ] else
-                      const SizedBox(height: 18),
-                    if (display.chapters.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 6),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 34,
-                              height: 2,
-                              color: colors.accent,
-                            ),
-                            const SizedBox(width: 10),
-                            Text(
-                              _searchTerm.trim().isNotEmpty
-                                  ? 'LEITURA FILTRADA'
-                                  : 'CAPÍTULOS OFICIAIS',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyMedium
-                                  ?.copyWith(
-                                    color: colors.onSurfaceVariant,
-                                    fontWeight: FontWeight.w800,
-                                    letterSpacing: 1.1,
-                                  ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    if (display.chapters.isNotEmpty) const SizedBox(height: 14),
-                    for (final chapter in display.chapters) ...[
-                      _buildChapterBlock(chapter),
-                      AppSpacing.gapMedium,
                     ],
-                    if (display.documents.isNotEmpty)
-                      AppCard(
-                        padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'DOCUMENTOS OFICIAIS',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyMedium
-                                  ?.copyWith(
-                                    color: colors.onSurfaceVariant,
-                                    fontWeight: FontWeight.w800,
-                                    letterSpacing: 1.1,
-                                  ),
-                            ),
-                            const SizedBox(height: 10),
-                            for (final document in display.documents) ...[
-                              RulesSectionPanel(
-                                key: ValueKey<String>(document.id),
-                                title: document.officialTitle,
-                                content: document.content,
-                                expanded: _expandedIds.contains(document.id),
-                                onChanged: (expanded) =>
-                                    _handleExpansion(document.id, expanded),
-                              ),
-                              const SizedBox(height: 12),
-                            ],
-                          ],
-                        ),
+                    const SizedBox(height: 24),
+                    _buildChapterHeading(context, catalog, display),
+                    const SizedBox(height: 18),
+                    for (final chapter in display.chapters) ...[
+                      _buildChapterBlock(
+                        context,
+                        chapter,
+                        showChapterTitle: !isShowingSelectedChapter,
                       ),
+                      const SizedBox(height: 22),
+                    ],
+                    if (display.documents.isNotEmpty) ...[
+                      _buildDocumentsBlock(context, display.documents),
+                      const SizedBox(height: 20),
+                    ],
+                    _buildWatermarkFooter(context, display),
                   ],
                 ),
               ),
@@ -203,167 +202,659 @@ class _RulesScreenState extends State<RulesScreen> {
     );
   }
 
-  Widget _buildSidebar(
-    RulesCatalog catalog, {
-    required bool scrollableWithinCard,
-    VoidCallback? onCategorySelected,
-    VoidCallback? onItemSelected,
-  }) {
+  Widget _buildDesktopTopNav() {
     final colors = AppTheme.colorsOf(context);
-    final menuGroups = _buildVisibleMenuGroups(catalog);
-    final body = Column(
-      children: [
-        if (menuGroups.isEmpty)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 24),
-            child: Text(
-              'Nenhum item do sumário corresponde à busca.',
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-          )
-        else
-          for (final group in menuGroups) ...[
-            _SidebarGroup(
-              key: Key('rules-menu-category-${group.id}'),
-              title: group.title,
-              icon: _categoryIcons[group.id] ?? Icons.menu_book_outlined,
-              isSelected: _selectedCategoryId == group.id &&
-                  _selectedChapterId == null &&
-                  _selectedDocumentId == null,
-              onTap: () {
-                setState(() {
-                  _selectedCategoryId = group.id;
-                  _selectedChapterId = null;
-                  _selectedDocumentId = null;
-                });
-                onCategorySelected?.call();
-              },
-              children: [
-                for (final item in group.items)
-                  _SidebarItem(
-                    key: Key('rules-menu-item-${item.id}'),
-                    title: item.label,
-                    isSelected: (_selectedChapterId != null &&
-                            _selectedChapterId == item.id) ||
-                        (_selectedDocumentId != null &&
-                            _selectedDocumentId == item.id),
-                    onTap: () {
-                      setState(() {
-                        _selectedCategoryId = group.id;
-                        if (item.kind == _SidebarMenuItemKind.chapter) {
-                          _selectedChapterId = item.id;
-                          _selectedDocumentId = null;
-                        } else {
-                          _selectedDocumentId = item.id;
-                          _selectedChapterId = null;
-                        }
-                      });
-                      onItemSelected?.call();
-                    },
-                  ),
+    final theme = Theme.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 18),
+      child: Center(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                colors.primaryDetail.withValues(alpha: 0.09),
+                Colors.transparent,
               ],
             ),
-            const SizedBox(height: 10),
-          ],
-      ],
+          ),
+          child: Wrap(
+            spacing: 28,
+            runSpacing: 10,
+            alignment: WrapAlignment.center,
+            children: [
+              _TopNavLink(
+                label: 'Regras',
+                isActive: true,
+                style: theme.textTheme.titleMedium!,
+              ),
+              _TopNavLink(
+                label: 'Casos',
+                isActive: false,
+                style: theme.textTheme.titleMedium!,
+              ),
+              _TopNavLink(
+                label: 'Diretrizes',
+                isActive: false,
+                style: theme.textTheme.titleMedium!,
+              ),
+            ],
+          ),
+        ),
+      ),
     );
+  }
 
-    return AppCard(
-      padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
+  Widget _buildHeroHeader(
+    BuildContext context,
+    RulesCatalog catalog,
+    bool showSidebar,
+  ) {
+    final colors = AppTheme.colorsOf(context);
+    final theme = Theme.of(context);
+
+    return Container(
+      padding: EdgeInsets.fromLTRB(
+        showSidebar ? 28 : 22,
+        24,
+        showSidebar ? 28 : 22,
+        28,
+      ),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            colors.surface,
+            colors.surfaceContainerLow,
+          ],
+        ),
+        borderRadius: BorderRadius.circular(28),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            decoration: BoxDecoration(
-              color: colors.surface,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: colors.subtleBorder),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: colors.chipBackground,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(
-                    Icons.menu_book_outlined,
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                    height: 1, color: colors.accent.withValues(alpha: 0.35)),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                child: Text(
+                  'Manual Técnico',
+                  style: theme.textTheme.labelSmall?.copyWith(
                     color: colors.accent,
+                    fontSize: showSidebar ? 14 : 12,
+                    letterSpacing: 2.2,
+                    fontWeight: FontWeight.w900,
                   ),
                 ),
+              ),
+              Expanded(
+                child: Container(
+                    height: 1, color: colors.accent.withValues(alpha: 0.35)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
+          Text(
+            'Regras Oficiais',
+            style: theme.textTheme.headlineMedium?.copyWith(
+              color: colors.onSurface,
+              fontSize: showSidebar ? 40 : 34,
+              height: 1.02,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'Aprovado no 39º Congresso Mundial da FIVB de 2024.',
+            style: theme.textTheme.bodyLarge?.copyWith(
+              color: colors.primaryDetail.withValues(alpha: 0.9),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 18),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                _HeroMetaChip(
+                  label: 'Edição ${catalog.sourceTitle}',
+                  icon: Icons.verified_outlined,
+                ),
                 const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'ÍNDICE OFICIAL',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: colors.accent,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 1.1,
-                            ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Sumário lateral',
-                        style:
-                            Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  color: colors.onSurface,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                      ),
-                    ],
-                  ),
+                _HeroMetaChip(
+                  label: '${catalog.chapters.length} capítulos oficiais',
+                  icon: Icons.menu_book_outlined,
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 16),
-          TextField(
-            key: const Key('rules-search-field'),
-            controller: _searchController,
-            onChanged: (value) => setState(() => _searchTerm = value),
-            decoration: InputDecoration(
-              hintText: 'Buscar por texto oficial, numeração ou seção',
-              prefixIcon: const Icon(Icons.search),
-              suffixIcon: _searchTerm.isEmpty
-                  ? null
-                  : IconButton(
-                      onPressed: () {
-                        _searchController.clear();
-                        setState(() => _searchTerm = '');
-                      },
-                      icon: const Icon(Icons.close),
-                    ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'CONTEÚDO',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 1.2,
-                  color: colors.onSurfaceVariant,
-                ),
-          ),
-          const SizedBox(height: 16),
-          if (scrollableWithinCard)
-            Expanded(child: SingleChildScrollView(child: body))
-          else
-            body,
         ],
       ),
     );
   }
 
+  Widget _buildControlsPanel(BuildContext context, RulesCatalog catalog) {
+    return _PressableCard(
+      key: const Key('rules-open-sidebar'),
+      onTap: () => _openSidebarSheet(catalog),
+      child: Row(
+        children: [
+          _LeadingIconBox(icon: Icons.menu_book_outlined),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Navegação do Documento',
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        letterSpacing: 1.2,
+                      ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Índice de Regras',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontSize: 18,
+                      ),
+                ),
+              ],
+            ),
+          ),
+          Icon(
+            Icons.chevron_right,
+            color: AppTheme.colorsOf(context).accent,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChapterHeading(
+    BuildContext context,
+    RulesCatalog catalog,
+    _VisibleContent display,
+  ) {
+    final colors = AppTheme.colorsOf(context);
+    final selectedChapter = display.chapters.isEmpty ? null : display.chapters.first;
+    final isShowingSelectedChapter =
+        _searchTerm.trim().isEmpty && _selectedChapterId != null;
+    final title = _searchTerm.trim().isNotEmpty
+        ? 'Resultados da busca'
+        : isShowingSelectedChapter && selectedChapter != null
+            ? 'Capítulo ${selectedChapter.displayOfficialNumber}: '
+                '${selectedChapter.officialTitle}'
+            : _titleForCategory(catalog, _selectedCategoryId);
+
+    final badge = _searchTerm.trim().isNotEmpty
+        ? '${display.chapters.length + display.documents.length} itens'
+        : _selectedChapterId != null
+            ? 'Leitura técnica'
+            : 'Índice oficial';
+
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            title,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  color: colors.onSurface,
+                ),
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: colors.surfaceContainer,
+            borderRadius: BorderRadius.circular(999),
+          ),
+          child: Text(
+            badge.toUpperCase(),
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: colors.onSurfaceVariant,
+                  letterSpacing: 1.1,
+                ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildChapterBlock(
+    BuildContext context,
+    _VisibleChapter chapter, {
+    bool showChapterTitle = true,
+  }) {
+    final colors = AppTheme.colorsOf(context);
+    final theme = Theme.of(context);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 18),
+          decoration: BoxDecoration(
+            color: colors.surfaceContainerLow,
+            borderRadius: BorderRadius.circular(24),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (showChapterTitle) ...[
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Capítulo ${chapter.displayOfficialNumber}: ${chapter.officialTitle}',
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontSize: 24,
+                          height: 1.1,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 18),
+              ],
+              for (var index = 0; index < chapter.sections.length; index++) ...[
+                RulesSectionPanel(
+                  key: ValueKey<String>(chapter.sections[index].id),
+                  label: chapter.sections[index].displayOfficialNumber,
+                  title: chapter.sections[index].officialTitle,
+                  content: chapter.sections[index].content,
+                  expanded: _expandedIds.contains(chapter.sections[index].id),
+                  media: chapter.sections[index].media,
+                  onChanged: (expanded) =>
+                      _handleExpansion(chapter.sections[index].id, expanded),
+                ),
+                if (index != chapter.sections.length - 1)
+                  const SizedBox(height: 12),
+              ],
+            ],
+          ),
+        ),
+        const SizedBox(height: 18),
+        _buildChapterWatermark(context, chapter),
+      ],
+    );
+  }
+
+  Widget _buildDocumentsBlock(
+    BuildContext context,
+    List<RulesDocument> documents,
+  ) {
+    final colors = AppTheme.colorsOf(context);
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Documentos oficiais',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+          const SizedBox(height: 16),
+          for (var index = 0; index < documents.length; index++) ...[
+            RulesSectionPanel(
+              key: ValueKey<String>(documents[index].id),
+              title: documents[index].officialTitle,
+              content: documents[index].content,
+              expanded: _expandedIds.contains(documents[index].id),
+              onChanged: (expanded) =>
+                  _handleExpansion(documents[index].id, expanded),
+            ),
+            if (index != documents.length - 1) const SizedBox(height: 12),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChapterWatermark(BuildContext context, _VisibleChapter chapter) {
+    final colors = AppTheme.colorsOf(context);
+    return SizedBox(
+      height: 112,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          IgnorePointer(
+            child: Opacity(
+              opacity: 0.05,
+              child: Text(
+                'FIVB',
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      fontSize: 110,
+                      fontWeight: FontWeight.w900,
+                      color: colors.onSurface,
+                    ),
+              ),
+            ),
+          ),
+          Text(
+            'Fim do Capítulo ${chapter.displayOfficialNumber}',
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: colors.onSurfaceVariant,
+                  letterSpacing: 3,
+                ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWatermarkFooter(BuildContext context, _VisibleContent display) {
+    if (display.chapters.isNotEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final colors = AppTheme.colorsOf(context);
+    return SizedBox(
+      height: 120,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          IgnorePointer(
+            child: Opacity(
+              opacity: 0.05,
+              child: Text(
+                'FIVB',
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      fontSize: 110,
+                      fontWeight: FontWeight.w900,
+                      color: colors.onSurface,
+                    ),
+              ),
+            ),
+          ),
+          Text(
+            'Fim da seção',
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  letterSpacing: 3,
+                ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSideNav(RulesCatalog catalog) {
+    final colors = AppTheme.colorsOf(context);
+    final menuGroups = _buildVisibleMenuGroups(catalog);
+
+    return Material(
+      color: colors.surface.withValues(alpha: 0.88),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          border: Border(
+            right:
+                BorderSide(color: colors.subtleBorder.withValues(alpha: 0.5)),
+          ),
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(18, 18, 18, 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'ScoutSet',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        color: colors.accent,
+                        fontWeight: FontWeight.w900,
+                      ),
+                ),
+                const SizedBox(height: 18),
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: colors.surfaceContainerLow,
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  child: Row(
+                    children: [
+                      _LeadingIconBox(icon: Icons.sports_volleyball),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Índice de Regras',
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Edição ${catalog.sourceTitle}',
+                              style: Theme.of(context).textTheme.labelSmall,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  key: const Key('rules-search-field'),
+                  controller: _searchController,
+                  onChanged: (value) => setState(() => _searchTerm = value),
+                  decoration: InputDecoration(
+                    hintText: 'Buscar por numeração, regra ou seção',
+                    prefixIcon: const Icon(Icons.search),
+                    suffixIcon: _searchTerm.isEmpty
+                        ? null
+                        : IconButton(
+                            onPressed: () {
+                              _searchController.clear();
+                              setState(() => _searchTerm = '');
+                            },
+                            icon: const Icon(Icons.close),
+                          ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: menuGroups.isEmpty
+                      ? Center(
+                          child: Text(
+                            'Nenhum item do índice corresponde à busca.',
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                        )
+                      : ListView(
+                          children: [
+                            for (final group in menuGroups) ...[
+                              _SideNavGroup(
+                                key: Key('rules-menu-category-${group.id}'),
+                                title: group.title,
+                                icon:
+                                    _categoryIcons[group.id] ?? Icons.menu_book,
+                                isSelected: _selectedCategoryId == group.id &&
+                                    _selectedChapterId == null &&
+                                    _selectedDocumentId == null,
+                                onTap: () {
+                                  setState(() {
+                                    _selectedCategoryId = group.id;
+                                    _selectedChapterId = null;
+                                    _selectedDocumentId = null;
+                                  });
+                                },
+                              ),
+                              const SizedBox(height: 8),
+                              for (final item in group.items) ...[
+                                _SideNavItem(
+                                  key: Key('rules-menu-item-${item.id}'),
+                                  title: item.label,
+                                  icon:
+                                      item.kind == _SidebarMenuItemKind.chapter
+                                          ? Icons.chevron_right
+                                          : Icons.description_outlined,
+                                  isSelected: (_selectedChapterId == item.id) ||
+                                      (_selectedDocumentId == item.id),
+                                  onTap: () {
+                                    setState(() {
+                                      _selectedCategoryId = group.id;
+                                      if (item.kind ==
+                                          _SidebarMenuItemKind.chapter) {
+                                        _selectedChapterId = item.id;
+                                        _selectedDocumentId = null;
+                                      } else {
+                                        _selectedDocumentId = item.id;
+                                        _selectedChapterId = null;
+                                      }
+                                    });
+                                  },
+                                ),
+                                const SizedBox(height: 8),
+                              ],
+                              const SizedBox(height: 6),
+                            ],
+                          ],
+                        ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openSidebarSheet(RulesCatalog catalog) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppTheme.colorsOf(context).surface,
+      showDragHandle: true,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            final colors = AppTheme.colorsOf(context);
+            final menuGroups = _buildVisibleMenuGroups(catalog);
+
+            return SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(18, 8, 18, 24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Índice de Regras',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Navegação do Documento',
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                            color: colors.onSurfaceVariant,
+                            letterSpacing: 1.4,
+                          ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      key: const Key('rules-search-field-mobile'),
+                      controller: _searchController,
+                      onChanged: (value) {
+                        setState(() => _searchTerm = value);
+                        setSheetState(() {});
+                      },
+                      decoration: InputDecoration(
+                        hintText: 'Buscar regra',
+                        prefixIcon: const Icon(Icons.search),
+                        suffixIcon: _searchTerm.isEmpty
+                            ? null
+                            : IconButton(
+                                onPressed: () {
+                                  _searchController.clear();
+                                  setState(() => _searchTerm = '');
+                                  setSheetState(() {});
+                                },
+                                icon: const Icon(Icons.close),
+                              ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Flexible(
+                      child: ListView(
+                        shrinkWrap: true,
+                        children: [
+                          for (final group in menuGroups) ...[
+                            _SideNavGroup(
+                              key: Key('rules-menu-category-${group.id}'),
+                              title: group.title,
+                              icon: _categoryIcons[group.id] ?? Icons.menu_book,
+                              isSelected: _selectedCategoryId == group.id &&
+                                  _selectedChapterId == null &&
+                                  _selectedDocumentId == null,
+                              onTap: () {
+                                setState(() {
+                                  _selectedCategoryId = group.id;
+                                  _selectedChapterId = null;
+                                  _selectedDocumentId = null;
+                                });
+                                Navigator.of(context).pop();
+                              },
+                            ),
+                            const SizedBox(height: 8),
+                            for (final item in group.items) ...[
+                              _SideNavItem(
+                                key: Key('rules-menu-item-${item.id}'),
+                                title: item.label,
+                                icon: item.kind == _SidebarMenuItemKind.chapter
+                                    ? Icons.chevron_right
+                                    : Icons.description_outlined,
+                                isSelected: (_selectedChapterId == item.id) ||
+                                    (_selectedDocumentId == item.id),
+                                onTap: () {
+                                  setState(() {
+                                    _selectedCategoryId = group.id;
+                                    if (item.kind ==
+                                        _SidebarMenuItemKind.chapter) {
+                                      _selectedChapterId = item.id;
+                                      _selectedDocumentId = null;
+                                    } else {
+                                      _selectedDocumentId = item.id;
+                                      _selectedChapterId = null;
+                                    }
+                                  });
+                                  Navigator.of(context).pop();
+                                },
+                              ),
+                              const SizedBox(height: 8),
+                            ],
+                            const SizedBox(height: 6),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   List<_SidebarMenuGroupData> _buildMenuGroups(RulesCatalog catalog) {
-    return catalog.categories.map((category) {
+    final groupsById = <String, _SidebarMenuGroupData>{};
+
+    for (final category in catalog.categories) {
       final items = <_SidebarMenuItemData>[];
 
       if (category.id == 'rotation-positions') {
@@ -372,7 +863,7 @@ class _RulesScreenState extends State<RulesScreen> {
         items.add(
           _SidebarMenuItemData(
             id: chapter.id,
-            label: '${chapter.officialNumber} ${chapter.officialTitle}',
+            label: '${chapter.displayOfficialNumber} ${chapter.officialTitle}',
             kind: _SidebarMenuItemKind.chapter,
           ),
         );
@@ -383,18 +874,21 @@ class _RulesScreenState extends State<RulesScreen> {
           items.add(
             _SidebarMenuItemData(
               id: chapter.id,
-              label: '${chapter.officialNumber} ${chapter.officialTitle}',
+              label:
+                  '${chapter.displayOfficialNumber} ${chapter.officialTitle}',
               kind: _SidebarMenuItemKind.chapter,
             ),
           );
         }
       } else {
         for (final chapter in catalog.chapters
-            .where((item) => item.categoryId == category.id)) {
+            .where((item) => item.categoryId == category.id)
+            .where((item) => !_belongsToArbitration(item))) {
           items.add(
             _SidebarMenuItemData(
               id: chapter.id,
-              label: '${chapter.officialNumber} ${chapter.officialTitle}',
+              label:
+                  '${chapter.displayOfficialNumber} ${chapter.officialTitle}',
               kind: _SidebarMenuItemKind.chapter,
             ),
           );
@@ -404,8 +898,7 @@ class _RulesScreenState extends State<RulesScreen> {
       if (category.id == 'supplemental') {
         for (final document in catalog.documents
             .where((item) => item.categoryId == category.id)) {
-          items.insert(
-            items.length.clamp(0, items.length),
+          items.add(
             _SidebarMenuItemData(
               id: document.id,
               label: document.officialTitle,
@@ -415,12 +908,40 @@ class _RulesScreenState extends State<RulesScreen> {
         }
       }
 
-      return _SidebarMenuGroupData(
+      groupsById[category.id] = _SidebarMenuGroupData(
         id: category.id,
         title: category.title,
         items: items,
       );
-    }).toList(growable: false);
+    }
+
+    final arbitrationItems = catalog.chapters
+        .where(_belongsToArbitration)
+        .map(
+          (chapter) => _SidebarMenuItemData(
+            id: chapter.id,
+            label: '${chapter.displayOfficialNumber} ${chapter.officialTitle}',
+            kind: _SidebarMenuItemKind.chapter,
+          ),
+        )
+        .toList(growable: false);
+
+    groupsById[_arbitrationCategoryId] = _SidebarMenuGroupData(
+      id: _arbitrationCategoryId,
+      title: 'Arbitragem',
+      items: arbitrationItems,
+    );
+
+    final orderedGroups = <_SidebarMenuGroupData>[];
+    for (final categoryId in _categoryOrder) {
+      final group = groupsById.remove(categoryId);
+      if (group != null) {
+        orderedGroups.add(group);
+      }
+    }
+
+    orderedGroups.addAll(groupsById.values);
+    return orderedGroups;
   }
 
   List<_SidebarMenuGroupData> _buildVisibleMenuGroups(RulesCatalog catalog) {
@@ -454,164 +975,6 @@ class _RulesScreenState extends State<RulesScreen> {
     return visibleGroups;
   }
 
-  Future<void> _openSidebarSheet(RulesCatalog catalog) async {
-    await showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      showDragHandle: true,
-      backgroundColor: AppTheme.colorsOf(context).surfaceContainer,
-      builder: (context) {
-        return SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-            child: _buildSidebar(
-              catalog,
-              scrollableWithinCard: false,
-              onCategorySelected: () => Navigator.of(context).pop(),
-              onItemSelected: () => Navigator.of(context).pop(),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildChapterBlock(_VisibleChapter chapter) {
-    final theme = Theme.of(context);
-    final colors = AppTheme.colorsOf(context);
-
-    return AppCard(
-      padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  colors.heroStart,
-                  colors.heroEnd,
-                ],
-              ),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: colors.chipBackground,
-                    borderRadius: BorderRadius.circular(999),
-                    border: Border.all(color: colors.subtleBorder),
-                  ),
-                  child: Text(
-                    chapter.officialNumber,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: colors.onSurface,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Text(
-                    chapter.officialTitle,
-                    style: theme.textTheme.titleLarge?.copyWith(
-                      color: colors.onSurface,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-          for (final section in chapter.sections) ...[
-            RulesSectionPanel(
-              key: ValueKey<String>(section.id),
-              label: section.officialNumber,
-              title: section.officialTitle,
-              subtitle: chapter.officialTitle,
-              content: section.content,
-              expanded: _expandedIds.contains(section.id),
-              onChanged: (expanded) => _handleExpansion(section.id, expanded),
-            ),
-            const SizedBox(height: 12),
-          ],
-        ],
-      ),
-    );
-  }
-
-  _VisibleContent _buildCategoryDisplay(
-      RulesCatalog catalog, String categoryId) {
-    final chapters = <_VisibleChapter>[];
-    final documents = <RulesDocument>[];
-    final supplementalChapters =
-        catalog.chapters.where((chapter) => chapter.categoryId == categoryId);
-
-    if (categoryId == 'rotation-positions') {
-      final chapter =
-          catalog.chapters.firstWhere((item) => item.officialNumber == '7');
-      chapters.add(
-        _VisibleChapter(
-          id: chapter.id,
-          officialNumber: chapter.officialNumber,
-          officialTitle: chapter.officialTitle,
-          sections: chapter.sections.where((section) {
-            return const {'7.4', '7,5', '7.6', '7,7'}
-                .contains(section.officialNumber);
-          }).toList(growable: false),
-        ),
-      );
-    } else if (categoryId == 'game-structure') {
-      final chapter7 =
-          catalog.chapters.firstWhere((item) => item.officialNumber == '7');
-      final chapter8 =
-          catalog.chapters.firstWhere((item) => item.officialNumber == '8');
-      chapters.add(
-        _VisibleChapter(
-          id: chapter7.id,
-          officialNumber: chapter7.officialNumber,
-          officialTitle: chapter7.officialTitle,
-          sections: chapter7.sections.where((section) {
-            return const {'7.1', '7.2', '7.3'}.contains(section.officialNumber);
-          }).toList(growable: false),
-        ),
-      );
-      chapters.add(
-        _VisibleChapter(
-          id: chapter8.id,
-          officialNumber: chapter8.officialNumber,
-          officialTitle: chapter8.officialTitle,
-          sections: chapter8.sections,
-        ),
-      );
-    } else {
-      chapters.addAll(
-        supplementalChapters.map(
-          (chapter) => _VisibleChapter(
-            id: chapter.id,
-            officialNumber: chapter.officialNumber,
-            officialTitle: chapter.officialTitle,
-            sections: chapter.sections,
-          ),
-        ),
-      );
-    }
-
-    if (categoryId == 'supplemental') {
-      documents.addAll(catalog.documents
-          .where((document) => document.categoryId == categoryId));
-    }
-
-    return _VisibleContent.from(chapters: chapters, documents: documents);
-  }
-
   _VisibleContent _buildCurrentDisplay(RulesCatalog catalog) {
     if (_searchTerm.trim().isNotEmpty) {
       return _buildSearchDisplay(catalog, _searchTerm);
@@ -636,13 +999,92 @@ class _RulesScreenState extends State<RulesScreen> {
       chapters: [
         _VisibleChapter(
           id: chapter.id,
-          officialNumber: chapter.officialNumber,
+          officialNumber: chapter.displayOfficialNumber,
           officialTitle: chapter.officialTitle,
           sections: chapter.sections,
         ),
       ],
       documents: const [],
     );
+  }
+
+  _VisibleContent _buildCategoryDisplay(
+      RulesCatalog catalog, String categoryId) {
+    final chapters = <_VisibleChapter>[];
+    final documents = <RulesDocument>[];
+    final supplementalChapters =
+        catalog.chapters.where((chapter) => chapter.categoryId == categoryId);
+
+    if (categoryId == _arbitrationCategoryId) {
+      chapters.addAll(
+        catalog.chapters.where(_belongsToArbitration).map(
+              (chapter) => _VisibleChapter(
+                id: chapter.id,
+                officialNumber: chapter.displayOfficialNumber,
+                officialTitle: chapter.officialTitle,
+                sections: chapter.sections,
+              ),
+            ),
+      );
+      return _VisibleContent.from(chapters: chapters, documents: documents);
+    }
+
+    if (categoryId == 'rotation-positions') {
+      final chapter =
+          catalog.chapters.firstWhere((item) => item.officialNumber == '7');
+      chapters.add(
+        _VisibleChapter(
+          id: chapter.id,
+          officialNumber: chapter.displayOfficialNumber,
+          officialTitle: chapter.officialTitle,
+          sections: chapter.sections.where((section) {
+            return const {'7.4', '7,5', '7.6', '7,7'}
+                .contains(section.officialNumber);
+          }).toList(growable: false),
+        ),
+      );
+    } else if (categoryId == 'game-structure') {
+      final chapter7 =
+          catalog.chapters.firstWhere((item) => item.officialNumber == '7');
+      final chapter8 =
+          catalog.chapters.firstWhere((item) => item.officialNumber == '8');
+      chapters.add(
+        _VisibleChapter(
+          id: chapter7.id,
+          officialNumber: chapter7.displayOfficialNumber,
+          officialTitle: chapter7.officialTitle,
+          sections: chapter7.sections.where((section) {
+            return const {'7.1', '7.2', '7.3'}.contains(section.officialNumber);
+          }).toList(growable: false),
+        ),
+      );
+      chapters.add(
+        _VisibleChapter(
+          id: chapter8.id,
+          officialNumber: chapter8.displayOfficialNumber,
+          officialTitle: chapter8.officialTitle,
+          sections: chapter8.sections,
+        ),
+      );
+    } else {
+      chapters.addAll(
+        supplementalChapters.map(
+          (chapter) => _VisibleChapter(
+            id: chapter.id,
+            officialNumber: chapter.displayOfficialNumber,
+            officialTitle: chapter.officialTitle,
+            sections: chapter.sections,
+          ),
+        ).where((chapter) => !_arbitrationChapterNumbers.contains(chapter.officialNumber)),
+      );
+    }
+
+    if (categoryId == 'supplemental') {
+      documents.addAll(catalog.documents
+          .where((document) => document.categoryId == categoryId));
+    }
+
+    return _VisibleContent.from(chapters: chapters, documents: documents);
   }
 
   _VisibleContent _buildSearchDisplay(RulesCatalog catalog, String query) {
@@ -653,7 +1095,7 @@ class _RulesScreenState extends State<RulesScreen> {
     for (final chapter in catalog.chapters) {
       final matchedSections = chapter.sections.where((section) {
         return _normalizeForSearch(
-          '${chapter.officialNumber} ${chapter.officialTitle} ${section.searchText}',
+          '${chapter.displayOfficialNumber} ${chapter.officialTitle} ${section.searchText}',
         ).contains(normalizedQuery);
       }).toList(growable: false);
 
@@ -661,7 +1103,7 @@ class _RulesScreenState extends State<RulesScreen> {
         matchedChapters.add(
           _VisibleChapter(
             id: chapter.id,
-            officialNumber: chapter.officialNumber,
+            officialNumber: chapter.displayOfficialNumber,
             officialTitle: chapter.officialTitle,
             sections: matchedSections,
           ),
@@ -695,156 +1137,16 @@ class _RulesScreenState extends State<RulesScreen> {
     return removeDiacritics(value).toLowerCase();
   }
 
-  Widget _buildHeroHeader(
-    BuildContext context,
-    RulesCatalog catalog,
-    bool showSidebar,
-  ) {
-    final theme = Theme.of(context);
-    final colors = AppTheme.colorsOf(context);
-
-    return Container(
-      padding: const EdgeInsets.fromLTRB(22, 22, 22, 24),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(28),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            colors.heroStart,
-            colors.heroEnd,
-          ],
-        ),
-        border: Border.all(color: colors.subtleBorder),
-        boxShadow: [
-          BoxShadow(
-            color: colors.surface.withValues(
-                alpha: theme.brightness == Brightness.dark ? 0.16 : 0.04),
-            blurRadius: 24,
-            offset: const Offset(0, 12),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 34,
-                height: 2,
-                color: colors.accent,
-              ),
-              const SizedBox(width: 10),
-              Text(
-                'MANUAL TÉCNICO',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: colors.accent,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 1.5,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 18),
-          Text(
-            'Regras Oficiais',
-            style: theme.textTheme.headlineMedium?.copyWith(
-              color: colors.onSurface,
-              fontSize: 34,
-              height: 1.05,
-            ),
-          ),
-          const SizedBox(height: 12),
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 640),
-            child: Text(
-              'Aprovado no 39º Congresso Mundial da FIVB de 2024.',
-              style: theme.textTheme.bodyLarge?.copyWith(
-                color: colors.onSurface.withValues(alpha: 0.88),
-              ),
-            ),
-          ),
-          const SizedBox(height: 18),
-          Wrap(
-            spacing: 10,
-            runSpacing: 10,
-            children: [
-              _HeroStatChip(
-                label: catalog.sourceTitle,
-                icon: Icons.verified_outlined,
-              ),
-              _HeroStatChip(
-                label: '${catalog.chapters.length} capítulos',
-                icon: Icons.view_agenda_outlined,
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
+  bool _belongsToArbitration(RulesChapter chapter) {
+    return chapter.categoryId == 'supplemental' &&
+        _arbitrationChapterNumbers.contains(chapter.officialNumber);
   }
 
-  Widget _buildControlsPanel(BuildContext context, RulesCatalog catalog) {
-    final colors = AppTheme.colorsOf(context);
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: colors.surfaceContainer,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: colors.subtleBorder,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: colors.surface.withValues(
-                alpha: Theme.of(context).brightness == Brightness.dark
-                    ? 0.12
-                    : 0.03),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          key: const Key('rules-open-sidebar'),
-          onTap: () => _openSidebarSheet(catalog),
-          borderRadius: BorderRadius.circular(18),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            child: Row(
-              children: [
-                Container(
-                  width: 38,
-                  height: 38,
-                  decoration: BoxDecoration(
-                    color: colors.chipBackground,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(
-                    Icons.menu_open,
-                    size: 20,
-                    color: colors.primaryDetail,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    'Abrir sumário lateral',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: colors.onSurface,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 16,
-                        ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
+  String _titleForCategory(RulesCatalog catalog, String categoryId) {
+    if (categoryId == _arbitrationCategoryId) {
+      return 'Arbitragem';
+    }
+    return catalog.categoryById(categoryId).title;
   }
 }
 
@@ -880,6 +1182,8 @@ class _VisibleChapter {
   final String officialNumber;
   final String officialTitle;
   final List<RulesSection> sections;
+
+  String get displayOfficialNumber => officialNumber.replaceAll(',', '.');
 }
 
 class _SidebarMenuGroupData {
@@ -911,134 +1215,32 @@ enum _SidebarMenuItemKind {
   document,
 }
 
-class _SidebarGroup extends StatelessWidget {
-  const _SidebarGroup({
-    required this.title,
-    required this.icon,
-    required this.isSelected,
-    required this.onTap,
-    required this.children,
-    super.key,
+class _TopNavLink extends StatelessWidget {
+  const _TopNavLink({
+    required this.label,
+    required this.isActive,
+    required this.style,
   });
 
-  final String title;
-  final IconData icon;
-  final bool isSelected;
-  final VoidCallback onTap;
-  final List<Widget> children;
+  final String label;
+  final bool isActive;
+  final TextStyle style;
 
   @override
   Widget build(BuildContext context) {
     final colors = AppTheme.colorsOf(context);
-    return Container(
-      decoration: BoxDecoration(
-        color:
-            isSelected ? colors.surfaceContainer : colors.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: isSelected ? colors.accent : colors.subtleBorder,
-          width: isSelected ? 1.4 : 1,
-        ),
-      ),
-      child: Column(
-        children: [
-          Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: onTap,
-              borderRadius: BorderRadius.circular(20),
-              child: Padding(
-                padding: const EdgeInsets.all(14),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 34,
-                      height: 34,
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? colors.chipBackground
-                            : colors.panelBackground,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: colors.subtleBorder),
-                      ),
-                      child: Icon(icon, color: colors.primaryDetail, size: 18),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        title,
-                        style:
-                            Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  color: colors.onSurface,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          if (children.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
-              child: Column(children: children),
-            ),
-        ],
+    return Text(
+      label,
+      style: style.copyWith(
+        color: isActive ? colors.accent : colors.onSurfaceVariant,
+        fontWeight: FontWeight.w800,
       ),
     );
   }
 }
 
-class _SidebarItem extends StatelessWidget {
-  const _SidebarItem({
-    required this.title,
-    required this.isSelected,
-    required this.onTap,
-    super.key,
-  });
-
-  final String title;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = AppTheme.colorsOf(context);
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: TextButton.icon(
-        onPressed: onTap,
-        style: TextButton.styleFrom(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          foregroundColor: isSelected ? colors.primaryDetail : colors.onSurface,
-          backgroundColor:
-              isSelected ? colors.chipBackground : colors.panelBackground,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          side: BorderSide(
-              color: isSelected ? colors.accent : colors.subtleBorder),
-        ),
-        icon: Icon(
-          isSelected ? Icons.arrow_right_alt : Icons.subdirectory_arrow_right,
-          size: 18,
-        ),
-        label: Align(
-          alignment: Alignment.centerLeft,
-          child: Text(
-            title,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _HeroStatChip extends StatelessWidget {
-  const _HeroStatChip({
+class _HeroMetaChip extends StatelessWidget {
+  const _HeroMetaChip({
     required this.label,
     required this.icon,
   });
@@ -1050,12 +1252,11 @@ class _HeroStatChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = AppTheme.colorsOf(context);
     return Container(
-      constraints: const BoxConstraints(maxWidth: 260),
+      constraints: const BoxConstraints(maxWidth: 280),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: colors.chipBackground,
+        color: colors.surfaceContainer,
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: colors.subtleBorder),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1067,13 +1268,207 @@ class _HeroStatChip extends StatelessWidget {
               label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
                     color: colors.onSurface,
-                    fontWeight: FontWeight.w700,
                   ),
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _LeadingIconBox extends StatelessWidget {
+  const _LeadingIconBox({
+    required this.icon,
+  });
+
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = AppTheme.colorsOf(context);
+    return Container(
+      width: 44,
+      height: 44,
+      decoration: BoxDecoration(
+        color: colors.surfaceContainer,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Icon(icon, color: colors.accent),
+    );
+  }
+}
+
+class _PressableCard extends StatefulWidget {
+  const _PressableCard({
+    required this.child,
+    required this.onTap,
+    super.key,
+  });
+
+  final Widget child;
+  final VoidCallback onTap;
+
+  @override
+  State<_PressableCard> createState() => _PressableCardState();
+}
+
+class _PressableCardState extends State<_PressableCard> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = AppTheme.colorsOf(context);
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: AnimatedScale(
+        scale: _hovered ? 1.01 : 1,
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOutCubic,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: widget.onTap,
+            borderRadius: BorderRadius.circular(20),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 220),
+              curve: Curves.easeOutCubic,
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                color: _hovered
+                    ? colors.surfaceContainer
+                    : colors.surfaceContainerLow,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: widget.child,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SideNavGroup extends StatelessWidget {
+  const _SideNavGroup({
+    required this.title,
+    required this.icon,
+    required this.isSelected,
+    required this.onTap,
+    super.key,
+  });
+
+  final String title;
+  final IconData icon;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = AppTheme.colorsOf(context);
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? colors.primaryDetail.withValues(alpha: 0.16)
+                : colors.surfaceContainerLow,
+            borderRadius: BorderRadius.circular(16),
+            border: Border(
+              right: BorderSide(
+                color: isSelected ? colors.accent : Colors.transparent,
+                width: 4,
+              ),
+            ),
+          ),
+          child: Row(
+            children: [
+              Icon(icon,
+                  color: isSelected ? colors.accent : colors.onSurfaceVariant),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  title,
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        color: isSelected ? colors.accent : colors.onSurface,
+                        letterSpacing: 0.6,
+                      ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SideNavItem extends StatelessWidget {
+  const _SideNavItem({
+    required this.title,
+    required this.icon,
+    required this.isSelected,
+    required this.onTap,
+    super.key,
+  });
+
+  final String title;
+  final IconData icon;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = AppTheme.colorsOf(context);
+    return Padding(
+      padding: const EdgeInsets.only(left: 14),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(14),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? colors.surfaceContainer
+                  : colors.surfaceContainerLow.withValues(alpha: 0.65),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  icon,
+                  size: 18,
+                  color: isSelected ? colors.accent : colors.onSurfaceVariant,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: isSelected
+                              ? colors.onSurface
+                              : colors.onSurfaceVariant,
+                          fontWeight:
+                              isSelected ? FontWeight.w700 : FontWeight.w600,
+                        ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -1090,7 +1485,12 @@ class _RulesErrorState extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: AppSpacing.screen,
-      child: AppCard(
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: AppTheme.colorsOf(context).surfaceContainerLow,
+          borderRadius: BorderRadius.circular(20),
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
