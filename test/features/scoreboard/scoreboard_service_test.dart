@@ -79,10 +79,12 @@ void main() {
     expect(finishedSet?.teamBScore, 24);
   });
 
-  test('third set extends after 14x14 until two-point lead', () async {
+  test('fifth set extends after 14x14 until two-point lead', () async {
     service.startMatch(teamAName: 'A', teamBName: 'B');
     await addPoints(teamA: 25, teamB: 0);
     await addPoints(teamA: 0, teamB: 25);
+    await addPoints(teamA: 25, teamB: 10);
+    await addPoints(teamA: 12, teamB: 25);
     await addPoints(teamA: 14, teamB: 14);
     await service.addPointToTeamB();
     expect(service.getState().activeMatch?.matchStatus, MatchStatus.inProgress);
@@ -94,45 +96,72 @@ void main() {
     expect(match?.sets.last.teamBScore, 16);
   });
 
-  test('automatically finishes match 2x0 when same team wins first two sets', () async {
+  test('does not finish match when the same team wins the first two sets', () async {
     service.startMatch(teamAName: 'A', teamBName: 'B');
     await addPoints(teamA: 25, teamB: 10);
     await addPoints(teamA: 25, teamB: 18);
 
     final match = service.getState().activeMatch;
-    expect(match?.matchStatus, MatchStatus.finished);
+    expect(match?.matchStatus, MatchStatus.inProgress);
     expect(match?.teamASetsWon, 2);
     expect(match?.teamBSetsWon, 0);
-    expect(service.listHistory(), hasLength(1));
+    expect(match?.currentSet, 3);
+    expect(service.listHistory(), isEmpty);
   });
 
-  test('only opens third set when the match is tied 1x1', () async {
+  test('opens fourth set after 2x1 and fifth set after 2x2', () async {
     service.startMatch(teamAName: 'A', teamBName: 'B');
     await addPoints(teamA: 25, teamB: 23);
     expect(service.getState().activeMatch?.currentSet, 2);
     await addPoints(teamA: 19, teamB: 25);
+    expect(service.getState().activeMatch?.currentSet, 3);
+    await addPoints(teamA: 25, teamB: 21);
 
     final match = service.getState().activeMatch;
-    expect(match?.currentSet, 3);
-    expect(match?.teamASetsWon, 1);
+    expect(match?.currentSet, 4);
+    expect(match?.teamASetsWon, 2);
     expect(match?.teamBSetsWon, 1);
     expect(match?.matchStatus, MatchStatus.inProgress);
+
+    await addPoints(teamA: 20, teamB: 25);
+
+    final tiedMatch = service.getState().activeMatch;
+    expect(tiedMatch?.currentSet, 5);
+    expect(tiedMatch?.teamASetsWon, 2);
+    expect(tiedMatch?.teamBSetsWon, 2);
+    expect(tiedMatch?.matchStatus, MatchStatus.inProgress);
   });
 
-  test('finishes match 2x1 in deciding set', () async {
+  test('finishes match 3x0 when the same team wins the first three sets', () async {
+    service.startMatch(teamAName: 'A', teamBName: 'B');
+    await addPoints(teamA: 25, teamB: 10);
+    await addPoints(teamA: 25, teamB: 18);
+    await addPoints(teamA: 25, teamB: 20);
+
+    final match = service.getState().activeMatch;
+    expect(match?.matchStatus, MatchStatus.finished);
+    expect(match?.teamASetsWon, 3);
+    expect(match?.teamBSetsWon, 0);
+    expect(service.listHistory(), hasLength(1));
+  });
+
+  test('finishes match 3x2 in deciding fifth set', () async {
     service.startMatch(teamAName: 'A', teamBName: 'B');
     await addPoints(teamA: 25, teamB: 10);
     await addPoints(teamA: 22, teamB: 25);
+    await addPoints(teamA: 25, teamB: 18);
+    await addPoints(teamA: 20, teamB: 25);
     await addPoints(teamA: 15, teamB: 12);
 
     final match = service.getState().activeMatch;
     expect(match?.matchStatus, MatchStatus.finished);
-    expect(match?.teamASetsWon, 2);
-    expect(match?.teamBSetsWon, 1);
+    expect(match?.teamASetsWon, 3);
+    expect(match?.teamBSetsWon, 2);
   });
 
   test('blocks scoring after match has finished', () async {
     service.startMatch(teamAName: 'A', teamBName: 'B');
+    await addPoints(teamA: 25, teamB: 10);
     await addPoints(teamA: 25, teamB: 10);
     await addPoints(teamA: 25, teamB: 10);
     final before = service.getState();
@@ -141,6 +170,19 @@ void main() {
     final after = service.getState();
     expect(after.currentTeamAScore, before.currentTeamAScore);
     expect(after.currentTeamBScore, before.currentTeamBScore);
+  });
+
+  test('opens fifth set with a 15-point target when match is tied 2x2', () async {
+    service.startMatch(teamAName: 'A', teamBName: 'B');
+    await addPoints(teamA: 25, teamB: 10);
+    await addPoints(teamA: 18, teamB: 25);
+    await addPoints(teamA: 25, teamB: 20);
+    await addPoints(teamA: 20, teamB: 25);
+
+    final match = service.getState().activeMatch;
+    expect(match?.currentSet, 5);
+    expect(service.getState().currentSetTargetPoints, 15);
+    expect(match?.matchStatus, MatchStatus.inProgress);
   });
 
   test('undo never makes score negative and only affects current set', () async {

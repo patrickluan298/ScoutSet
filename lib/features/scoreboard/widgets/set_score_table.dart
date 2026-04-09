@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../widgets/app_card.dart';
+import '../models/scoreboard_rules.dart';
 import '../models/set_score.dart';
 
 class SetScoreTable extends StatelessWidget {
@@ -54,7 +55,8 @@ class SetScoreTable extends StatelessWidget {
                   _HeaderCell(label: 'Duração'),
                 ],
               ),
-              for (var setNumber = 1; setNumber <= 3; setNumber++) _buildSetRow(setNumber),
+              for (var setNumber = 1; setNumber <= scoreboardMaxSets; setNumber++)
+                _buildSetRow(setNumber),
             ],
           ),
         ],
@@ -70,7 +72,7 @@ class SetScoreTable extends StatelessWidget {
     final teamAScore = finishedSet?.teamAScore ?? (isCurrent ? inProgressTeamAScore : null);
     final teamBScore = finishedSet?.teamBScore ?? (isCurrent ? inProgressTeamBScore : null);
     final targetPoints = finishedSet?.targetPoints ??
-        (setNumber == currentSet ? currentTargetPoints : (setNumber == 3 ? 15 : 25));
+        (setNumber == currentSet ? currentTargetPoints : scoreboardTargetPointsForSet(setNumber));
     final rowColor = finishedSet != null
         ? AppTheme.accentColor.withValues(alpha: 0.12)
         : isCurrent
@@ -127,14 +129,19 @@ class _HeaderCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final baseStyle = Theme.of(context).textTheme.bodyMedium;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Text(
         label,
         textAlign: TextAlign.center,
-        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+        style: baseStyle?.copyWith(
               fontWeight: FontWeight.w700,
-              color: AppTheme.mediumGrayColor,
+              color: isDark
+                  ? AppTheme.whiteColor.withValues(alpha: 0.72)
+                  : AppTheme.mediumGrayColor,
             ),
       ),
     );
@@ -152,14 +159,21 @@ class _ValueCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final baseStyle = Theme.of(context).textTheme.bodyLarge;
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: Text(
         label,
         textAlign: TextAlign.center,
-        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+        style: baseStyle?.copyWith(
               fontWeight: isHighlighted ? FontWeight.w800 : FontWeight.w600,
-              color: AppTheme.textColor,
+              color: isDark
+                  ? (isHighlighted
+                      ? AppTheme.whiteColor
+                      : AppTheme.whiteColor.withValues(alpha: 0.72))
+                  : AppTheme.textColor,
             ),
       ),
     );

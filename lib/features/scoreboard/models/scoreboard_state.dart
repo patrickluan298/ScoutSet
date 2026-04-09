@@ -1,4 +1,5 @@
 import 'match_score.dart';
+import 'scoreboard_rules.dart';
 import 'set_point_event.dart';
 
 class ScoreboardSnapshot {
@@ -60,10 +61,10 @@ class ScoreboardState {
   int get currentSetTargetPoints {
     final match = activeMatch;
     if (match == null) {
-      return 25;
+      return scoreboardRegularSetTargetPoints;
     }
 
-    return match.currentSet == 3 ? 15 : 25;
+    return scoreboardTargetPointsForSet(match.currentSet);
   }
 
   ScoreboardState copyWith({

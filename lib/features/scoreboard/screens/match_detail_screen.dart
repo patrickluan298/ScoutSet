@@ -4,6 +4,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../utils/app_spacing.dart';
 import '../../../widgets/app_card.dart';
 import '../models/match_score.dart';
+import '../models/scoreboard_rules.dart';
 import '../models/set_point_event.dart';
 import '../models/set_score.dart';
 import '../widgets/match_status_banner.dart';
@@ -69,7 +70,7 @@ class MatchDetailScreen extends StatelessWidget {
             currentSet: match.currentSet,
             currentTeamAScore: 0,
             currentTeamBScore: 0,
-            currentTargetPoints: match.currentSet == 3 ? 15 : 25,
+            currentTargetPoints: scoreboardTargetPointsForSet(match.currentSet),
             isMatchFinished: match.isFinished,
           ),
           if (match.sets.isNotEmpty) ...[

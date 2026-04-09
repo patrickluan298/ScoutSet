@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   const AppTheme._();
@@ -121,44 +120,43 @@ class AppTheme {
     final onSurface = tokens.onSurface;
     final onSurfaceVariant = tokens.onSurfaceVariant;
     final isDark = brightness == Brightness.dark;
-    final baseTextTheme = GoogleFonts.manropeTextTheme(base.textTheme);
-    final textTheme = baseTextTheme.copyWith(
-      headlineMedium: GoogleFonts.spaceGrotesk(
+    final textTheme = base.textTheme.copyWith(
+      headlineMedium: TextStyle(
         fontSize: 28,
         fontWeight: FontWeight.w800,
         color: onSurface,
       ),
-      titleLarge: GoogleFonts.spaceGrotesk(
+      titleLarge: TextStyle(
         fontSize: 22,
         fontWeight: FontWeight.w800,
         color: onSurface,
       ),
-      titleMedium: GoogleFonts.spaceGrotesk(
+      titleMedium: TextStyle(
         fontSize: 18,
         fontWeight: FontWeight.w700,
         color: onSurface,
       ),
-      bodyLarge: GoogleFonts.manrope(
+      bodyLarge: TextStyle(
         fontSize: 16,
         color: onSurface,
         height: 1.5,
       ),
-      bodyMedium: GoogleFonts.manrope(
+      bodyMedium: TextStyle(
         fontSize: 14,
         color: onSurfaceVariant,
         height: 1.4,
       ),
-      labelLarge: GoogleFonts.manrope(
+      labelLarge: TextStyle(
         fontSize: 14,
         fontWeight: FontWeight.w700,
         color: onSurface,
       ),
-      labelMedium: GoogleFonts.manrope(
+      labelMedium: TextStyle(
         fontSize: 12,
         fontWeight: FontWeight.w700,
         color: onSurfaceVariant,
       ),
-      labelSmall: GoogleFonts.manrope(
+      labelSmall: TextStyle(
         fontSize: 10,
         fontWeight: FontWeight.w800,
         color: onSurfaceVariant,
@@ -202,7 +200,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
           ),
-          textStyle: GoogleFonts.manrope(
+          textStyle: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w700,
           ),
