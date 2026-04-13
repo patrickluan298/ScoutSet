@@ -26,7 +26,7 @@ void main() {
 
     final chapter12 = catalog.chapters.firstWhere((chapter) => chapter.officialNumber == '12');
     final section124 = chapter12.sections.firstWhere((section) => section.officialNumber == '12.4');
-    expect(section124.officialTitle, 'EXECUÇÃO DO SERVIÇO');
+    expect(section124.officialTitle, 'EXECUÇÃO DO SAQUE');
     expect(
       section124.content,
       contains('12.4.1 A bola deve ser golpeada com uma das mãos ou qualquer parte do braço'),

@@ -127,6 +127,7 @@ class Matches extends Table {
   TextColumn get matchStatus => text().named('match_status')();
   TextColumn get winnerTeam => text().named('winner_team').nullable()();
   TextColumn get sourceType => text().named('source_type').withDefault(const Constant('manual'))();
+  TextColumn get sportMode => text().named('sport_mode').withDefault(const Constant('court'))();
   TextColumn get savedTeamGroupId => text().named('saved_team_group_id').nullable()();
   TextColumn get savedTeamGroupTitle => text().named('saved_team_group_title').nullable()();
   TextColumn get teamAOriginTeamId => text().named('team_a_origin_team_id').nullable()();
@@ -424,7 +425,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -464,6 +465,9 @@ class AppDatabase extends _$AppDatabase {
           if (from < 5) {
             await m.addColumn(matchSets, matchSets.durationSeconds);
             await m.addColumn(matchSets, matchSets.pointEventsJson);
+          }
+          if (from < 6) {
+            await m.addColumn(matches, matches.sportMode);
           }
         },
         beforeOpen: (details) async {

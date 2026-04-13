@@ -1,3 +1,4 @@
+import '../../../models/sport_mode.dart';
 import '../../teams/models/team_draw_player.dart';
 import '../../teams/models/waiting_player.dart';
 import 'set_score.dart';
@@ -77,6 +78,7 @@ class MatchScore {
     required this.createdAt,
     this.winnerTeam,
     this.finishedAt,
+    this.sportMode = SportMode.court,
     this.savedTeamGroupId,
     this.savedTeamGroupTitle,
     this.teamAPlayers = const [],
@@ -99,6 +101,7 @@ class MatchScore {
   final String? winnerTeam;
   final DateTime createdAt;
   final DateTime? finishedAt;
+  final SportMode sportMode;
   final String? savedTeamGroupId;
   final String? savedTeamGroupTitle;
   final List<TeamDrawPlayer> teamAPlayers;
@@ -126,6 +129,7 @@ class MatchScore {
       'winnerTeam': winnerTeam,
       'createdAt': createdAt.toIso8601String(),
       'finishedAt': finishedAt?.toIso8601String(),
+      'sportMode': sportMode.value,
       'savedTeamGroupId': savedTeamGroupId,
       'savedTeamGroupTitle': savedTeamGroupTitle,
       'teamAPlayers': teamAPlayers.map((player) => player.toJson()).toList(),
@@ -153,6 +157,7 @@ class MatchScore {
       winnerTeam: json['winnerTeam'] as String?,
       createdAt: DateTime.tryParse(json['createdAt'] as String? ?? '') ?? DateTime.now(),
       finishedAt: DateTime.tryParse(json['finishedAt'] as String? ?? ''),
+      sportMode: SportMode.fromValue(json['sportMode'] as String?),
       savedTeamGroupId: json['savedTeamGroupId'] as String?,
       savedTeamGroupTitle: json['savedTeamGroupTitle'] as String?,
       teamAPlayers: (json['teamAPlayers'] as List<dynamic>? ?? const [])
@@ -183,6 +188,7 @@ class MatchScore {
     Object? winnerTeam = _sentinel,
     DateTime? createdAt,
     Object? finishedAt = _sentinel,
+    SportMode? sportMode,
     Object? savedTeamGroupId = _sentinel,
     Object? savedTeamGroupTitle = _sentinel,
     List<TeamDrawPlayer>? teamAPlayers,
@@ -205,6 +211,7 @@ class MatchScore {
       winnerTeam: winnerTeam == _sentinel ? this.winnerTeam : winnerTeam as String?,
       createdAt: createdAt ?? this.createdAt,
       finishedAt: finishedAt == _sentinel ? this.finishedAt : finishedAt as DateTime?,
+      sportMode: sportMode ?? this.sportMode,
       savedTeamGroupId:
           savedTeamGroupId == _sentinel ? this.savedTeamGroupId : savedTeamGroupId as String?,
       savedTeamGroupTitle: savedTeamGroupTitle == _sentinel

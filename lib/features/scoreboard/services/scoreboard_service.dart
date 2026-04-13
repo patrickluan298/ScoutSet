@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 
 import '../../../data/local/database/app_services.dart';
 import '../../../data/local/repositories/matches_repository.dart';
+import '../../../models/sport_mode.dart';
+import '../../../services/sport_mode_service.dart';
 import '../../teams/models/team_draw_player.dart';
 import '../../teams/models/waiting_player.dart';
 import '../models/match_score.dart';
@@ -92,6 +94,7 @@ class ScoreboardService {
       servingTeam: TeamSide.fromValue(servingTeam),
       matchStatus: MatchStatus.inProgress,
       sourceType: sourceType,
+      sportMode: SportModeService.instance.currentMode ?? SportMode.court,
       winnerTeam: null,
       createdAt: startedAt,
       finishedAt: null,
@@ -268,6 +271,12 @@ class ScoreboardService {
     _setState(const ScoreboardState.initial());
   }
 
+  @visibleForTesting
+  void clearCachedStateForTesting() {
+    _initialized = false;
+    _setState(const ScoreboardState.initial());
+  }
+
   Future<ScoreboardState> _addPoint(
     TeamSide team, {
     required PointOrigin pointOrigin,
@@ -346,8 +355,9 @@ class ScoreboardService {
         ? progressedMatch.teamAName
         : progressedMatch.teamBName;
 
-    if (progressedMatch.teamASetsWon == scoreboardSetsToWin ||
-        progressedMatch.teamBSetsWon == scoreboardSetsToWin) {
+    final rules = _rulesFor(progressedMatch.sportMode);
+    if (progressedMatch.teamASetsWon == rules.setsToWin ||
+        progressedMatch.teamBSetsWon == rules.setsToWin) {
       final finished = _finishMatch(progressedMatch);
       await _publishFinishedMatch(
         finished,
@@ -421,11 +431,12 @@ class ScoreboardService {
   }
 
   MatchScore _applyFinishedSet(MatchScore match, SetScore setScore) {
+    final rules = _rulesFor(match.sportMode);
     final teamASetsWon = match.teamASetsWon + (setScore.winnerTeamId == TeamSide.teamA.value ? 1 : 0);
     final teamBSetsWon = match.teamBSetsWon + (setScore.winnerTeamId == TeamSide.teamB.value ? 1 : 0);
-    final shouldFinish = teamASetsWon == scoreboardSetsToWin ||
-        teamBSetsWon == scoreboardSetsToWin ||
-        setScore.setNumber == scoreboardMaxSets;
+    final shouldFinish = teamASetsWon == rules.setsToWin ||
+        teamBSetsWon == rules.setsToWin ||
+        setScore.setNumber == rules.maxSets;
     final nextSet = shouldFinish ? setScore.setNumber : setScore.setNumber + 1;
 
     return match.copyWith(
@@ -478,7 +489,13 @@ class ScoreboardService {
     await _repository.saveFinishedMatch(match);
   }
 
-  int _targetPointsForSet(int setNumber) => scoreboardTargetPointsForSet(setNumber);
+  int _targetPointsForSet(int setNumber) {
+    final match = stateNotifier.value.activeMatch;
+    final mode = match?.sportMode ?? SportModeService.instance.currentMode ?? SportMode.court;
+    return _rulesFor(mode).targetPointsForSet(setNumber);
+  }
+
+  ScoreboardRules _rulesFor(SportMode mode) => ScoreboardRules.forMode(mode);
 
   String _buildMatchFinishedMessage(MatchScore match) {
     if (match.winnerTeam == null) {

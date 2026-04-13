@@ -7,6 +7,7 @@ import '../../../features/scoreboard/models/set_point_event.dart';
 import '../../../features/scoreboard/models/set_score.dart';
 import '../../../features/teams/models/team_draw_player.dart' as team_models;
 import '../../../features/teams/models/waiting_player.dart' as team_models;
+import '../../../models/sport_mode.dart';
 import '../database/app_database.dart';
 
 class MatchesRepository {
@@ -61,6 +62,7 @@ class MatchesRepository {
               servingTeam: match.servingTeam.value,
               matchStatus: match.matchStatus.value,
               sourceType: Value(match.sourceType.value),
+              sportMode: Value(match.sportMode.value),
               winnerTeam: Value(match.winnerTeam),
               savedTeamGroupId: Value(match.savedTeamGroupId),
               savedTeamGroupTitle: Value(match.savedTeamGroupTitle),
@@ -121,6 +123,7 @@ class MatchesRepository {
       servingTeam: scoreboard_model.TeamSide.fromValue(row.servingTeam),
       matchStatus: scoreboard_model.MatchStatus.fromValue(row.matchStatus),
       sourceType: scoreboard_model.MatchSourceType.fromValue(row.sourceType),
+      sportMode: SportMode.fromValue(row.sportMode),
       winnerTeam: row.winnerTeam,
       createdAt: DateTime.parse(row.createdAt),
       finishedAt: row.finishedAt == null ? null : DateTime.parse(row.finishedAt!),

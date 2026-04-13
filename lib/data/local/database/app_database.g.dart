@@ -3099,6 +3099,14 @@ class $MatchesTable extends Matches with TableInfo<$MatchesTable, Matche> {
       type: DriftSqlType.string,
       requiredDuringInsert: false,
       defaultValue: const Constant('manual'));
+  static const VerificationMeta _sportModeMeta =
+      const VerificationMeta('sportMode');
+  @override
+  late final GeneratedColumn<String> sportMode = GeneratedColumn<String>(
+      'sport_mode', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant('court'));
   static const VerificationMeta _savedTeamGroupIdMeta =
       const VerificationMeta('savedTeamGroupId');
   @override
@@ -3166,6 +3174,7 @@ class $MatchesTable extends Matches with TableInfo<$MatchesTable, Matche> {
         matchStatus,
         winnerTeam,
         sourceType,
+        sportMode,
         savedTeamGroupId,
         savedTeamGroupTitle,
         teamAOriginTeamId,
@@ -3259,6 +3268,10 @@ class $MatchesTable extends Matches with TableInfo<$MatchesTable, Matche> {
           sourceType.isAcceptableOrUnknown(
               data['source_type']!, _sourceTypeMeta));
     }
+    if (data.containsKey('sport_mode')) {
+      context.handle(_sportModeMeta,
+          sportMode.isAcceptableOrUnknown(data['sport_mode']!, _sportModeMeta));
+    }
     if (data.containsKey('saved_team_group_id')) {
       context.handle(
           _savedTeamGroupIdMeta,
@@ -3343,6 +3356,8 @@ class $MatchesTable extends Matches with TableInfo<$MatchesTable, Matche> {
           .read(DriftSqlType.string, data['${effectivePrefix}winner_team']),
       sourceType: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}source_type'])!,
+      sportMode: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}sport_mode'])!,
       savedTeamGroupId: attachedDatabase.typeMapping.read(
           DriftSqlType.string, data['${effectivePrefix}saved_team_group_id']),
       savedTeamGroupTitle: attachedDatabase.typeMapping.read(
@@ -3383,6 +3398,7 @@ class Matche extends DataClass implements Insertable<Matche> {
   final String matchStatus;
   final String? winnerTeam;
   final String sourceType;
+  final String sportMode;
   final String? savedTeamGroupId;
   final String? savedTeamGroupTitle;
   final String? teamAOriginTeamId;
@@ -3403,6 +3419,7 @@ class Matche extends DataClass implements Insertable<Matche> {
       required this.matchStatus,
       this.winnerTeam,
       required this.sourceType,
+      required this.sportMode,
       this.savedTeamGroupId,
       this.savedTeamGroupTitle,
       this.teamAOriginTeamId,
@@ -3427,6 +3444,7 @@ class Matche extends DataClass implements Insertable<Matche> {
       map['winner_team'] = Variable<String>(winnerTeam);
     }
     map['source_type'] = Variable<String>(sourceType);
+    map['sport_mode'] = Variable<String>(sportMode);
     if (!nullToAbsent || savedTeamGroupId != null) {
       map['saved_team_group_id'] = Variable<String>(savedTeamGroupId);
     }
@@ -3470,6 +3488,7 @@ class Matche extends DataClass implements Insertable<Matche> {
           ? const Value.absent()
           : Value(winnerTeam),
       sourceType: Value(sourceType),
+      sportMode: Value(sportMode),
       savedTeamGroupId: savedTeamGroupId == null && nullToAbsent
           ? const Value.absent()
           : Value(savedTeamGroupId),
@@ -3513,6 +3532,7 @@ class Matche extends DataClass implements Insertable<Matche> {
       matchStatus: serializer.fromJson<String>(json['matchStatus']),
       winnerTeam: serializer.fromJson<String?>(json['winnerTeam']),
       sourceType: serializer.fromJson<String>(json['sourceType']),
+      sportMode: serializer.fromJson<String>(json['sportMode']),
       savedTeamGroupId: serializer.fromJson<String?>(json['savedTeamGroupId']),
       savedTeamGroupTitle:
           serializer.fromJson<String?>(json['savedTeamGroupTitle']),
@@ -3542,6 +3562,7 @@ class Matche extends DataClass implements Insertable<Matche> {
       'matchStatus': serializer.toJson<String>(matchStatus),
       'winnerTeam': serializer.toJson<String?>(winnerTeam),
       'sourceType': serializer.toJson<String>(sourceType),
+      'sportMode': serializer.toJson<String>(sportMode),
       'savedTeamGroupId': serializer.toJson<String?>(savedTeamGroupId),
       'savedTeamGroupTitle': serializer.toJson<String?>(savedTeamGroupTitle),
       'teamAOriginTeamId': serializer.toJson<String?>(teamAOriginTeamId),
@@ -3566,6 +3587,7 @@ class Matche extends DataClass implements Insertable<Matche> {
           String? matchStatus,
           Value<String?> winnerTeam = const Value.absent(),
           String? sourceType,
+          String? sportMode,
           Value<String?> savedTeamGroupId = const Value.absent(),
           Value<String?> savedTeamGroupTitle = const Value.absent(),
           Value<String?> teamAOriginTeamId = const Value.absent(),
@@ -3586,6 +3608,7 @@ class Matche extends DataClass implements Insertable<Matche> {
         matchStatus: matchStatus ?? this.matchStatus,
         winnerTeam: winnerTeam.present ? winnerTeam.value : this.winnerTeam,
         sourceType: sourceType ?? this.sourceType,
+        sportMode: sportMode ?? this.sportMode,
         savedTeamGroupId: savedTeamGroupId.present
             ? savedTeamGroupId.value
             : this.savedTeamGroupId,
@@ -3631,6 +3654,7 @@ class Matche extends DataClass implements Insertable<Matche> {
           data.winnerTeam.present ? data.winnerTeam.value : this.winnerTeam,
       sourceType:
           data.sourceType.present ? data.sourceType.value : this.sourceType,
+      sportMode: data.sportMode.present ? data.sportMode.value : this.sportMode,
       savedTeamGroupId: data.savedTeamGroupId.present
           ? data.savedTeamGroupId.value
           : this.savedTeamGroupId,
@@ -3671,6 +3695,7 @@ class Matche extends DataClass implements Insertable<Matche> {
           ..write('matchStatus: $matchStatus, ')
           ..write('winnerTeam: $winnerTeam, ')
           ..write('sourceType: $sourceType, ')
+          ..write('sportMode: $sportMode, ')
           ..write('savedTeamGroupId: $savedTeamGroupId, ')
           ..write('savedTeamGroupTitle: $savedTeamGroupTitle, ')
           ..write('teamAOriginTeamId: $teamAOriginTeamId, ')
@@ -3696,6 +3721,7 @@ class Matche extends DataClass implements Insertable<Matche> {
       matchStatus,
       winnerTeam,
       sourceType,
+      sportMode,
       savedTeamGroupId,
       savedTeamGroupTitle,
       teamAOriginTeamId,
@@ -3719,6 +3745,7 @@ class Matche extends DataClass implements Insertable<Matche> {
           other.matchStatus == this.matchStatus &&
           other.winnerTeam == this.winnerTeam &&
           other.sourceType == this.sourceType &&
+          other.sportMode == this.sportMode &&
           other.savedTeamGroupId == this.savedTeamGroupId &&
           other.savedTeamGroupTitle == this.savedTeamGroupTitle &&
           other.teamAOriginTeamId == this.teamAOriginTeamId &&
@@ -3741,6 +3768,7 @@ class MatchesCompanion extends UpdateCompanion<Matche> {
   final Value<String> matchStatus;
   final Value<String?> winnerTeam;
   final Value<String> sourceType;
+  final Value<String> sportMode;
   final Value<String?> savedTeamGroupId;
   final Value<String?> savedTeamGroupTitle;
   final Value<String?> teamAOriginTeamId;
@@ -3762,6 +3790,7 @@ class MatchesCompanion extends UpdateCompanion<Matche> {
     this.matchStatus = const Value.absent(),
     this.winnerTeam = const Value.absent(),
     this.sourceType = const Value.absent(),
+    this.sportMode = const Value.absent(),
     this.savedTeamGroupId = const Value.absent(),
     this.savedTeamGroupTitle = const Value.absent(),
     this.teamAOriginTeamId = const Value.absent(),
@@ -3784,6 +3813,7 @@ class MatchesCompanion extends UpdateCompanion<Matche> {
     required String matchStatus,
     this.winnerTeam = const Value.absent(),
     this.sourceType = const Value.absent(),
+    this.sportMode = const Value.absent(),
     this.savedTeamGroupId = const Value.absent(),
     this.savedTeamGroupTitle = const Value.absent(),
     this.teamAOriginTeamId = const Value.absent(),
@@ -3814,6 +3844,7 @@ class MatchesCompanion extends UpdateCompanion<Matche> {
     Expression<String>? matchStatus,
     Expression<String>? winnerTeam,
     Expression<String>? sourceType,
+    Expression<String>? sportMode,
     Expression<String>? savedTeamGroupId,
     Expression<String>? savedTeamGroupTitle,
     Expression<String>? teamAOriginTeamId,
@@ -3836,6 +3867,7 @@ class MatchesCompanion extends UpdateCompanion<Matche> {
       if (matchStatus != null) 'match_status': matchStatus,
       if (winnerTeam != null) 'winner_team': winnerTeam,
       if (sourceType != null) 'source_type': sourceType,
+      if (sportMode != null) 'sport_mode': sportMode,
       if (savedTeamGroupId != null) 'saved_team_group_id': savedTeamGroupId,
       if (savedTeamGroupTitle != null)
         'saved_team_group_title': savedTeamGroupTitle,
@@ -3862,6 +3894,7 @@ class MatchesCompanion extends UpdateCompanion<Matche> {
       Value<String>? matchStatus,
       Value<String?>? winnerTeam,
       Value<String>? sourceType,
+      Value<String>? sportMode,
       Value<String?>? savedTeamGroupId,
       Value<String?>? savedTeamGroupTitle,
       Value<String?>? teamAOriginTeamId,
@@ -3883,6 +3916,7 @@ class MatchesCompanion extends UpdateCompanion<Matche> {
       matchStatus: matchStatus ?? this.matchStatus,
       winnerTeam: winnerTeam ?? this.winnerTeam,
       sourceType: sourceType ?? this.sourceType,
+      sportMode: sportMode ?? this.sportMode,
       savedTeamGroupId: savedTeamGroupId ?? this.savedTeamGroupId,
       savedTeamGroupTitle: savedTeamGroupTitle ?? this.savedTeamGroupTitle,
       teamAOriginTeamId: teamAOriginTeamId ?? this.teamAOriginTeamId,
@@ -3929,6 +3963,9 @@ class MatchesCompanion extends UpdateCompanion<Matche> {
     }
     if (sourceType.present) {
       map['source_type'] = Variable<String>(sourceType.value);
+    }
+    if (sportMode.present) {
+      map['sport_mode'] = Variable<String>(sportMode.value);
     }
     if (savedTeamGroupId.present) {
       map['saved_team_group_id'] = Variable<String>(savedTeamGroupId.value);
@@ -3978,6 +4015,7 @@ class MatchesCompanion extends UpdateCompanion<Matche> {
           ..write('matchStatus: $matchStatus, ')
           ..write('winnerTeam: $winnerTeam, ')
           ..write('sourceType: $sourceType, ')
+          ..write('sportMode: $sportMode, ')
           ..write('savedTeamGroupId: $savedTeamGroupId, ')
           ..write('savedTeamGroupTitle: $savedTeamGroupTitle, ')
           ..write('teamAOriginTeamId: $teamAOriginTeamId, ')
@@ -13526,6 +13564,7 @@ typedef $$MatchesTableCreateCompanionBuilder = MatchesCompanion Function({
   required String matchStatus,
   Value<String?> winnerTeam,
   Value<String> sourceType,
+  Value<String> sportMode,
   Value<String?> savedTeamGroupId,
   Value<String?> savedTeamGroupTitle,
   Value<String?> teamAOriginTeamId,
@@ -13548,6 +13587,7 @@ typedef $$MatchesTableUpdateCompanionBuilder = MatchesCompanion Function({
   Value<String> matchStatus,
   Value<String?> winnerTeam,
   Value<String> sourceType,
+  Value<String> sportMode,
   Value<String?> savedTeamGroupId,
   Value<String?> savedTeamGroupTitle,
   Value<String?> teamAOriginTeamId,
@@ -13617,6 +13657,9 @@ class $$MatchesTableFilterComposer
 
   ColumnFilters<String> get sourceType => $composableBuilder(
       column: $table.sourceType, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get sportMode => $composableBuilder(
+      column: $table.sportMode, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get savedTeamGroupId => $composableBuilder(
       column: $table.savedTeamGroupId,
@@ -13715,6 +13758,9 @@ class $$MatchesTableOrderingComposer
   ColumnOrderings<String> get sourceType => $composableBuilder(
       column: $table.sourceType, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get sportMode => $composableBuilder(
+      column: $table.sportMode, builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<String> get savedTeamGroupId => $composableBuilder(
       column: $table.savedTeamGroupId,
       builder: (column) => ColumnOrderings(column));
@@ -13788,6 +13834,9 @@ class $$MatchesTableAnnotationComposer
 
   GeneratedColumn<String> get sourceType => $composableBuilder(
       column: $table.sourceType, builder: (column) => column);
+
+  GeneratedColumn<String> get sportMode =>
+      $composableBuilder(column: $table.sportMode, builder: (column) => column);
 
   GeneratedColumn<String> get savedTeamGroupId => $composableBuilder(
       column: $table.savedTeamGroupId, builder: (column) => column);
@@ -13871,6 +13920,7 @@ class $$MatchesTableTableManager extends RootTableManager<
             Value<String> matchStatus = const Value.absent(),
             Value<String?> winnerTeam = const Value.absent(),
             Value<String> sourceType = const Value.absent(),
+            Value<String> sportMode = const Value.absent(),
             Value<String?> savedTeamGroupId = const Value.absent(),
             Value<String?> savedTeamGroupTitle = const Value.absent(),
             Value<String?> teamAOriginTeamId = const Value.absent(),
@@ -13893,6 +13943,7 @@ class $$MatchesTableTableManager extends RootTableManager<
             matchStatus: matchStatus,
             winnerTeam: winnerTeam,
             sourceType: sourceType,
+            sportMode: sportMode,
             savedTeamGroupId: savedTeamGroupId,
             savedTeamGroupTitle: savedTeamGroupTitle,
             teamAOriginTeamId: teamAOriginTeamId,
@@ -13915,6 +13966,7 @@ class $$MatchesTableTableManager extends RootTableManager<
             required String matchStatus,
             Value<String?> winnerTeam = const Value.absent(),
             Value<String> sourceType = const Value.absent(),
+            Value<String> sportMode = const Value.absent(),
             Value<String?> savedTeamGroupId = const Value.absent(),
             Value<String?> savedTeamGroupTitle = const Value.absent(),
             Value<String?> teamAOriginTeamId = const Value.absent(),
@@ -13937,6 +13989,7 @@ class $$MatchesTableTableManager extends RootTableManager<
             matchStatus: matchStatus,
             winnerTeam: winnerTeam,
             sourceType: sourceType,
+            sportMode: sportMode,
             savedTeamGroupId: savedTeamGroupId,
             savedTeamGroupTitle: savedTeamGroupTitle,
             teamAOriginTeamId: teamAOriginTeamId,

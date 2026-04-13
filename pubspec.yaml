@@ -35,6 +35,8 @@ flutter:
     - assets/fonts/DejaVuSans.ttf
     - assets/fonts/DejaVuSans-Bold.ttf
     - assets/images/logo_scoutset.png
+    - assets/images/mode_selection/volei_quadra.png
+    - assets/images/mode_selection/volei_praia.png
     - assets/data/rules_official_catalog.json
 
 flutter_launcher_icons:

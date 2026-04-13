@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../../../config/app_routes.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../models/sport_mode.dart';
 import '../../../services/auth_service.dart';
+import '../../../services/sport_mode_service.dart';
 import '../../../utils/app_spacing.dart';
 import '../../../widgets/app_card.dart';
 import '../../../widgets/app_page_scaffold.dart';
@@ -48,88 +50,107 @@ class DashboardScreen extends StatelessWidget {
     final userName =
         (user?.name.trim().isNotEmpty ?? false) ? user!.name.trim() : 'Usuário';
 
-    return AppPageScaffold(
-      showScaffold: showScaffold,
-      child: SingleChildScrollView(
-        padding: AppSpacing.screen,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            AppSpacing.gapMedium,
-            AppCard(
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Vamos começar os treinos?',
-                            style: theme.textTheme.titleMedium),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Bem-vindo, $userName. Escolha um módulo para continuar.',
-                          style: theme.textTheme.bodyMedium,
+    return ValueListenableBuilder<SportMode?>(
+      valueListenable: SportModeService.instance.modeNotifier,
+      builder: (context, activeMode, _) {
+        final mode = activeMode ?? SportMode.court;
+        final modeColors = mode == SportMode.court
+            ? [colors.accent, colors.accent.withValues(alpha: 0.82)]
+            : [const Color(0xFFC97B2F), const Color(0xFFE2A84C)];
+
+        return AppPageScaffold(
+          showScaffold: showScaffold,
+          child: SingleChildScrollView(
+            padding: AppSpacing.screen,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AppSpacing.gapMedium,
+                AppCard(
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(mode.dashboardTitle, style: theme.textTheme.titleMedium),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Bem-vindo, $userName. ${mode.dashboardSubtitle}',
+                              style: theme.textTheme.bodyMedium,
+                            ),
+                            const SizedBox(height: 14),
+                            Container(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: colors.surfaceContainerLow,
+                                borderRadius: BorderRadius.circular(999),
+                              ),
+                              child: Text(
+                                'Modo ativo: ${mode.label}',
+                                style: theme.textTheme.labelLarge,
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Container(
-                    width: 68,
-                    height: 68,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20),
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          colors.accent,
-                          colors.accent.withValues(alpha: 0.82),
-                        ],
                       ),
-                      border: Border.all(color: colors.subtleBorder),
-                    ),
-                    child: Icon(
-                      Icons.sports_volleyball,
-                      color: colors.surface,
-                      size: 32,
-                    ),
+                      const SizedBox(width: 16),
+                      Container(
+                        width: 68,
+                        height: 68,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: modeColors,
+                          ),
+                          border: Border.all(color: colors.subtleBorder),
+                        ),
+                        child: Icon(
+                          Icons.sports_volleyball,
+                          color: colors.surface,
+                          size: 32,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ),
-            AppSpacing.gapMedium,
-            GridView.builder(
-              itemCount: _tiles.length,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                childAspectRatio: 1.1,
-              ),
-              itemBuilder: (context, index) {
-                final item = _tiles[index];
+                ),
+                AppSpacing.gapMedium,
+                GridView.builder(
+                  itemCount: _tiles.length,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                    childAspectRatio: 1.1,
+                  ),
+                  itemBuilder: (context, index) {
+                    final item = _tiles[index];
 
-                return DashboardTile(
-                  title: item.title,
-                  subtitle: item.subtitle,
-                  icon: item.icon,
-                  onTap: () {
-                    if (_shellRoutes.contains(item.route)) {
-                      Navigator.pushReplacementNamed(context, item.route);
-                      return;
-                    }
+                    return DashboardTile(
+                      title: item.title,
+                      subtitle: item.subtitle,
+                      icon: item.icon,
+                      onTap: () {
+                        if (_shellRoutes.contains(item.route)) {
+                          Navigator.pushReplacementNamed(context, item.route);
+                          return;
+                        }
 
-                    Navigator.pushNamed(context, item.route);
+                        Navigator.pushNamed(context, item.route);
+                      },
+                    );
                   },
-                );
-              },
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

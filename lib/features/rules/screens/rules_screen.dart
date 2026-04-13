@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 
 import '../../../config/app_routes.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../models/sport_mode.dart';
+import '../../../services/sport_mode_service.dart';
 import '../../../utils/app_spacing.dart';
 import '../../../widgets/app_page_scaffold.dart';
 import '../../../widgets/dashboard_profile_bottom_navigation.dart';
@@ -16,11 +18,13 @@ class RulesScreen extends StatefulWidget {
     this.showScaffold = true,
     this.repository = const RulesCatalogRepository(),
     this.initialSearchTerm = '',
+    this.sportMode,
   });
 
   final bool showScaffold;
   final RulesCatalogRepository repository;
   final String initialSearchTerm;
+  final SportMode? sportMode;
 
   @override
   State<RulesScreen> createState() => _RulesScreenState();
@@ -72,7 +76,9 @@ class _RulesScreenState extends State<RulesScreen> {
   @override
   void initState() {
     super.initState();
-    _catalogFuture = widget.repository.load();
+    _catalogFuture = widget.repository.load(
+      sportMode: widget.sportMode ?? SportModeService.instance.currentMode ?? SportMode.court,
+    );
     _searchTerm = widget.initialSearchTerm;
     if (_searchTerm.isNotEmpty) {
       _searchController.text = _searchTerm;
@@ -122,6 +128,7 @@ class _RulesScreenState extends State<RulesScreen> {
   }
 
   Widget _buildCatalogView(BuildContext context, RulesCatalog catalog) {
+    final isEmptyCatalog = _isEmptyCatalog(catalog);
     final display = _buildCurrentDisplay(catalog);
     final isShowingSelectedChapter =
         _searchTerm.trim().isEmpty && _selectedChapterId != null;
@@ -161,7 +168,12 @@ class _RulesScreenState extends State<RulesScreen> {
                   ),
                   children: [
                     if (showSidebar) _buildDesktopTopNav(),
-                    _buildHeroHeader(context, catalog, showSidebar),
+                    _buildHeroHeader(
+                      context,
+                      catalog,
+                      showSidebar,
+                      isEmptyCatalog: isEmptyCatalog,
+                    ),
                     if (!showSidebar) ...[
                       const SizedBox(height: 16),
                       _buildControlsPanel(context, catalog),
@@ -169,6 +181,10 @@ class _RulesScreenState extends State<RulesScreen> {
                     const SizedBox(height: 24),
                     _buildChapterHeading(context, catalog, display),
                     const SizedBox(height: 18),
+                    if (isEmptyCatalog) ...[
+                      _buildEmptyCatalogCard(context),
+                      const SizedBox(height: 20),
+                    ],
                     for (final chapter in display.chapters) ...[
                       _buildChapterBlock(
                         context,
@@ -242,9 +258,11 @@ class _RulesScreenState extends State<RulesScreen> {
     BuildContext context,
     RulesCatalog catalog,
     bool showSidebar,
+    {required bool isEmptyCatalog}
   ) {
     final colors = AppTheme.colorsOf(context);
     final theme = Theme.of(context);
+    final sportMode = _effectiveSportMode;
 
     return Container(
       padding: EdgeInsets.fromLTRB(
@@ -293,7 +311,7 @@ class _RulesScreenState extends State<RulesScreen> {
           ),
           const SizedBox(height: 18),
           Text(
-            'Regras Oficiais',
+            isEmptyCatalog ? 'Regras de ${sportMode.shortLabel}' : 'Regras Oficiais',
             style: theme.textTheme.headlineMedium?.copyWith(
               color: colors.onSurface,
               fontSize: showSidebar ? 40 : 34,
@@ -302,7 +320,9 @@ class _RulesScreenState extends State<RulesScreen> {
           ),
           const SizedBox(height: 10),
           Text(
-            'Aprovado no 39º Congresso Mundial da FIVB de 2024.',
+            isEmptyCatalog
+                ? 'Estrutura pronta para receber o conteúdo oficial da modalidade.'
+                : 'Aprovado no 39º Congresso Mundial da FIVB de 2024.',
             style: theme.textTheme.bodyLarge?.copyWith(
               color: colors.primaryDetail.withValues(alpha: 0.9),
               fontWeight: FontWeight.w600,
@@ -314,12 +334,16 @@ class _RulesScreenState extends State<RulesScreen> {
             child: Row(
               children: [
                 _HeroMetaChip(
-                  label: 'Edição ${catalog.sourceTitle}',
+                  label: isEmptyCatalog
+                      ? 'Edição em preparação'
+                      : 'Edição ${catalog.sourceTitle}',
                   icon: Icons.verified_outlined,
                 ),
                 const SizedBox(width: 12),
                 _HeroMetaChip(
-                  label: '${catalog.chapters.length} capítulos oficiais',
+                  label: isEmptyCatalog
+                      ? 'Layout compartilhado'
+                      : '${catalog.chapters.length} capítulos oficiais',
                   icon: Icons.menu_book_outlined,
                 ),
               ],
@@ -376,14 +400,18 @@ class _RulesScreenState extends State<RulesScreen> {
     final selectedChapter = display.chapters.isEmpty ? null : display.chapters.first;
     final isShowingSelectedChapter =
         _searchTerm.trim().isEmpty && _selectedChapterId != null;
-    final title = _searchTerm.trim().isNotEmpty
+    final title = _isEmptyCatalog(catalog)
+        ? 'Conteúdo em preparação'
+        : _searchTerm.trim().isNotEmpty
         ? 'Resultados da busca'
         : isShowingSelectedChapter && selectedChapter != null
             ? 'Capítulo ${selectedChapter.displayOfficialNumber}: '
                 '${selectedChapter.officialTitle}'
             : _titleForCategory(catalog, _selectedCategoryId);
 
-    final badge = _searchTerm.trim().isNotEmpty
+    final badge = _isEmptyCatalog(catalog)
+        ? 'Em preparação'
+        : _searchTerm.trim().isNotEmpty
         ? '${display.chapters.length + display.documents.length} itens'
         : _selectedChapterId != null
             ? 'Leitura técnica'
@@ -507,6 +535,32 @@ class _RulesScreenState extends State<RulesScreen> {
             ),
             if (index != documents.length - 1) const SizedBox(height: 12),
           ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyCatalogCard(BuildContext context) {
+    final colors = AppTheme.colorsOf(context);
+
+    return Container(
+      padding: const EdgeInsets.all(22),
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Conteúdo em preparação',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'O layout do módulo já está pronto para o vôlei de praia, mas o conteúdo normativo será preenchido em uma próxima etapa.',
+            style: Theme.of(context).textTheme.bodyLarge,
+          ),
         ],
       ),
     );
@@ -951,6 +1005,10 @@ class _RulesScreenState extends State<RulesScreen> {
   }
 
   _VisibleContent _buildCurrentDisplay(RulesCatalog catalog) {
+    if (_isEmptyCatalog(catalog)) {
+      return const _VisibleContent(chapters: [], documents: []);
+    }
+
     if (_searchTerm.trim().isNotEmpty) {
       return _buildSearchDisplay(catalog, _searchTerm);
     }
@@ -1109,6 +1167,16 @@ class _RulesScreenState extends State<RulesScreen> {
   String _normalizeForSearch(String value) {
     return removeDiacritics(value).toLowerCase();
   }
+
+  bool _isEmptyCatalog(RulesCatalog catalog) {
+    return catalog.categories.isEmpty &&
+        catalog.chapters.isEmpty &&
+        catalog.documents.isEmpty;
+  }
+
+  SportMode get _effectiveSportMode =>
+      widget.sportMode ?? SportModeService.instance.currentMode ?? SportMode.court;
+
   String _titleForCategory(RulesCatalog catalog, String categoryId) {
     return catalog.categoryById(categoryId).title;
   }

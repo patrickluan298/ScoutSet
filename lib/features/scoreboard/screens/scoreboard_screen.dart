@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../models/sport_mode.dart';
+import '../../../services/sport_mode_service.dart';
 import '../../../utils/app_spacing.dart';
 import '../../../utils/navigation_helpers.dart';
 import '../../../utils/team_name_validator.dart';
@@ -247,12 +249,15 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
   }
 
   Widget _buildSetupView(ScoreboardState state) {
+    final mode = SportModeService.instance.currentMode ?? SportMode.court;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         ScoreboardHeader(
-          title: 'Placar Eletrônico de Vôlei',
-          subtitle: 'Monte a partida, acompanhe os sets e salve o histórico em tempo real.',
+          title: 'Placar Eletrônico de ${mode.shortLabel}',
+          subtitle:
+              'Monte a partida, acompanhe os sets e salve o histórico em tempo real para ${mode.label.toLowerCase()}.',
           statusLabel: state.statusMessage,
         ),
         AppSpacing.gapMedium,
@@ -442,6 +447,7 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
         AppSpacing.gapMedium,
         SetScoreTable(
           finishedSets: match.sets,
+          rules: state.currentRules,
           currentSet: match.currentSet,
           currentTeamAScore: state.currentTeamAScore,
           currentTeamBScore: state.currentTeamBScore,
@@ -524,7 +530,8 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
     required int targetPoints,
   }) {
     final setsWon = team == TeamSide.teamA ? match.teamASetsWon : match.teamBSetsWon;
-    if (setsWon < (scoreboardSetsToWin - 1)) {
+    final rules = ScoreboardRules.forMode(match.sportMode);
+    if (setsWon < (rules.setsToWin - 1)) {
       return false;
     }
 

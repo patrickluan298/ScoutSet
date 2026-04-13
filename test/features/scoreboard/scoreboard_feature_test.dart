@@ -3,18 +3,22 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:scoutset/core/theme/app_theme.dart';
 import 'package:scoutset/data/local/database/app_services.dart';
 import 'package:scoutset/features/scoreboard/models/match_score.dart';
+import 'package:scoutset/features/scoreboard/models/scoreboard_rules.dart';
 import 'package:scoutset/features/scoreboard/models/set_score.dart';
 import 'package:scoutset/features/scoreboard/screens/match_detail_screen.dart';
 import 'package:scoutset/features/scoreboard/screens/scoreboard_screen.dart';
 import 'package:scoutset/features/scoreboard/services/scoreboard_service.dart';
 import 'package:scoutset/features/scoreboard/widgets/set_score_table.dart';
 import 'package:scoutset/features/teams/models/team_draw_player.dart';
+import 'package:scoutset/models/sport_mode.dart';
+import 'package:scoutset/services/sport_mode_service.dart';
 
 void main() {
   late ScoreboardService service;
 
   setUp(() async {
     await AppServices.useInMemoryDatabaseForTesting();
+    SportModeService.instance.resetForTesting();
     service = ScoreboardService.instance;
     await service.clearAll();
   });
@@ -54,6 +58,14 @@ void main() {
     expect(find.text('Nova Partida'), findsOneWidget);
     expect(find.byKey(const Key('scoreboard-team-a-field')), findsOneWidget);
     expect(find.byKey(const Key('scoreboard-team-b-field')), findsOneWidget);
+  });
+
+  testWidgets('beach mode setup reflects contextual title', (tester) async {
+    SportModeService.instance.selectMode(SportMode.beach);
+
+    await pumpScoreboard(tester);
+
+    expect(find.text('Placar Eletrônico de Praia'), findsOneWidget);
   });
 
   testWidgets('transitions from setup form to live scoreboard', (tester) async {
@@ -236,6 +248,7 @@ void main() {
               targetPoints: 25,
             ),
           ],
+          rules: ScoreboardRules.court,
           currentSet: 2,
           currentTeamAScore: 25,
           currentTeamBScore: 20,
@@ -254,6 +267,7 @@ void main() {
       buildTestable(
         const SetScoreTable(
           finishedSets: [],
+          rules: ScoreboardRules.court,
           currentSet: 1,
           currentTeamAScore: 0,
           currentTeamBScore: 0,

@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import '../data/local/database/app_services.dart';
 import '../data/local/repositories/auth_repository.dart';
 import '../models/user.dart';
+import 'sport_mode_service.dart';
 
 class AuthService {
   AuthService._();
@@ -179,6 +180,7 @@ class AuthService {
   Future<void> signOut() async {
     await initialize();
     authState.value = null;
+    SportModeService.instance.clearSelection();
     await _repository.clearSession();
   }
 
@@ -221,6 +223,7 @@ class AuthService {
   Future<void> reset() async {
     _initialized = false;
     authState.value = null;
+    SportModeService.instance.resetState();
     await AppServices.initialize();
     await _repository.clearAll();
   }
@@ -229,5 +232,6 @@ class AuthService {
   void clearCachedStateForTesting() {
     _initialized = false;
     authState.value = null;
+    SportModeService.instance.resetState();
   }
 }

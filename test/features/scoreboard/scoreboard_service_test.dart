@@ -4,12 +4,15 @@ import 'package:scoutset/features/scoreboard/models/match_score.dart';
 import 'package:scoutset/features/scoreboard/models/set_point_event.dart';
 import 'package:scoutset/features/scoreboard/services/scoreboard_service.dart';
 import 'package:scoutset/features/teams/models/team_draw_player.dart';
+import 'package:scoutset/models/sport_mode.dart';
+import 'package:scoutset/services/sport_mode_service.dart';
 
 void main() {
   late ScoreboardService service;
 
   setUp(() async {
     await AppServices.useInMemoryDatabaseForTesting();
+    SportModeService.instance.resetForTesting();
     service = ScoreboardService.instance;
     await service.clearAll();
   });
@@ -40,6 +43,7 @@ void main() {
     expect(state.activeMatch?.currentSet, 1);
     expect(state.currentTeamAScore, 0);
     expect(state.currentTeamBScore, 0);
+    expect(match.sportMode, SportMode.court);
   });
 
   test('rejects team names with special characters', () {
@@ -183,6 +187,37 @@ void main() {
     expect(match?.currentSet, 5);
     expect(service.getState().currentSetTargetPoints, 15);
     expect(match?.matchStatus, MatchStatus.inProgress);
+  });
+
+  test('beach mode finishes in two sets and limits match to three sets', () async {
+    SportModeService.instance.selectMode(SportMode.beach);
+    service.startMatch(teamAName: 'A', teamBName: 'B');
+    await addPoints(teamA: 25, teamB: 15);
+    expect(service.getState().activeMatch?.currentSet, 2);
+
+    await addPoints(teamA: 25, teamB: 22);
+
+    final match = service.getState().activeMatch;
+    expect(match?.sportMode, SportMode.beach);
+    expect(match?.matchStatus, MatchStatus.finished);
+    expect(match?.teamASetsWon, 2);
+    expect(match?.currentSet, 2);
+  });
+
+  test('persists beach sport mode in saved match history', () async {
+    SportModeService.instance.selectMode(SportMode.beach);
+    service.startMatch(teamAName: 'A', teamBName: 'B');
+    await addPoints(teamA: 25, teamB: 15);
+    await addPoints(teamA: 25, teamB: 19);
+
+    final finished = service.listHistory().single;
+    expect(finished.sportMode, SportMode.beach);
+
+    service.clearCachedStateForTesting();
+    await service.initialize();
+
+    final reloaded = service.listHistory().single;
+    expect(reloaded.sportMode, SportMode.beach);
   });
 
   test('undo never makes score negative and only affects current set', () async {

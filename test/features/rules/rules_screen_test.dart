@@ -6,8 +6,14 @@ import 'package:scoutset/core/theme/app_theme.dart';
 import 'package:scoutset/features/rules/data/rules_catalog_repository.dart';
 import 'package:scoutset/features/rules/models/rules_models.dart';
 import 'package:scoutset/features/rules/screens/rules_screen.dart';
+import 'package:scoutset/models/sport_mode.dart';
+import 'package:scoutset/services/sport_mode_service.dart';
 
 void main() {
+  setUp(() {
+    SportModeService.instance.resetForTesting();
+  });
+
   testWidgets('rules screen renders manual tecnico header and search results',
       (tester) async {
     await tester.binding.setSurfaceSize(const Size(900, 2200));
@@ -53,7 +59,6 @@ void main() {
     expect(find.byKey(const Key('rules-menu-category-system-points')),
         findsOneWidget);
     expect(find.byKey(const Key('rules-menu-category-serve')), findsOneWidget);
-    expect(find.byKey(const Key('rules-menu-category-libero')), findsOneWidget);
 
     await tester
         .ensureVisible(find.byKey(const Key('rules-menu-item-chapter-12')));
@@ -64,7 +69,7 @@ void main() {
 
     expect(find.textContaining('Capítulo 12'), findsWidgets);
     expect(find.text('REGRA 12.4'), findsOneWidget);
-    expect(find.text('EXECUÇÃO DO SERVIÇO'), findsOneWidget);
+    expect(find.text('EXECUÇÃO DO SAQUE'), findsOneWidget);
 
     expect(
       find.textContaining(
@@ -72,7 +77,7 @@ void main() {
       findsNothing,
     );
 
-    await tester.tap(find.text('EXECUÇÃO DO SERVIÇO'));
+    await tester.tap(find.text('EXECUÇÃO DO SAQUE'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
@@ -140,7 +145,6 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
 
     expect(find.byKey(const Key('rules-menu-category-serve')), findsOneWidget);
-    expect(find.byKey(const Key('rules-menu-category-libero')), findsOneWidget);
 
     await tester.enterText(
         find.byKey(const Key('rules-search-field')), 'líbero');
@@ -182,11 +186,12 @@ void main() {
     final arbitrationTop = tester
         .getTopLeft(find.byKey(const Key('rules-menu-category-arbitration')))
         .dy;
-    final supplementalTop = tester
-        .getTopLeft(find.byKey(const Key('rules-menu-category-supplemental')))
+    final annexesTop = tester
+        .getTopLeft(find.byKey(const Key('rules-menu-category-annexes')))
         .dy;
 
-    expect(arbitrationTop, lessThan(supplementalTop));
+    expect(arbitrationTop, greaterThan(attackTop));
+    expect(arbitrationTop, lessThan(annexesTop));
   });
 
   testWidgets('rules screen groups arbitration chapters in a dedicated section',
@@ -206,7 +211,6 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
-    expect(find.text('Conteúdo Complementar'), findsWidgets);
     expect(find.text('Capítulo 22: EQUIPE DE ARBITRAGEM E PROCEDIMENTOS'),
         findsNothing);
 
@@ -320,11 +324,36 @@ void main() {
     expect(find.text('Manual Técnico'), findsOneWidget);
     expect(find.text('Índice de Regras'), findsOneWidget);
   });
+
+  testWidgets('rules screen renders empty beach placeholder with shared layout',
+      (tester) async {
+    await tester.binding.setSurfaceSize(const Size(900, 1600));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.lightTheme,
+        home: const RulesScreen(
+          showScaffold: false,
+          sportMode: SportMode.beach,
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.text('Manual Técnico'), findsOneWidget);
+    expect(find.text('Regras de Praia'), findsOneWidget);
+    expect(find.text('Conteúdo em preparação'), findsWidgets);
+  });
 }
 
 class _TestRulesCatalogRepository extends RulesCatalogRepository {
   @override
-  Future<RulesCatalog> load([AssetBundle? bundle]) async {
+  Future<RulesCatalog> load({
+    required SportMode sportMode,
+    AssetBundle? bundle,
+  }) async {
     final jsonString =
         File(RulesCatalogRepository.assetPath).readAsStringSync();
     return loadFromString(jsonString);

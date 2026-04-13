@@ -8,11 +8,13 @@ import 'features/drills/services/drills_service.dart';
 import 'features/scoreboard/services/scoreboard_service.dart';
 import 'features/strategies/services/strategy_service.dart';
 import 'services/auth_service.dart';
+import 'services/sport_mode_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AppServices.initialize();
   await AuthService.instance.initialize();
+  await SportModeService.instance.initialize();
   await StrategyService.instance.initialize();
   await ScoreboardService.instance.initialize();
   await DrillsService.instance.initialize();

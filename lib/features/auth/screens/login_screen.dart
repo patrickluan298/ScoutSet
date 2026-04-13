@@ -83,7 +83,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
       Navigator.pushNamedAndRemoveUntil(
         context,
-        AppRoutes.dashboard,
+        AppRoutes.modeSelection,
         (route) => false,
       );
     });

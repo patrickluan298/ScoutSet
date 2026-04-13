@@ -58,13 +58,22 @@ class ScoreboardState {
 
   bool get isMatchFinished => activeMatch?.matchStatus == MatchStatus.finished;
 
+  ScoreboardRules get currentRules {
+    final match = activeMatch;
+    if (match == null) {
+      return ScoreboardRules.court;
+    }
+
+    return ScoreboardRules.forMode(match.sportMode);
+  }
+
   int get currentSetTargetPoints {
     final match = activeMatch;
     if (match == null) {
-      return scoreboardRegularSetTargetPoints;
+      return currentRules.regularSetTargetPoints;
     }
 
-    return scoreboardTargetPointsForSet(match.currentSet);
+    return currentRules.targetPointsForSet(match.currentSet);
   }
 
   ScoreboardState copyWith({

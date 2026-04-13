@@ -8,6 +8,7 @@ import '../models/set_score.dart';
 class SetScoreTable extends StatelessWidget {
   const SetScoreTable({
     required this.finishedSets,
+    required this.rules,
     required this.currentSet,
     required this.currentTeamAScore,
     required this.currentTeamBScore,
@@ -17,6 +18,7 @@ class SetScoreTable extends StatelessWidget {
   });
 
   final List<SetScore> finishedSets;
+  final ScoreboardRules rules;
   final int currentSet;
   final int currentTeamAScore;
   final int currentTeamBScore;
@@ -55,7 +57,7 @@ class SetScoreTable extends StatelessWidget {
                   _HeaderCell(label: 'Duração'),
                 ],
               ),
-              for (var setNumber = 1; setNumber <= scoreboardMaxSets; setNumber++)
+              for (var setNumber = 1; setNumber <= rules.maxSets; setNumber++)
                 _buildSetRow(setNumber),
             ],
           ),
@@ -72,7 +74,7 @@ class SetScoreTable extends StatelessWidget {
     final teamAScore = finishedSet?.teamAScore ?? (isCurrent ? inProgressTeamAScore : null);
     final teamBScore = finishedSet?.teamBScore ?? (isCurrent ? inProgressTeamBScore : null);
     final targetPoints = finishedSet?.targetPoints ??
-        (setNumber == currentSet ? currentTargetPoints : scoreboardTargetPointsForSet(setNumber));
+        (setNumber == currentSet ? currentTargetPoints : rules.targetPointsForSet(setNumber));
     final rowColor = finishedSet != null
         ? AppTheme.accentColor.withValues(alpha: 0.12)
         : isCurrent

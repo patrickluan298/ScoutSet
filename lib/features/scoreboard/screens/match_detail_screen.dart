@@ -67,10 +67,12 @@ class MatchDetailScreen extends StatelessWidget {
           AppSpacing.gapMedium,
           SetScoreTable(
             finishedSets: match.sets,
+            rules: ScoreboardRules.forMode(match.sportMode),
             currentSet: match.currentSet,
             currentTeamAScore: 0,
             currentTeamBScore: 0,
-            currentTargetPoints: scoreboardTargetPointsForSet(match.currentSet),
+            currentTargetPoints:
+                ScoreboardRules.forMode(match.sportMode).targetPointsForSet(match.currentSet),
             isMatchFinished: match.isFinished,
           ),
           if (match.sets.isNotEmpty) ...[
@@ -107,6 +109,7 @@ class MatchDetailScreen extends StatelessWidget {
                   value: match.finishedAt == null ? '-' : _formatDate(match.finishedAt!),
                 ),
                 _DetailRow(label: 'Status', value: match.matchStatus.label),
+                _DetailRow(label: 'Modalidade', value: match.sportMode.label),
                 _DetailRow(
                   label: 'Origem',
                   value: match.sourceType == MatchSourceType.manual ? 'Times digitados manualmente' : 'Equipes Salvas',
