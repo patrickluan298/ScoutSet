@@ -27,8 +27,8 @@ class RulesScreen extends StatefulWidget {
 }
 
 class _RulesScreenState extends State<RulesScreen> {
-  static const String _arbitrationCategoryId = 'arbitration';
   static const List<String> _categoryOrder = [
+    'fundamentals',
     'system-points',
     'game-structure',
     'rotation-positions',
@@ -39,32 +39,22 @@ class _RulesScreenState extends State<RulesScreen> {
     'block',
     'libero',
     'penalties',
-    _arbitrationCategoryId,
-    'supplemental',
+    'arbitration',
+    'annexes',
   ];
-  static const Set<String> _arbitrationChapterNumbers = {
-    '22',
-    '23',
-    '24',
-    '25',
-    '26',
-    '27',
-    '28',
-    '29',
-    '30',
-  };
 
   late final Future<RulesCatalog> _catalogFuture;
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final Set<String> _expandedIds = <String>{};
 
-  String _selectedCategoryId = 'supplemental';
+  String _selectedCategoryId = 'fundamentals';
   String? _selectedChapterId;
   String? _selectedDocumentId;
   String _searchTerm = '';
 
   static const Map<String, IconData> _categoryIcons = {
+    'fundamentals': Icons.stadium_outlined,
     'system-points': Icons.scoreboard_outlined,
     'game-structure': Icons.account_tree_outlined,
     'rotation-positions': Icons.sync_outlined,
@@ -76,7 +66,7 @@ class _RulesScreenState extends State<RulesScreen> {
     'libero': Icons.person_outline,
     'penalties': Icons.gavel_outlined,
     'arbitration': Icons.gavel_outlined,
-    'supplemental': Icons.menu_book_outlined,
+    'annexes': Icons.menu_book_outlined,
   };
 
   @override
@@ -869,7 +859,10 @@ class _RulesScreenState extends State<RulesScreen> {
         );
       } else if (category.id == 'game-structure') {
         for (final chapter in catalog.chapters.where(
-          (item) => item.officialNumber == '7' || item.officialNumber == '8',
+          (item) =>
+              item.officialNumber == '7' ||
+              item.officialNumber == '8' ||
+              const {'15', '16', '17', '18'}.contains(item.officialNumber),
         )) {
           items.add(
             _SidebarMenuItemData(
@@ -881,9 +874,8 @@ class _RulesScreenState extends State<RulesScreen> {
           );
         }
       } else {
-        for (final chapter in catalog.chapters
-            .where((item) => item.categoryId == category.id)
-            .where((item) => !_belongsToArbitration(item))) {
+        for (final chapter
+            in catalog.chapters.where((item) => item.categoryId == category.id)) {
           items.add(
             _SidebarMenuItemData(
               id: chapter.id,
@@ -895,7 +887,7 @@ class _RulesScreenState extends State<RulesScreen> {
         }
       }
 
-      if (category.id == 'supplemental') {
+      if (category.id == 'annexes') {
         for (final document in catalog.documents
             .where((item) => item.categoryId == category.id)) {
           items.add(
@@ -914,23 +906,6 @@ class _RulesScreenState extends State<RulesScreen> {
         items: items,
       );
     }
-
-    final arbitrationItems = catalog.chapters
-        .where(_belongsToArbitration)
-        .map(
-          (chapter) => _SidebarMenuItemData(
-            id: chapter.id,
-            label: '${chapter.displayOfficialNumber} ${chapter.officialTitle}',
-            kind: _SidebarMenuItemKind.chapter,
-          ),
-        )
-        .toList(growable: false);
-
-    groupsById[_arbitrationCategoryId] = _SidebarMenuGroupData(
-      id: _arbitrationCategoryId,
-      title: 'Arbitragem',
-      items: arbitrationItems,
-    );
 
     final orderedGroups = <_SidebarMenuGroupData>[];
     for (final categoryId in _categoryOrder) {
@@ -1012,22 +987,8 @@ class _RulesScreenState extends State<RulesScreen> {
       RulesCatalog catalog, String categoryId) {
     final chapters = <_VisibleChapter>[];
     final documents = <RulesDocument>[];
-    final supplementalChapters =
+    final categoryChapters =
         catalog.chapters.where((chapter) => chapter.categoryId == categoryId);
-
-    if (categoryId == _arbitrationCategoryId) {
-      chapters.addAll(
-        catalog.chapters.where(_belongsToArbitration).map(
-              (chapter) => _VisibleChapter(
-                id: chapter.id,
-                officialNumber: chapter.displayOfficialNumber,
-                officialTitle: chapter.officialTitle,
-                sections: chapter.sections,
-              ),
-            ),
-      );
-      return _VisibleContent.from(chapters: chapters, documents: documents);
-    }
 
     if (categoryId == 'rotation-positions') {
       final chapter =
@@ -1038,7 +999,7 @@ class _RulesScreenState extends State<RulesScreen> {
           officialNumber: chapter.displayOfficialNumber,
           officialTitle: chapter.officialTitle,
           sections: chapter.sections.where((section) {
-            return const {'7.4', '7,5', '7.6', '7,7'}
+            return const {'7.4', '7.5', '7.6', '7.7'}
                 .contains(section.officialNumber);
           }).toList(growable: false),
         ),
@@ -1066,20 +1027,32 @@ class _RulesScreenState extends State<RulesScreen> {
           sections: chapter8.sections,
         ),
       );
+      for (final chapter in catalog.chapters.where((item) {
+        return const {'15', '16', '17', '18'}.contains(item.officialNumber);
+      })) {
+        chapters.add(
+          _VisibleChapter(
+            id: chapter.id,
+            officialNumber: chapter.displayOfficialNumber,
+            officialTitle: chapter.officialTitle,
+            sections: chapter.sections,
+          ),
+        );
+      }
     } else {
       chapters.addAll(
-        supplementalChapters.map(
+        categoryChapters.map(
           (chapter) => _VisibleChapter(
             id: chapter.id,
             officialNumber: chapter.displayOfficialNumber,
             officialTitle: chapter.officialTitle,
             sections: chapter.sections,
           ),
-        ).where((chapter) => !_arbitrationChapterNumbers.contains(chapter.officialNumber)),
+        ),
       );
     }
 
-    if (categoryId == 'supplemental') {
+    if (categoryId == 'annexes') {
       documents.addAll(catalog.documents
           .where((document) => document.categoryId == categoryId));
     }
@@ -1136,16 +1109,7 @@ class _RulesScreenState extends State<RulesScreen> {
   String _normalizeForSearch(String value) {
     return removeDiacritics(value).toLowerCase();
   }
-
-  bool _belongsToArbitration(RulesChapter chapter) {
-    return chapter.categoryId == 'supplemental' &&
-        _arbitrationChapterNumbers.contains(chapter.officialNumber);
-  }
-
   String _titleForCategory(RulesCatalog catalog, String categoryId) {
-    if (categoryId == _arbitrationCategoryId) {
-      return 'Arbitragem';
-    }
     return catalog.categoryById(categoryId).title;
   }
 }
