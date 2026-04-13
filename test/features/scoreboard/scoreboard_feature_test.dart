@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:scoutset/core/theme/app_theme.dart';
 import 'package:scoutset/data/local/database/app_services.dart';
+import 'package:scoutset/features/scoreboard/models/match_score.dart';
 import 'package:scoutset/features/scoreboard/models/set_score.dart';
+import 'package:scoutset/features/scoreboard/screens/match_detail_screen.dart';
 import 'package:scoutset/features/scoreboard/screens/scoreboard_screen.dart';
 import 'package:scoutset/features/scoreboard/services/scoreboard_service.dart';
 import 'package:scoutset/features/scoreboard/widgets/set_score_table.dart';
@@ -146,6 +148,9 @@ void main() {
     for (var i = 0; i < 25; i++) {
       await service.addPointToTeamA();
     }
+    for (var i = 0; i < 25; i++) {
+      await service.addPointToTeamA();
+    }
 
     await pumpScoreboard(tester);
 
@@ -244,9 +249,78 @@ void main() {
     expect(find.text('Set 2'), findsOneWidget);
   });
 
+  testWidgets('renders five sets in the summary table with a 15-point fifth set', (tester) async {
+    await tester.pumpWidget(
+      buildTestable(
+        const SetScoreTable(
+          finishedSets: [],
+          currentSet: 1,
+          currentTeamAScore: 0,
+          currentTeamBScore: 0,
+          currentTargetPoints: 25,
+        ),
+      ),
+    );
+
+    expect(find.text('Set 5'), findsOneWidget);
+    expect(find.text('15 pts'), findsOneWidget);
+  });
+
+  testWidgets('match details show 15-point target in the fifth set', (tester) async {
+    final match = MatchScore(
+      id: 'match-detail-1',
+      teamAName: 'A',
+      teamBName: 'B',
+      currentSet: 5,
+      sets: [
+        SetScore(
+          setNumber: 1,
+          teamAScore: 25,
+          teamBScore: 20,
+          winnerTeamId: TeamSide.teamA.value,
+          targetPoints: 25,
+        ),
+        SetScore(
+          setNumber: 2,
+          teamAScore: 18,
+          teamBScore: 25,
+          winnerTeamId: TeamSide.teamB.value,
+          targetPoints: 25,
+        ),
+        SetScore(
+          setNumber: 3,
+          teamAScore: 25,
+          teamBScore: 21,
+          winnerTeamId: TeamSide.teamA.value,
+          targetPoints: 25,
+        ),
+        SetScore(
+          setNumber: 4,
+          teamAScore: 20,
+          teamBScore: 25,
+          winnerTeamId: TeamSide.teamB.value,
+          targetPoints: 25,
+        ),
+      ],
+      teamASetsWon: 2,
+      teamBSetsWon: 2,
+      servingTeam: TeamSide.teamA,
+      matchStatus: MatchStatus.inProgress,
+      sourceType: MatchSourceType.manual,
+      createdAt: DateTime(2026, 4, 9, 10),
+    );
+
+    await tester.pumpWidget(buildTestable(MatchDetailScreen(match: match)));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Set 5'), findsOneWidget);
+    expect(find.text('15 pts'), findsOneWidget);
+  });
+
   testWidgets('shows red match point alert when next point can end the match', (tester) async {
     service.startMatch(teamAName: 'A', teamBName: 'B');
     await addPoints(service, teamA: 25, teamB: 10);
+    await addPoints(service, teamA: 25, teamB: 20);
     await addPoints(service, teamA: 24, teamB: 20);
 
     await pumpScoreboard(tester);
@@ -259,6 +333,8 @@ void main() {
     service.startMatch(teamAName: 'A', teamBName: 'B');
     await addPoints(service, teamA: 25, teamB: 10);
     await addPoints(service, teamA: 20, teamB: 25);
+    await addPoints(service, teamA: 25, teamB: 18);
+    await addPoints(service, teamA: 18, teamB: 25);
     await addPoints(service, teamA: 14, teamB: 12);
 
     await pumpScoreboard(tester);
@@ -277,8 +353,10 @@ void main() {
     expect(find.text('MATCH POINT PARA A'), findsNothing);
   });
 
-  testWidgets('keeps match point only for the tie-break after the game reaches 1x1', (tester) async {
+  testWidgets('keeps match point only for the fifth set after the game reaches 2x2', (tester) async {
     service.startMatch(teamAName: 'A', teamBName: 'B');
+    await addPoints(service, teamA: 25, teamB: 10);
+    await addPoints(service, teamA: 20, teamB: 25);
     await addPoints(service, teamA: 25, teamB: 10);
     await addPoints(service, teamA: 20, teamB: 24);
 

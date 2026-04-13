@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../config/app_routes.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../services/auth_service.dart';
 import '../../../utils/app_spacing.dart';
 import '../../../widgets/app_card.dart';
@@ -23,20 +24,29 @@ class DashboardScreen extends StatelessWidget {
   };
 
   static const _tiles = [
-    _DashboardItem('Drills', 'Organize treinos e exercícios', Icons.fitness_center, AppRoutes.drills),
-    _DashboardItem('Equipes', 'Gerencie times e atletas', Icons.groups_outlined, AppRoutes.teams),
-    _DashboardItem('Estratégias', 'Monte cenários e simulações', Icons.schema, AppRoutes.strategies),
-    _DashboardItem('Placar', 'Controle o jogo em tempo real', Icons.sports_volleyball, AppRoutes.scoreboard),
-    _DashboardItem('Relatórios', 'Acompanhe dados e métricas', Icons.bar_chart, AppRoutes.reports),
-    _DashboardItem('Regras', 'Consulte regras e observações', Icons.gavel, AppRoutes.rules),
-    _DashboardItem('Vídeos', 'Central de análise de vídeo', Icons.videocam_outlined, AppRoutes.videos),
+    _DashboardItem('Drills', 'Organize treinos e exercícios',
+        Icons.fitness_center, AppRoutes.drills),
+    _DashboardItem('Equipes', 'Gerencie times e atletas', Icons.groups_outlined,
+        AppRoutes.teams),
+    _DashboardItem('Estratégias', 'Monte cenários e simulações', Icons.schema,
+        AppRoutes.strategies),
+    _DashboardItem('Placar', 'Controle o jogo em tempo real',
+        Icons.sports_volleyball, AppRoutes.scoreboard),
+    _DashboardItem('Relatórios', 'Acompanhe dados e métricas', Icons.bar_chart,
+        AppRoutes.reports),
+    _DashboardItem('Regras', 'Consulte regras e observações', Icons.gavel,
+        AppRoutes.rules),
+    _DashboardItem('Vídeos', 'Central de análise de vídeo',
+        Icons.videocam_outlined, AppRoutes.videos),
   ];
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colors = AppTheme.colorsOf(context);
     final user = AuthService.instance.currentUser;
-    final userName = (user?.name.trim().isNotEmpty ?? false) ? user!.name.trim() : 'Usuário';
+    final userName =
+        (user?.name.trim().isNotEmpty ?? false) ? user!.name.trim() : 'Usuário';
 
     return AppPageScaffold(
       showScaffold: showScaffold,
@@ -53,7 +63,8 @@ class DashboardScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Vamos começar os treinos?', style: theme.textTheme.titleMedium),
+                        Text('Vamos começar os treinos?',
+                            style: theme.textTheme.titleMedium),
                         const SizedBox(height: 8),
                         Text(
                           'Bem-vindo, $userName. Escolha um módulo para continuar.',
@@ -68,18 +79,19 @@ class DashboardScreen extends StatelessWidget {
                     height: 68,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(20),
-                      gradient: const LinearGradient(
+                      gradient: LinearGradient(
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                         colors: [
-                          Color(0xFFF5BE00),
-                          Color(0xFFFFD84D),
+                          colors.accent,
+                          colors.accent.withValues(alpha: 0.82),
                         ],
                       ),
+                      border: Border.all(color: colors.subtleBorder),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.sports_volleyball,
-                      color: Color(0xFF081426),
+                      color: colors.surface,
                       size: 32,
                     ),
                   ),

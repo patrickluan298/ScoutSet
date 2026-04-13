@@ -12,6 +12,7 @@ import '../../../widgets/section_title.dart';
 import '../../teams/models/team_draw_player.dart';
 import '../../teams/screens/saved_teams_screen.dart';
 import '../models/match_score.dart';
+import '../models/scoreboard_rules.dart';
 import '../models/scoreboard_state.dart';
 import '../models/set_point_event.dart';
 import '../services/scoreboard_service.dart';
@@ -523,7 +524,7 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
     required int targetPoints,
   }) {
     final setsWon = team == TeamSide.teamA ? match.teamASetsWon : match.teamBSetsWon;
-    if (setsWon < 1) {
+    if (setsWon < (scoreboardSetsToWin - 1)) {
       return false;
     }
 

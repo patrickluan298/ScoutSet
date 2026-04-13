@@ -1,3 +1,23 @@
+class RulesSectionMedia {
+  const RulesSectionMedia({
+    this.imageAsset,
+    this.caption,
+    this.alt,
+  });
+
+  factory RulesSectionMedia.fromJson(Map<String, dynamic> json) {
+    return RulesSectionMedia(
+      imageAsset: json['imageAsset'] as String?,
+      caption: json['caption'] as String?,
+      alt: json['alt'] as String?,
+    );
+  }
+
+  final String? imageAsset;
+  final String? caption;
+  final String? alt;
+}
+
 class RulesCategory {
   const RulesCategory({
     required this.id,
@@ -24,6 +44,7 @@ class RulesSection {
     required this.officialNumber,
     required this.officialTitle,
     required this.content,
+    this.media,
   });
 
   factory RulesSection.fromJson(Map<String, dynamic> json) {
@@ -32,6 +53,9 @@ class RulesSection {
       officialNumber: json['officialNumber'] as String,
       officialTitle: json['officialTitle'] as String,
       content: json['content'] as String,
+      media: json['media'] == null
+          ? null
+          : RulesSectionMedia.fromJson(json['media'] as Map<String, dynamic>),
     );
   }
 
@@ -39,8 +63,11 @@ class RulesSection {
   final String officialNumber;
   final String officialTitle;
   final String content;
+  final RulesSectionMedia? media;
 
-  String get searchText => '$officialNumber $officialTitle $content';
+  String get displayOfficialNumber => officialNumber.replaceAll(',', '.');
+  String get searchText =>
+      '$officialNumber $displayOfficialNumber $officialTitle $content';
 }
 
 class RulesChapter {
@@ -69,6 +96,8 @@ class RulesChapter {
   final String officialTitle;
   final String categoryId;
   final List<RulesSection> sections;
+
+  String get displayOfficialNumber => officialNumber.replaceAll(',', '.');
 
   RulesChapter copyWith({
     String? id,

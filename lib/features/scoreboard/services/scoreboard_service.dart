@@ -5,6 +5,7 @@ import '../../../data/local/repositories/matches_repository.dart';
 import '../../teams/models/team_draw_player.dart';
 import '../../teams/models/waiting_player.dart';
 import '../models/match_score.dart';
+import '../models/scoreboard_rules.dart';
 import '../models/scoreboard_state.dart';
 import '../models/set_point_event.dart';
 import '../models/set_score.dart';
@@ -345,7 +346,8 @@ class ScoreboardService {
         ? progressedMatch.teamAName
         : progressedMatch.teamBName;
 
-    if (progressedMatch.teamASetsWon == 2 || progressedMatch.teamBSetsWon == 2) {
+    if (progressedMatch.teamASetsWon == scoreboardSetsToWin ||
+        progressedMatch.teamBSetsWon == scoreboardSetsToWin) {
       final finished = _finishMatch(progressedMatch);
       await _publishFinishedMatch(
         finished,
@@ -421,7 +423,9 @@ class ScoreboardService {
   MatchScore _applyFinishedSet(MatchScore match, SetScore setScore) {
     final teamASetsWon = match.teamASetsWon + (setScore.winnerTeamId == TeamSide.teamA.value ? 1 : 0);
     final teamBSetsWon = match.teamBSetsWon + (setScore.winnerTeamId == TeamSide.teamB.value ? 1 : 0);
-    final shouldFinish = teamASetsWon == 2 || teamBSetsWon == 2 || setScore.setNumber == 3;
+    final shouldFinish = teamASetsWon == scoreboardSetsToWin ||
+        teamBSetsWon == scoreboardSetsToWin ||
+        setScore.setNumber == scoreboardMaxSets;
     final nextSet = shouldFinish ? setScore.setNumber : setScore.setNumber + 1;
 
     return match.copyWith(
@@ -474,7 +478,7 @@ class ScoreboardService {
     await _repository.saveFinishedMatch(match);
   }
 
-  int _targetPointsForSet(int setNumber) => setNumber == 3 ? 15 : 25;
+  int _targetPointsForSet(int setNumber) => scoreboardTargetPointsForSet(setNumber);
 
   String _buildMatchFinishedMessage(MatchScore match) {
     if (match.winnerTeam == null) {

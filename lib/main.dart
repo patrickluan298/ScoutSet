@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'config/app_routes.dart';
 import 'core/theme/app_theme.dart';
+import 'core/theme/theme_controller.dart';
 import 'data/local/database/app_services.dart';
 import 'features/drills/services/drills_service.dart';
 import 'features/scoreboard/services/scoreboard_service.dart';
@@ -15,6 +16,7 @@ Future<void> main() async {
   await StrategyService.instance.initialize();
   await ScoreboardService.instance.initialize();
   await DrillsService.instance.initialize();
+  await ThemeController.instance.initialize();
   runApp(const ScoutSetApp());
 }
 
@@ -23,13 +25,20 @@ class ScoutSetApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'ScoutSet',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.theme,
-      initialRoute: AppRoutes.initialRoute,
-      onGenerateRoute: AppRoutes.onGenerateRoute,
-      onUnknownRoute: AppRoutes.onUnknownRoute,
+    return AnimatedBuilder(
+      animation: ThemeController.instance,
+      builder: (context, _) {
+        return MaterialApp(
+          title: 'ScoutSet',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: ThemeController.instance.themeMode,
+          initialRoute: AppRoutes.initialRoute,
+          onGenerateRoute: AppRoutes.onGenerateRoute,
+          onUnknownRoute: AppRoutes.onUnknownRoute,
+        );
+      },
     );
   }
 }

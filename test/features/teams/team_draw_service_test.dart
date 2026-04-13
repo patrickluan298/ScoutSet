@@ -215,4 +215,45 @@ void main() {
     expect(firstGroup.teams[0].id, isNot('manual-team-0'));
     expect(secondGroup.teams[0].id, isNot(firstGroup.teams[0].id));
   });
+
+  test('permite salvar montagens manuais sequenciais com ids de equipe unicos', () async {
+    for (var i = 0; i < 6; i++) {
+      await service.savePlayer(
+        name: 'Extra$i',
+        position: 'Ponteiro',
+        level: PlayerLevel.intermediario,
+      );
+    }
+
+    final players = await service.listPlayers();
+    final manualTeams = [
+      DrawTeam(
+        id: 'manual-team-0',
+        name: 'Time A',
+        players: players.take(6).toList(),
+      ),
+      DrawTeam(
+        id: 'manual-team-1',
+        name: 'Time B',
+        players: players.skip(6).take(6).toList(),
+      ),
+    ];
+
+    final firstResult = service.validateManualSetup(
+      selectedPlayers: players,
+      teams: manualTeams,
+      oddPlayerHandling: OddPlayerHandling.extraPlayerOnTeam,
+    );
+    final secondResult = service.validateManualSetup(
+      selectedPlayers: players,
+      teams: manualTeams,
+      oddPlayerHandling: OddPlayerHandling.extraPlayerOnTeam,
+    );
+
+    await service.saveManualResult(firstResult);
+    await service.saveManualResult(secondResult);
+
+    expect(firstResult.teams[0].id, isNot('manual-team-0'));
+    expect(secondResult.teams[0].id, isNot(firstResult.teams[0].id));
+  });
 }
