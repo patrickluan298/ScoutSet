@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../../../../config/app_routes.dart';
+import '../../../../models/sport_mode.dart';
+import '../../../../services/sport_mode_service.dart';
 import '../../../../utils/app_spacing.dart';
 import '../../../../utils/confirmation_dialogs.dart';
+import '../../../../utils/ui_feedback.dart';
 import '../../scoreboard/models/match_score.dart';
 import '../../scoreboard/services/scoreboard_service.dart';
 import '../team_dialogs.dart';
@@ -79,20 +82,44 @@ class _SavedTeamsScreenState extends State<SavedTeamsScreen> {
       return;
     }
 
+    final mode = SportModeService.instance.currentMode ?? SportMode.court;
+    final startingRotation = await showStartingRotationDialog(
+      context,
+      teamA: selection.teamA,
+      teamB: selection.teamB,
+      sportMode: mode,
+    );
+    if (startingRotation == null || !mounted) {
+      return;
+    }
+
     final scoreboardService = ScoreboardService.instance;
     scoreboardService.prepareForNewMatch();
-    scoreboardService.startMatch(
-      teamAName: selection.teamA.name,
-      teamBName: selection.teamB.name,
-      sourceType: MatchSourceType.savedTeamGroup,
-      savedTeamGroupId: group.id,
-      savedTeamGroupTitle: group.title,
-      teamAPlayers: selection.teamA.players,
-      teamBPlayers: selection.teamB.players,
-      teamAOriginTeamId: selection.teamA.id,
-      teamBOriginTeamId: selection.teamB.id,
-      waitingPlayersSnapshot: group.waitingPlayers,
-    );
+    try {
+      scoreboardService.startMatch(
+        teamAName: selection.teamA.name,
+        teamBName: selection.teamB.name,
+        sourceType: MatchSourceType.savedTeamGroup,
+        savedTeamGroupId: group.id,
+        savedTeamGroupTitle: group.title,
+        teamAPlayers: selection.teamA.players,
+        teamBPlayers: selection.teamB.players,
+        teamAStartingPlayers: startingRotation.teamAPlayers,
+        teamBStartingPlayers: startingRotation.teamBPlayers,
+        teamAOriginTeamId: selection.teamA.id,
+        teamBOriginTeamId: selection.teamB.id,
+        waitingPlayersSnapshot: group.waitingPlayers,
+      );
+    } on ArgumentError catch (error) {
+      if (!mounted) {
+        return;
+      }
+      showAppSnackBar(
+        context,
+        error.message?.toString() ?? 'Nao foi possivel iniciar a partida.',
+      );
+      return;
+    }
 
     if (!mounted) {
       return;

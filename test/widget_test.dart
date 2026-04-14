@@ -32,7 +32,7 @@ void main() {
 
     expect(find.text('Informe seu e-mail.'), findsOneWidget);
     expect(find.text('Informe sua senha.'), findsOneWidget);
-    expect(find.text('Escolha a modalidade'), findsNothing);
+    expect(find.text('Escolha a Modalidade'), findsNothing);
   });
 
   test('login só autentica quando o usuário existe na base local', () async {
@@ -66,7 +66,7 @@ void main() {
 
     expect(find.text('Usuário não encontrado ou senha incorreta.'),
         findsOneWidget);
-    expect(find.text('Escolha a modalidade'), findsNothing);
+    expect(find.text('Escolha a Modalidade'), findsNothing);
   });
 
   testWidgets('login com usuário válido navega para o seletor de modalidade',
@@ -86,7 +86,7 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 600));
 
-    expect(find.text('Escolha a modalidade'), findsOneWidget);
+    expect(find.text('Escolha a Modalidade'), findsOneWidget);
     expect(find.text('Vôlei de Quadra'), findsOneWidget);
   });
 

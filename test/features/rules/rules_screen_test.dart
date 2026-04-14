@@ -386,6 +386,42 @@ void main() {
     expect(find.textContaining('EXECUÇÃO DO SAQUE'), findsWidgets);
     expect(find.textContaining('PRIMEIRO SERVIÇO EM UM SET'), findsWidgets);
   });
+
+  testWidgets(
+      'rules screen keeps beach chapter split when selecting service-order chapter from menu',
+      (tester) async {
+    await tester.binding.setSurfaceSize(const Size(1320, 2200));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.lightTheme,
+        home: RulesScreen(
+          showScaffold: false,
+          repository: _TestRulesCatalogRepository(),
+          sportMode: SportMode.beach,
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    final chapterSevenItems = find.byKey(const Key('rules-menu-item-chapter-7'));
+    expect(chapterSevenItems, findsNWidgets(2));
+
+    await tester.ensureVisible(chapterSevenItems.last);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    await tester.tap(chapterSevenItems.last);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.text('Capítulo 7: ESTRUTURA DO JOGO'), findsOneWidget);
+    expect(find.text('ORDEM DE SERVIÇO'), findsOneWidget);
+    expect(find.text('FALHA NA ORDEM DE SERVIÇO'), findsOneWidget);
+    expect(find.text('O LANÇAMENTO'), findsNothing);
+  });
 }
 
 class _TestRulesCatalogRepository extends RulesCatalogRepository {

@@ -66,15 +66,18 @@ class ModeSelectionScreen extends StatelessWidget {
                             children: [
                               SizedBox(height: compact ? 12 : 28),
                               ConstrainedBox(
-                                constraints: const BoxConstraints(maxWidth: 680),
+                                constraints:
+                                    const BoxConstraints(maxWidth: 680),
                                 child: Text(
-                                  'Escolha a modalidade',
+                                  'Escolha a Modalidade',
                                   textAlign: TextAlign.center,
-                                  style: theme.textTheme.headlineMedium?.copyWith(
+                                  style:
+                                      theme.textTheme.headlineMedium?.copyWith(
                                     fontSize: compact ? 32 : 40,
                                     fontWeight: FontWeight.w900,
                                     letterSpacing: -1.1,
-                                    color: colors.onSurface.withValues(alpha: 0.96),
+                                    color: colors.onSurface
+                                        .withValues(alpha: 0.96),
                                   ),
                                 ),
                               ),
@@ -91,7 +94,8 @@ class ModeSelectionScreen extends StatelessWidget {
                                       (mode) => _ModeCard(
                                         mode: mode,
                                         onTap: () {
-                                          SportModeService.instance.selectMode(mode);
+                                          SportModeService.instance
+                                              .selectMode(mode);
                                           Navigator.pushNamedAndRemoveUntil(
                                             context,
                                             AppRoutes.dashboard,
@@ -157,9 +161,11 @@ class _ModeCardState extends State<_ModeCard> {
     final colors = AppTheme.colorsOf(context);
     final theme = Theme.of(context);
     final palette = _paletteFor(widget.mode, colors);
-    final imageAsset = widget.mode == SportMode.court ? _courtAsset : _beachAsset;
+    final imageAsset =
+        widget.mode == SportMode.court ? _courtAsset : _beachAsset;
     final scale = _isPressed ? 0.985 : (_isHovered ? 1.01 : 1.0);
-    final shadowColor = palette.glow.withValues(alpha: _isHovered ? 0.26 : 0.18);
+    final shadowColor =
+        palette.glow.withValues(alpha: _isHovered ? 0.26 : 0.18);
 
     return Semantics(
       button: true,
@@ -185,7 +191,8 @@ class _ModeCardState extends State<_ModeCard> {
                   color: colors.surfaceContainer,
                   borderRadius: BorderRadius.circular(28),
                   border: Border.all(
-                    color: colors.subtleBorder.withValues(alpha: _isHovered ? 0.82 : 0.58),
+                    color: colors.subtleBorder
+                        .withValues(alpha: _isHovered ? 0.82 : 0.58),
                   ),
                   boxShadow: [
                     BoxShadow(
@@ -251,48 +258,38 @@ class _ModeCardState extends State<_ModeCard> {
                         left: 28,
                         right: 28,
                         bottom: 28,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        child: Row(
                           children: [
-                            Text(
-                              widget.mode.label,
-                              style: theme.textTheme.headlineMedium?.copyWith(
-                                color: Colors.white,
-                                fontSize: 34,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: -1.25,
-                                height: 1,
-                                shadows: const [
-                                  Shadow(
-                                    color: Color(0x59000000),
-                                    blurRadius: 14,
-                                    offset: Offset(0, 4),
-                                  ),
-                                ],
+                            Expanded(
+                              child: Text(
+                                widget.mode.label,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: theme.textTheme.titleLarge?.copyWith(
+                                  color: Colors.white,
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: -0.4,
+                                  shadows: const [
+                                    Shadow(
+                                      color: Color(0x59000000),
+                                      blurRadius: 14,
+                                      offset: Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
-                            const SizedBox(height: 22),
-                            Row(
-                              children: [
-                                AnimatedContainer(
-                                  duration: const Duration(milliseconds: 260),
-                                  curve: Curves.easeOutCubic,
-                                  height: 1.4,
-                                  width: _isHovered ? 78 : 46,
-                                  color: palette.dot.withValues(alpha: 0.45),
-                                ),
-                                const SizedBox(width: 12),
-                                AnimatedSlide(
-                                  duration: const Duration(milliseconds: 260),
-                                  curve: Curves.easeOutCubic,
-                                  offset: Offset(_isHovered ? 0.22 : 0, 0),
-                                  child: const Icon(
-                                    Icons.arrow_forward_ios_rounded,
-                                    size: 18,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ],
+                            const SizedBox(width: 12),
+                            AnimatedSlide(
+                              duration: const Duration(milliseconds: 260),
+                              curve: Curves.easeOutCubic,
+                              offset: Offset(_isHovered ? 0.22 : 0, 0),
+                              child: const Icon(
+                                Icons.arrow_forward_ios_rounded,
+                                size: 18,
+                                color: Colors.white,
+                              ),
                             ),
                           ],
                         ),

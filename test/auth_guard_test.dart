@@ -51,7 +51,7 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    expect(find.text('Escolha a modalidade'), findsOneWidget);
+    expect(find.text('Escolha a Modalidade'), findsOneWidget);
     expect(find.text('Vôlei de Quadra'), findsOneWidget);
     expect(find.text('Vôlei de Praia'), findsOneWidget);
   });

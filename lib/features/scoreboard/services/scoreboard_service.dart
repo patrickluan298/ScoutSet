@@ -37,26 +37,16 @@ class ScoreboardService {
 
   Future<void> initialize() async {
     if (_initialized) {
+      await refreshHistory();
       return;
     }
 
-    await AppServices.initialize();
-    final history = await _repository.listHistory();
-    _syncCounterFromHistory(history);
-    _setState(
-      ScoreboardState(
-        activeMatch: stateNotifier.value.activeMatch,
-        history: history,
-        statusMessage: stateNotifier.value.statusMessage,
-        canUndo: stateNotifier.value.canUndo,
-        currentTeamAScore: stateNotifier.value.currentTeamAScore,
-        currentTeamBScore: stateNotifier.value.currentTeamBScore,
-        currentSetStartedAt: stateNotifier.value.currentSetStartedAt,
-        currentSetPointEvents: stateNotifier.value.currentSetPointEvents,
-        lastSnapshot: stateNotifier.value.lastSnapshot,
-      ),
-    );
+    await _reloadHistoryFromRepository();
     _initialized = true;
+  }
+
+  Future<void> refreshHistory() async {
+    await _reloadHistoryFromRepository();
   }
 
   ScoreboardState getState() => stateNotifier.value;
@@ -72,6 +62,8 @@ class ScoreboardService {
     String? savedTeamGroupTitle,
     List<TeamDrawPlayer> teamAPlayers = const [],
     List<TeamDrawPlayer> teamBPlayers = const [],
+    List<TeamDrawPlayer> teamAStartingPlayers = const [],
+    List<TeamDrawPlayer> teamBStartingPlayers = const [],
     String? teamAOriginTeamId,
     String? teamBOriginTeamId,
     List<WaitingPlayer> waitingPlayersSnapshot = const [],
@@ -91,9 +83,28 @@ class ScoreboardService {
       throw ArgumentError('Os times precisam ter nomes diferentes.');
     }
 
+    final mode = SportModeService.instance.currentMode ?? SportMode.court;
+    if (mode == SportMode.beach &&
+        (teamAPlayers.length != 2 || teamBPlayers.length != 2)) {
+      throw ArgumentError(
+        'No volei de praia, o placar aceita apenas partidas com duplas completas de 2 atletas por equipe.',
+      );
+    }
+
+    final orderedTeamAPlayers = _applyStartingRotation(
+      players: teamAPlayers,
+      startingPlayers: teamAStartingPlayers,
+      maxPlayersOnCourt: _maxPlayersOnCourtFor(mode),
+    );
+    final orderedTeamBPlayers = _applyStartingRotation(
+      players: teamBPlayers,
+      startingPlayers: teamBStartingPlayers,
+      maxPlayersOnCourt: _maxPlayersOnCourtFor(mode),
+    );
     final initialLineup = _buildInitialLineup(
-      teamAPlayers: teamAPlayers,
-      teamBPlayers: teamBPlayers,
+      sportMode: mode,
+      teamAPlayers: orderedTeamAPlayers,
+      teamBPlayers: orderedTeamBPlayers,
     );
 
     final match = MatchScore(
@@ -107,14 +118,14 @@ class ScoreboardService {
       servingTeam: TeamSide.fromValue(servingTeam),
       matchStatus: MatchStatus.inProgress,
       sourceType: sourceType,
-      sportMode: SportModeService.instance.currentMode ?? SportMode.court,
+      sportMode: mode,
       winnerTeam: null,
       createdAt: startedAt,
       finishedAt: null,
       savedTeamGroupId: savedTeamGroupId,
       savedTeamGroupTitle: savedTeamGroupTitle,
-      teamAPlayers: teamAPlayers,
-      teamBPlayers: teamBPlayers,
+      teamAPlayers: orderedTeamAPlayers,
+      teamBPlayers: orderedTeamBPlayers,
       teamAOriginTeamId: teamAOriginTeamId,
       teamBOriginTeamId: teamBOriginTeamId,
       waitingPlayersSnapshot: waitingPlayersSnapshot,
@@ -331,6 +342,7 @@ class ScoreboardService {
     }
 
     final initialLineup = _buildInitialLineup(
+      sportMode: match.sportMode,
       teamAPlayers: match.teamAPlayers,
       teamBPlayers: match.teamBPlayers,
     );
@@ -462,19 +474,28 @@ class ScoreboardService {
         : (match.teamBOnCourtPlayers.isNotEmpty
             ? match.teamBOnCourtPlayers
             : match.teamBPlayers);
+    final expectedServer = _currentServerFor(match.servingTeam, match);
+
+    if (pointOrigin == PointOrigin.serve && team != match.servingTeam) {
+      throw ArgumentError(
+        'Ponto de saque so pode ser registrado para a equipe que esta sacando.',
+      );
+    }
+
+    final effectivePlayer =
+        pointOrigin == PointOrigin.serve ? expectedServer : player;
     final requiresPlayerSelection =
         availablePlayers.isNotEmpty && pointOrigin.requiresPlayer;
-    if (requiresPlayerSelection && player == null) {
+    if (requiresPlayerSelection && effectivePlayer == null) {
       throw ArgumentError('Selecione o jogador que marcou o ponto.');
     }
-    if (player != null && player.id.isEmpty) {
+    if (effectivePlayer != null && effectivePlayer.id.isEmpty) {
       throw ArgumentError('Jogador inválido para registrar o ponto.');
     }
     if (serverPlayer != null && serverPlayer.id.isEmpty) {
       throw ArgumentError('Sacador inválido para registrar o rally.');
     }
 
-    final expectedServer = _currentServerFor(match.servingTeam, match);
     final actualServer = serverPlayer ?? expectedServer;
     final hasServingOrderControl =
         servingPlayers.isNotEmpty && expectedServer != null;
@@ -511,8 +532,8 @@ class ScoreboardService {
       sequence: state.currentSetPointEvents.length + 1,
       scoringTeam: effectiveScoringTeam,
       pointOrigin: effectivePointOrigin,
-      playerId: hasRotationalFault ? null : player?.id,
-      playerName: hasRotationalFault ? null : player?.name,
+      playerId: hasRotationalFault ? null : effectivePlayer?.id,
+      playerName: hasRotationalFault ? null : effectivePlayer?.name,
       serverPlayerId: actualServer?.id,
       serverPlayerName: actualServer?.name,
       recordedAt: DateTime.now(),
@@ -829,17 +850,95 @@ class ScoreboardService {
     stateNotifier.value = state;
   }
 
+  Future<void> _reloadHistoryFromRepository() async {
+    await AppServices.initialize();
+    await _repository.cleanupExpiredHistory();
+    final history = await _repository.listHistory();
+    _syncCounterFromHistory(history);
+    _setState(
+      ScoreboardState(
+        activeMatch: stateNotifier.value.activeMatch,
+        history: history,
+        statusMessage: stateNotifier.value.statusMessage,
+        canUndo: stateNotifier.value.canUndo,
+        currentTeamAScore: stateNotifier.value.currentTeamAScore,
+        currentTeamBScore: stateNotifier.value.currentTeamBScore,
+        currentSetStartedAt: stateNotifier.value.currentSetStartedAt,
+        currentSetPointEvents: stateNotifier.value.currentSetPointEvents,
+        lastSnapshot: stateNotifier.value.lastSnapshot,
+      ),
+    );
+  }
+
   _InitialLineup _buildInitialLineup({
+    required SportMode sportMode,
     required List<TeamDrawPlayer> teamAPlayers,
     required List<TeamDrawPlayer> teamBPlayers,
   }) {
-    final teamAOnCourt = teamAPlayers.take(6).toList(growable: false);
-    final teamBOnCourt = teamBPlayers.take(6).toList(growable: false);
+    final maxPlayersOnCourt = _maxPlayersOnCourtFor(sportMode);
+    final teamAOnCourt =
+        teamAPlayers.take(maxPlayersOnCourt).toList(growable: false);
+    final teamBOnCourt =
+        teamBPlayers.take(maxPlayersOnCourt).toList(growable: false);
 
     return _InitialLineup(
       teamAOnCourt: teamAOnCourt,
       teamBOnCourt: teamBOnCourt,
     );
+  }
+
+  int _maxPlayersOnCourtFor(SportMode sportMode) {
+    return sportMode == SportMode.beach ? 2 : 6;
+  }
+
+  List<TeamDrawPlayer> _applyStartingRotation({
+    required List<TeamDrawPlayer> players,
+    required List<TeamDrawPlayer> startingPlayers,
+    required int maxPlayersOnCourt,
+  }) {
+    if (players.isEmpty) {
+      return const [];
+    }
+
+    final lineupSize =
+        players.length < maxPlayersOnCourt ? players.length : maxPlayersOnCourt;
+    if (startingPlayers.isEmpty) {
+      return List<TeamDrawPlayer>.from(players);
+    }
+
+    if (startingPlayers.length != lineupSize) {
+      throw ArgumentError(
+        'Defina exatamente $lineupSize atletas para a rotacao inicial.',
+      );
+    }
+
+    final playersById = {
+      for (final player in players) player.id: player,
+    };
+    final selectedIds = <String>{};
+    final orderedStarters = <TeamDrawPlayer>[];
+    for (final player in startingPlayers) {
+      final originalPlayer = playersById[player.id];
+      if (originalPlayer == null) {
+        throw ArgumentError(
+          'A rotacao inicial deve usar apenas atletas cadastrados na equipe.',
+        );
+      }
+      if (!selectedIds.add(player.id)) {
+        throw ArgumentError(
+          'A rotacao inicial nao pode repetir atletas.',
+        );
+      }
+      orderedStarters.add(originalPlayer);
+    }
+
+    final remainingPlayers = players
+        .where((player) => !selectedIds.contains(player.id))
+        .toList(growable: false);
+    return [
+      ...orderedStarters,
+      ...remainingPlayers,
+    ];
   }
 
   bool _isLibero(TeamDrawPlayer player) =>

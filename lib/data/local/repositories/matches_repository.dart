@@ -2,7 +2,8 @@ import 'dart:convert';
 
 import 'package:drift/drift.dart';
 
-import '../../../features/scoreboard/models/match_score.dart' as scoreboard_model;
+import '../../../features/scoreboard/models/match_score.dart'
+    as scoreboard_model;
 import '../../../features/scoreboard/models/set_point_event.dart';
 import '../../../features/scoreboard/models/set_score.dart';
 import '../../../features/teams/models/team_draw_player.dart' as team_models;
@@ -20,7 +21,12 @@ class MatchesRepository {
   Future<void> cleanupExpiredHistory() async {
     final cutoff = DateTime.now().subtract(historyRetention).toIso8601String();
     final expiredMatches = await (_database.select(_database.matches)
-          ..where((tbl) => tbl.createdAt.isSmallerThanValue(cutoff)))
+          ..where(
+            (tbl) =>
+                tbl.finishedAt.isSmallerThanValue(cutoff) |
+                (tbl.finishedAt.isNull() &
+                    tbl.createdAt.isSmallerThanValue(cutoff)),
+          ))
         .get();
     final expiredIds = expiredMatches.map((match) => match.id).toList();
     if (expiredIds.isEmpty) {
@@ -28,8 +34,12 @@ class MatchesRepository {
     }
 
     await _database.transaction(() async {
-      await (_database.delete(_database.matchSets)..where((tbl) => tbl.matchId.isIn(expiredIds))).go();
-      await (_database.delete(_database.matches)..where((tbl) => tbl.id.isIn(expiredIds))).go();
+      await (_database.delete(_database.matchSets)
+            ..where((tbl) => tbl.matchId.isIn(expiredIds)))
+          .go();
+      await (_database.delete(_database.matches)
+            ..where((tbl) => tbl.id.isIn(expiredIds)))
+          .go();
     });
   }
 
@@ -44,7 +54,8 @@ class MatchesRepository {
   }
 
   Future<scoreboard_model.MatchScore?> getMatchById(String id) async {
-    final row = await (_database.select(_database.matches)..where((tbl) => tbl.id.equals(id)))
+    final row = await (_database.select(_database.matches)
+          ..where((tbl) => tbl.id.equals(id)))
         .getSingleOrNull();
     return row == null ? null : _mapMatchRow(row);
   }
@@ -70,13 +81,16 @@ class MatchesRepository {
               teamBOriginTeamId: Value(match.teamBOriginTeamId),
               teamAPlayersJson: Value(_encodePlayers(match.teamAPlayers)),
               teamBPlayersJson: Value(_encodePlayers(match.teamBPlayers)),
-              waitingPlayersSnapshotJson: Value(_encodeWaitingPlayers(match.waitingPlayersSnapshot)),
+              waitingPlayersSnapshotJson:
+                  Value(_encodeWaitingPlayers(match.waitingPlayersSnapshot)),
               createdAt: match.createdAt.toIso8601String(),
               finishedAt: Value(match.finishedAt?.toIso8601String()),
             ),
           );
 
-      await (_database.delete(_database.matchSets)..where((tbl) => tbl.matchId.equals(match.id))).go();
+      await (_database.delete(_database.matchSets)
+            ..where((tbl) => tbl.matchId.equals(match.id)))
+          .go();
 
       await _database.batch((batch) {
         for (final set in match.sets) {
@@ -126,14 +140,16 @@ class MatchesRepository {
       sportMode: SportMode.fromValue(row.sportMode),
       winnerTeam: row.winnerTeam,
       createdAt: DateTime.parse(row.createdAt),
-      finishedAt: row.finishedAt == null ? null : DateTime.parse(row.finishedAt!),
+      finishedAt:
+          row.finishedAt == null ? null : DateTime.parse(row.finishedAt!),
       savedTeamGroupId: row.savedTeamGroupId,
       savedTeamGroupTitle: row.savedTeamGroupTitle,
       teamAPlayers: _decodePlayers(row.teamAPlayersJson),
       teamBPlayers: _decodePlayers(row.teamBPlayersJson),
       teamAOriginTeamId: row.teamAOriginTeamId,
       teamBOriginTeamId: row.teamBOriginTeamId,
-      waitingPlayersSnapshot: _decodeWaitingPlayers(row.waitingPlayersSnapshotJson),
+      waitingPlayersSnapshot:
+          _decodeWaitingPlayers(row.waitingPlayersSnapshotJson),
     );
   }
 
@@ -156,7 +172,8 @@ class MatchesRepository {
   List<team_models.TeamDrawPlayer> _decodePlayers(String? source) {
     return _decodeJsonList(
       source,
-      (item) => team_models.TeamDrawPlayer.fromJson(Map<String, dynamic>.from(item)),
+      (item) =>
+          team_models.TeamDrawPlayer.fromJson(Map<String, dynamic>.from(item)),
     );
   }
 
@@ -167,7 +184,8 @@ class MatchesRepository {
   List<team_models.WaitingPlayer> _decodeWaitingPlayers(String? source) {
     return _decodeJsonList(
       source,
-      (item) => team_models.WaitingPlayer.fromJson(Map<String, dynamic>.from(item)),
+      (item) =>
+          team_models.WaitingPlayer.fromJson(Map<String, dynamic>.from(item)),
     );
   }
 

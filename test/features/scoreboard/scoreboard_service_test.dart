@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:scoutset/data/local/database/app_services.dart';
 import 'package:scoutset/features/scoreboard/models/match_score.dart';
 import 'package:scoutset/features/scoreboard/models/set_point_event.dart';
+import 'package:scoutset/features/scoreboard/models/set_score.dart';
 import 'package:scoutset/features/scoreboard/services/scoreboard_service.dart';
 import 'package:scoutset/features/teams/models/team_draw_player.dart';
 import 'package:scoutset/features/teams/services/team_draw_service.dart';
@@ -10,6 +11,18 @@ import 'package:scoutset/services/sport_mode_service.dart';
 
 void main() {
   late ScoreboardService service;
+
+  List<TeamDrawPlayer> beachDuo(String prefix) {
+    return List.generate(
+      2,
+      (index) => TeamDrawPlayer(
+        id: '$prefix$index',
+        name: '${prefix.toUpperCase()} $index',
+        position: 'Posicao $index',
+        level: PlayerLevel.intermediario,
+      ),
+    );
+  }
 
   setUp(() async {
     await AppServices.useInMemoryDatabaseForTesting();
@@ -197,7 +210,12 @@ void main() {
   test('beach mode finishes in two sets and limits match to three sets',
       () async {
     SportModeService.instance.selectMode(SportMode.beach);
-    service.startMatch(teamAName: 'A', teamBName: 'B');
+    service.startMatch(
+      teamAName: 'A',
+      teamBName: 'B',
+      teamAPlayers: beachDuo('a'),
+      teamBPlayers: beachDuo('b'),
+    );
     await addPoints(teamA: 21, teamB: 15);
     expect(service.getState().activeMatch?.currentSet, 2);
 
@@ -210,9 +228,52 @@ void main() {
     expect(match?.currentSet, 2);
   });
 
+  test('beach mode rejects teams that are not doubles', () {
+    SportModeService.instance.selectMode(SportMode.beach);
+    final trio = List.generate(
+      3,
+      (index) => TeamDrawPlayer(
+        id: 'a$index',
+        name: 'A $index',
+        position: 'Posicao $index',
+        level: PlayerLevel.intermediario,
+      ),
+    );
+    final duo = List.generate(
+      2,
+      (index) => TeamDrawPlayer(
+        id: 'b$index',
+        name: 'B $index',
+        position: 'Posicao $index',
+        level: PlayerLevel.intermediario,
+      ),
+    );
+
+    expect(
+      () => service.startMatch(
+        teamAName: 'A',
+        teamBName: 'B',
+        teamAPlayers: trio,
+        teamBPlayers: duo,
+      ),
+      throwsA(
+        isA<ArgumentError>().having(
+          (error) => error.message,
+          'message',
+          'No volei de praia, o placar aceita apenas partidas com duplas completas de 2 atletas por equipe.',
+        ),
+      ),
+    );
+  });
+
   test('persists beach sport mode in saved match history', () async {
     SportModeService.instance.selectMode(SportMode.beach);
-    service.startMatch(teamAName: 'A', teamBName: 'B');
+    service.startMatch(
+      teamAName: 'A',
+      teamBName: 'B',
+      teamAPlayers: beachDuo('a'),
+      teamBPlayers: beachDuo('b'),
+    );
     await addPoints(teamA: 21, teamB: 15);
     await addPoints(teamA: 21, teamB: 19);
 
@@ -226,9 +287,91 @@ void main() {
     expect(reloaded.sportMode, SportMode.beach);
   });
 
+  test('cleans match history entries older than one week on refresh', () async {
+    final expiredMatch = MatchScore(
+      id: 'expired-match',
+      teamAName: 'A',
+      teamBName: 'B',
+      currentSet: 2,
+      sets: [
+        SetScore(
+          setNumber: 1,
+          teamAScore: 25,
+          teamBScore: 20,
+          winnerTeamId: TeamSide.teamA.value,
+          targetPoints: 25,
+        ),
+      ],
+      teamASetsWon: 1,
+      teamBSetsWon: 0,
+      servingTeam: TeamSide.teamA,
+      matchStatus: MatchStatus.finished,
+      sourceType: MatchSourceType.manual,
+      createdAt: DateTime(2026, 4, 1),
+      finishedAt: DateTime(2026, 4, 1, 1),
+      sportMode: SportMode.court,
+      winnerTeam: TeamSide.teamA.value,
+    );
+
+    await AppServices.matchesRepository.saveFinishedMatch(expiredMatch);
+
+    await service.refreshHistory();
+
+    expect(service.listHistory(), isEmpty);
+    final stored = await AppServices.matchesRepository.listHistory();
+    expect(stored, isEmpty);
+  });
+
+  test('keeps matches finished within the last week even if created earlier',
+      () async {
+    final recentFinishedMatch = MatchScore(
+      id: 'recent-finished-match',
+      teamAName: 'A',
+      teamBName: 'B',
+      currentSet: 3,
+      sets: [
+        SetScore(
+          setNumber: 1,
+          teamAScore: 25,
+          teamBScore: 18,
+          winnerTeamId: TeamSide.teamA.value,
+          targetPoints: 25,
+        ),
+        SetScore(
+          setNumber: 2,
+          teamAScore: 25,
+          teamBScore: 21,
+          winnerTeamId: TeamSide.teamA.value,
+          targetPoints: 25,
+        ),
+      ],
+      teamASetsWon: 2,
+      teamBSetsWon: 0,
+      servingTeam: TeamSide.teamA,
+      matchStatus: MatchStatus.finished,
+      sourceType: MatchSourceType.manual,
+      createdAt: DateTime(2026, 4, 1),
+      finishedAt: DateTime(2026, 4, 12),
+      sportMode: SportMode.court,
+      winnerTeam: TeamSide.teamA.value,
+    );
+
+    await AppServices.matchesRepository.saveFinishedMatch(recentFinishedMatch);
+
+    await service.refreshHistory();
+
+    expect(service.listHistory(), hasLength(1));
+    expect(service.listHistory().single.id, 'recent-finished-match');
+  });
+
   test('beach mode uses 21 points in regular sets', () async {
     SportModeService.instance.selectMode(SportMode.beach);
-    service.startMatch(teamAName: 'A', teamBName: 'B');
+    service.startMatch(
+      teamAName: 'A',
+      teamBName: 'B',
+      teamAPlayers: beachDuo('a'),
+      teamBPlayers: beachDuo('b'),
+    );
 
     await addPoints(teamA: 21, teamB: 19);
 
@@ -240,7 +383,12 @@ void main() {
 
   test('beach mode announces mandatory side change every 7 points', () async {
     SportModeService.instance.selectMode(SportMode.beach);
-    service.startMatch(teamAName: 'A', teamBName: 'B');
+    service.startMatch(
+      teamAName: 'A',
+      teamBName: 'B',
+      teamAPlayers: beachDuo('a'),
+      teamBPlayers: beachDuo('b'),
+    );
 
     await addPoints(teamA: 4, teamB: 3);
 
@@ -253,7 +401,12 @@ void main() {
   test('beach deciding set announces mandatory side change every 5 points',
       () async {
     SportModeService.instance.selectMode(SportMode.beach);
-    service.startMatch(teamAName: 'A', teamBName: 'B');
+    service.startMatch(
+      teamAName: 'A',
+      teamBName: 'B',
+      teamAPlayers: beachDuo('a'),
+      teamBPlayers: beachDuo('b'),
+    );
     await addPoints(teamA: 21, teamB: 19);
     await addPoints(teamA: 18, teamB: 21);
 
@@ -289,6 +442,42 @@ void main() {
     expect(state.currentTeamAScore, 0);
     expect(state.currentTeamBScore, 0);
     expect(state.statusMessage, '1° set em andamento');
+  });
+
+  test('reset preserves the configured initial rotation order', () async {
+    final players = List.generate(
+      6,
+      (index) => TeamDrawPlayer(
+        id: 'p$index',
+        name: 'Jogador $index',
+        position: 'Posicao $index',
+        level: PlayerLevel.intermediario,
+      ),
+    );
+
+    service.startMatch(
+      teamAName: 'A',
+      teamBName: 'B',
+      teamAPlayers: players,
+      teamAStartingPlayers: [
+        players[4],
+        players[2],
+        players[0],
+        players[5],
+        players[1],
+        players[3],
+      ],
+    );
+    await service.addPointToTeamB();
+
+    service.resetCurrentMatch();
+
+    final match = service.getState().activeMatch;
+    expect(
+      match?.teamAOnCourtPlayers.map((player) => player.id),
+      ['p4', 'p2', 'p0', 'p5', 'p1', 'p3'],
+    );
+    expect(match?.servingTeam, TeamSide.teamA);
   });
 
   test('rejects manual finish before the match ends by rule', () async {
@@ -342,6 +531,175 @@ void main() {
     expect(set?.pointEvents.first.pointOrigin, PointOrigin.opponentError);
     expect(set?.pointEvents.first.playerId, isNull);
     expect(set?.pointsByOrigin[PointOrigin.opponentError], 1);
+  });
+
+  test('serve point uses the current indoor server automatically', () async {
+    final teamAPlayers = List.generate(
+      6,
+      (index) => TeamDrawPlayer(
+        id: 'a$index',
+        name: 'A $index',
+        position: 'Posicao $index',
+        level: PlayerLevel.intermediario,
+      ),
+    );
+
+    service.startMatch(
+      teamAName: 'A',
+      teamBName: 'B',
+      teamAPlayers: teamAPlayers,
+      teamBPlayers: const [
+        TeamDrawPlayer(
+          id: 'b1',
+          name: 'B1',
+          position: 'Defensor',
+          level: PlayerLevel.intermediario,
+        ),
+        TeamDrawPlayer(
+          id: 'b2',
+          name: 'B2',
+          position: 'Bloqueador',
+          level: PlayerLevel.intermediario,
+        ),
+      ],
+    );
+
+    await service.addPoint(
+      team: TeamSide.teamA,
+      pointOrigin: PointOrigin.serve,
+    );
+
+    final event = service.getState().currentSetPointEvents.single;
+    expect(event.playerId, 'a0');
+    expect(event.playerName, 'A 0');
+    expect(event.serverPlayerId, 'a0');
+  });
+
+  test('serve point uses the current beach server automatically', () async {
+    SportModeService.instance.selectMode(SportMode.beach);
+    const teamAPlayers = [
+      TeamDrawPlayer(
+        id: 'a1',
+        name: 'A1',
+        position: 'Defensor',
+        level: PlayerLevel.intermediario,
+      ),
+      TeamDrawPlayer(
+        id: 'a2',
+        name: 'A2',
+        position: 'Bloqueador',
+        level: PlayerLevel.intermediario,
+      ),
+    ];
+
+    service.startMatch(
+      teamAName: 'A',
+      teamBName: 'B',
+      teamAPlayers: teamAPlayers,
+      teamBPlayers: const [
+        TeamDrawPlayer(
+          id: 'b1',
+          name: 'B1',
+          position: 'Defensor',
+          level: PlayerLevel.intermediario,
+        ),
+        TeamDrawPlayer(
+          id: 'b2',
+          name: 'B2',
+          position: 'Bloqueador',
+          level: PlayerLevel.intermediario,
+        ),
+      ],
+    );
+
+    await service.addPoint(
+      team: TeamSide.teamA,
+      pointOrigin: PointOrigin.serve,
+    );
+
+    final event = service.getState().currentSetPointEvents.single;
+    expect(event.playerId, 'a1');
+    expect(event.playerName, 'A1');
+    expect(event.serverPlayerId, 'a1');
+  });
+
+  test('starts court match with configured initial rotation order', () {
+    final players = List.generate(
+      8,
+      (index) => TeamDrawPlayer(
+        id: 'p$index',
+        name: 'Jogador $index',
+        position: 'Posicao $index',
+        level: PlayerLevel.intermediario,
+      ),
+    );
+
+    final match = service.startMatch(
+      teamAName: 'A',
+      teamBName: 'B',
+      teamAPlayers: players,
+      teamAStartingPlayers: [
+        players[3],
+        players[1],
+        players[5],
+        players[0],
+        players[4],
+        players[2],
+      ],
+    );
+
+    expect(
+      match.teamAOnCourtPlayers.map((player) => player.id),
+      ['p3', 'p1', 'p5', 'p0', 'p4', 'p2'],
+    );
+    expect(match.teamAPlayers.first.id, 'p3');
+    expect(match.teamAPlayers[5].id, 'p2');
+    expect(match.teamAPlayers[6].id, 'p6');
+  });
+
+  test('starts beach match with configured serving order', () {
+    SportModeService.instance.selectMode(SportMode.beach);
+    const players = [
+      TeamDrawPlayer(
+        id: 'a1',
+        name: 'A1',
+        position: 'Defensor',
+        level: PlayerLevel.intermediario,
+      ),
+      TeamDrawPlayer(
+        id: 'a2',
+        name: 'A2',
+        position: 'Bloqueador',
+        level: PlayerLevel.intermediario,
+      ),
+    ];
+
+    final match = service.startMatch(
+      teamAName: 'A',
+      teamBName: 'B',
+      teamAPlayers: players,
+      teamAStartingPlayers: [players[1], players[0]],
+      teamBPlayers: const [
+        TeamDrawPlayer(
+          id: 'b1',
+          name: 'B1',
+          position: 'Defensor',
+          level: PlayerLevel.intermediario,
+        ),
+        TeamDrawPlayer(
+          id: 'b2',
+          name: 'B2',
+          position: 'Bloqueador',
+          level: PlayerLevel.intermediario,
+        ),
+      ],
+    );
+
+    expect(
+      match.teamAOnCourtPlayers.map((player) => player.id),
+      ['a2', 'a1'],
+    );
+    expect(match.teamAPlayers.map((player) => player.id), ['a2', 'a1']);
   });
 
   test('receiving team rotates when it wins the rally and takes the serve',

@@ -70,10 +70,67 @@ void main() {
     expect(find.text('Placar Eletrônico de Praia'), findsOneWidget);
   });
 
+  testWidgets('beach mode blocks manual match start without doubles',
+      (tester) async {
+    SportModeService.instance.selectMode(SportMode.beach);
+
+    await pumpScoreboard(tester);
+
+    await tester.enterText(
+      find.byKey(const Key('scoreboard-team-a-field')),
+      'Dupla A',
+    );
+    await tester.enterText(
+      find.byKey(const Key('scoreboard-team-b-field')),
+      'Dupla B',
+    );
+    await tester.tap(find.byKey(const Key('scoreboard-start-button')));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text(
+        'No volei de praia, o placar aceita apenas partidas com duplas completas de 2 atletas por equipe.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Controles do Placar'), findsNothing);
+  });
+
   testWidgets('beach mode shows 21-point target in the live set summary',
       (tester) async {
     SportModeService.instance.selectMode(SportMode.beach);
-    service.startMatch(teamAName: 'A', teamBName: 'B');
+    service.startMatch(
+      teamAName: 'A',
+      teamBName: 'B',
+      teamAPlayers: const [
+        TeamDrawPlayer(
+          id: 'a1',
+          name: 'A1',
+          position: 'Defensor',
+          level: PlayerLevel.intermediario,
+        ),
+        TeamDrawPlayer(
+          id: 'a2',
+          name: 'A2',
+          position: 'Bloqueador',
+          level: PlayerLevel.intermediario,
+        ),
+      ],
+      teamBPlayers: const [
+        TeamDrawPlayer(
+          id: 'b1',
+          name: 'B1',
+          position: 'Defensor',
+          level: PlayerLevel.intermediario,
+        ),
+        TeamDrawPlayer(
+          id: 'b2',
+          name: 'B2',
+          position: 'Bloqueador',
+          level: PlayerLevel.intermediario,
+        ),
+      ],
+    );
 
     await pumpScoreboard(tester);
 
@@ -246,11 +303,46 @@ void main() {
     expect(find.text('Quem marcou por A?'), findsOneWidget);
     await tester.tap(find.byKey(const Key('point-player-p1')));
     await tester.pumpAndSettle();
-    expect(find.text('Conferencia do saque'), findsOneWidget);
-    await tester.tap(find.byKey(const Key('server-player-p1')));
-    await tester.pumpAndSettle();
 
     expect(service.getState().currentTeamAScore, 1);
+  });
+
+  testWidgets('serve point uses the current server automatically in the UI',
+      (tester) async {
+    final teamAPlayers = List.generate(
+      6,
+      (index) => TeamDrawPlayer(
+        id: 'a$index',
+        name: 'A $index',
+        position: 'Posicao $index',
+        level: PlayerLevel.intermediario,
+      ),
+    );
+
+    service.startMatch(
+      teamAName: 'A',
+      teamBName: 'B',
+      teamAPlayers: teamAPlayers,
+    );
+
+    await pumpScoreboard(tester);
+    final addPointButton = tester.widget<ElevatedButton>(
+      find.widgetWithText(ElevatedButton, '+1 A').first,
+    );
+    addPointButton.onPressed?.call();
+    await tester.pumpAndSettle();
+
+    final serveOrigin = find.byKey(const Key('point-origin-team_a-serve'));
+    await tester.ensureVisible(serveOrigin);
+    await tester.tap(serveOrigin);
+    await tester.pumpAndSettle();
+
+    final state = service.getState();
+    expect(state.currentTeamAScore, 1);
+    expect(find.text('Quem marcou por A?'), findsNothing);
+    expect(find.text('Conferencia do saque'), findsNothing);
+    expect(state.currentSetPointEvents.single.playerId, 'a0');
+    expect(state.currentSetPointEvents.single.playerName, 'A 0');
   });
 
   testWidgets(
@@ -294,16 +386,16 @@ void main() {
 
     await pumpScoreboard(tester);
 
-    expect(find.text('Substituicoes FIVB'), findsOneWidget);
+    expect(find.text('Substituicoes FIVB'), findsNothing);
     expect(
-      find.textContaining('modulo Equipes que nao estejam atuando na partida'),
-      findsWidgets,
+      find.widgetWithText(OutlinedButton, 'Aplicar substituição'),
+      findsOneWidget,
     );
 
-    final openSubstitutionButton = tester.widget<OutlinedButton>(
-      find.widgetWithText(OutlinedButton, 'Aplicar substituicao').first,
-    );
-    openSubstitutionButton.onPressed?.call();
+    await tester.tap(find.byKey(const Key('scoreboard-substitution-menu')));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('scoreboard-sub-team-a')));
     await tester.pumpAndSettle();
 
     await tester.tap(find.byKey(const Key('scoreboard-sub-out-A')));
@@ -317,60 +409,12 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester
-        .tap(find.widgetWithText(ElevatedButton, 'Confirmar substituicao'));
+        .tap(find.widgetWithText(ElevatedButton, 'Confirmar substituição'));
     await tester.pumpAndSettle();
 
     final match = service.getState().activeMatch;
     expect(
         match?.teamAOnCourtPlayers.map((player) => player.id), contains('p6'));
-    expect(find.textContaining('1/6 reg.'), findsOneWidget);
-  });
-
-  testWidgets('detects rotational fault from the selected server in the UI',
-      (tester) async {
-    final teamAPlayers = List.generate(
-      6,
-      (index) => TeamDrawPlayer(
-        id: 'a$index',
-        name: 'A $index',
-        position: 'Posicao $index',
-        level: PlayerLevel.intermediario,
-      ),
-    );
-    final teamBPlayers = List.generate(
-      6,
-      (index) => TeamDrawPlayer(
-        id: 'b$index',
-        name: 'B $index',
-        position: 'Posicao $index',
-        level: PlayerLevel.intermediario,
-      ),
-    );
-
-    service.startMatch(
-      teamAName: 'A',
-      teamBName: 'B',
-      teamAPlayers: teamAPlayers,
-      teamBPlayers: teamBPlayers,
-    );
-
-    await pumpScoreboard(tester);
-    final addPointButton = tester.widget<ElevatedButton>(
-      find.widgetWithText(ElevatedButton, '+1 A').first,
-    );
-    addPointButton.onPressed?.call();
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.byKey(const Key('point-origin-team_a-attack')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('point-player-a0')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('server-player-a1')));
-    await tester.pumpAndSettle();
-
-    expect(service.getState().currentTeamAScore, 0);
-    expect(service.getState().currentTeamBScore, 1);
-    expect(find.textContaining('Falha rotacional detectada'), findsOneWidget);
   });
 
   testWidgets('finished match keeps next set summary at zero', (tester) async {

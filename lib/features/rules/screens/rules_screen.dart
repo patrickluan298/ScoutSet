@@ -1007,12 +1007,7 @@ class _RulesScreenState extends State<RulesScreen> {
         catalog.chapters.firstWhere((item) => item.id == _selectedChapterId);
     return _VisibleContent.from(
       chapters: [
-        _VisibleChapter(
-          id: chapter.id,
-          officialNumber: chapter.displayOfficialNumber,
-          officialTitle: chapter.officialTitle,
-          sections: chapter.sections,
-        ),
+        _visibleChapterForCategory(_selectedCategoryId, chapter),
       ],
       documents: const [],
     );
