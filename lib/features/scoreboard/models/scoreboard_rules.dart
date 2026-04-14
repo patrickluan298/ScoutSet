@@ -6,15 +6,25 @@ class ScoreboardRules {
     required this.setsToWin,
     required this.regularSetTargetPoints,
     required this.finalSetTargetPoints,
+    this.regularSetSideChangePoints,
+    this.finalSetSideChangePoints,
   });
 
   final int maxSets;
   final int setsToWin;
   final int regularSetTargetPoints;
   final int finalSetTargetPoints;
+  final int? regularSetSideChangePoints;
+  final int? finalSetSideChangePoints;
 
   int targetPointsForSet(int setNumber) {
     return setNumber == maxSets ? finalSetTargetPoints : regularSetTargetPoints;
+  }
+
+  int? sideChangePointsForSet(int setNumber) {
+    return setNumber == maxSets
+        ? finalSetSideChangePoints
+        : regularSetSideChangePoints;
   }
 
   static const ScoreboardRules court = ScoreboardRules(
@@ -27,8 +37,10 @@ class ScoreboardRules {
   static const ScoreboardRules beach = ScoreboardRules(
     maxSets: 3,
     setsToWin: 2,
-    regularSetTargetPoints: 25,
+    regularSetTargetPoints: 21,
     finalSetTargetPoints: 15,
+    regularSetSideChangePoints: 7,
+    finalSetSideChangePoints: 5,
   );
 
   static ScoreboardRules forMode(SportMode mode) {

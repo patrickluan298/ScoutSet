@@ -1,4 +1,5 @@
 import '../../../models/sport_mode.dart';
+import '../../strategies/models/substitution.dart';
 import '../../teams/models/team_draw_player.dart';
 import '../../teams/models/waiting_player.dart';
 import 'set_score.dart';
@@ -86,6 +87,14 @@ class MatchScore {
     this.teamAOriginTeamId,
     this.teamBOriginTeamId,
     this.waitingPlayersSnapshot = const [],
+    this.teamAOnCourtPlayers = const [],
+    this.teamBOnCourtPlayers = const [],
+    this.teamABenchPlayers = const [],
+    this.teamBBenchPlayers = const [],
+    this.teamASetStarterIds = const [],
+    this.teamBSetStarterIds = const [],
+    this.teamASetSubstitutions = const [],
+    this.teamBSetSubstitutions = const [],
   });
 
   final String id;
@@ -109,6 +118,14 @@ class MatchScore {
   final String? teamAOriginTeamId;
   final String? teamBOriginTeamId;
   final List<WaitingPlayer> waitingPlayersSnapshot;
+  final List<TeamDrawPlayer> teamAOnCourtPlayers;
+  final List<TeamDrawPlayer> teamBOnCourtPlayers;
+  final List<TeamDrawPlayer> teamABenchPlayers;
+  final List<TeamDrawPlayer> teamBBenchPlayers;
+  final List<String> teamASetStarterIds;
+  final List<String> teamBSetStarterIds;
+  final List<Substitution> teamASetSubstitutions;
+  final List<Substitution> teamBSetSubstitutions;
 
   bool get isFinished => matchStatus == MatchStatus.finished;
 
@@ -136,7 +153,22 @@ class MatchScore {
       'teamBPlayers': teamBPlayers.map((player) => player.toJson()).toList(),
       'teamAOriginTeamId': teamAOriginTeamId,
       'teamBOriginTeamId': teamBOriginTeamId,
-      'waitingPlayersSnapshot': waitingPlayersSnapshot.map((player) => player.toJson()).toList(),
+      'waitingPlayersSnapshot':
+          waitingPlayersSnapshot.map((player) => player.toJson()).toList(),
+      'teamAOnCourtPlayers':
+          teamAOnCourtPlayers.map((player) => player.toJson()).toList(),
+      'teamBOnCourtPlayers':
+          teamBOnCourtPlayers.map((player) => player.toJson()).toList(),
+      'teamABenchPlayers':
+          teamABenchPlayers.map((player) => player.toJson()).toList(),
+      'teamBBenchPlayers':
+          teamBBenchPlayers.map((player) => player.toJson()).toList(),
+      'teamASetStarterIds': teamASetStarterIds,
+      'teamBSetStarterIds': teamBSetStarterIds,
+      'teamASetSubstitutions':
+          teamASetSubstitutions.map((item) => item.toJson()).toList(),
+      'teamBSetSubstitutions':
+          teamBSetSubstitutions.map((item) => item.toJson()).toList(),
     };
   }
 
@@ -147,7 +179,8 @@ class MatchScore {
       teamBName: json['teamBName'] as String? ?? '',
       currentSet: json['currentSet'] as int? ?? 1,
       sets: (json['sets'] as List<dynamic>? ?? const [])
-          .map((item) => SetScore.fromJson(Map<String, dynamic>.from(item as Map)))
+          .map((item) =>
+              SetScore.fromJson(Map<String, dynamic>.from(item as Map)))
           .toList(),
       teamASetsWon: json['teamASetsWon'] as int? ?? 0,
       teamBSetsWon: json['teamBSetsWon'] as int? ?? 0,
@@ -155,22 +188,66 @@ class MatchScore {
       matchStatus: MatchStatus.fromValue(json['matchStatus'] as String?),
       sourceType: MatchSourceType.fromValue(json['sourceType'] as String?),
       winnerTeam: json['winnerTeam'] as String?,
-      createdAt: DateTime.tryParse(json['createdAt'] as String? ?? '') ?? DateTime.now(),
+      createdAt: DateTime.tryParse(json['createdAt'] as String? ?? '') ??
+          DateTime.now(),
       finishedAt: DateTime.tryParse(json['finishedAt'] as String? ?? ''),
       sportMode: SportMode.fromValue(json['sportMode'] as String?),
       savedTeamGroupId: json['savedTeamGroupId'] as String?,
       savedTeamGroupTitle: json['savedTeamGroupTitle'] as String?,
       teamAPlayers: (json['teamAPlayers'] as List<dynamic>? ?? const [])
-          .map((item) => TeamDrawPlayer.fromJson(Map<String, dynamic>.from(item as Map)))
+          .map((item) =>
+              TeamDrawPlayer.fromJson(Map<String, dynamic>.from(item as Map)))
           .toList(),
       teamBPlayers: (json['teamBPlayers'] as List<dynamic>? ?? const [])
-          .map((item) => TeamDrawPlayer.fromJson(Map<String, dynamic>.from(item as Map)))
+          .map((item) =>
+              TeamDrawPlayer.fromJson(Map<String, dynamic>.from(item as Map)))
           .toList(),
       teamAOriginTeamId: json['teamAOriginTeamId'] as String?,
       teamBOriginTeamId: json['teamBOriginTeamId'] as String?,
-      waitingPlayersSnapshot: (json['waitingPlayersSnapshot'] as List<dynamic>? ?? const [])
-          .map((item) => WaitingPlayer.fromJson(Map<String, dynamic>.from(item as Map)))
+      waitingPlayersSnapshot: (json['waitingPlayersSnapshot']
+                  as List<dynamic>? ??
+              const [])
+          .map((item) =>
+              WaitingPlayer.fromJson(Map<String, dynamic>.from(item as Map)))
           .toList(),
+      teamAOnCourtPlayers: (json['teamAOnCourtPlayers'] as List<dynamic>? ??
+              const [])
+          .map((item) =>
+              TeamDrawPlayer.fromJson(Map<String, dynamic>.from(item as Map)))
+          .toList(),
+      teamBOnCourtPlayers: (json['teamBOnCourtPlayers'] as List<dynamic>? ??
+              const [])
+          .map((item) =>
+              TeamDrawPlayer.fromJson(Map<String, dynamic>.from(item as Map)))
+          .toList(),
+      teamABenchPlayers: (json['teamABenchPlayers'] as List<dynamic>? ??
+              const [])
+          .map((item) =>
+              TeamDrawPlayer.fromJson(Map<String, dynamic>.from(item as Map)))
+          .toList(),
+      teamBBenchPlayers: (json['teamBBenchPlayers'] as List<dynamic>? ??
+              const [])
+          .map((item) =>
+              TeamDrawPlayer.fromJson(Map<String, dynamic>.from(item as Map)))
+          .toList(),
+      teamASetStarterIds:
+          (json['teamASetStarterIds'] as List<dynamic>? ?? const [])
+              .map((item) => item.toString())
+              .toList(),
+      teamBSetStarterIds:
+          (json['teamBSetStarterIds'] as List<dynamic>? ?? const [])
+              .map((item) => item.toString())
+              .toList(),
+      teamASetSubstitutions:
+          (json['teamASetSubstitutions'] as List<dynamic>? ?? const [])
+              .map((item) =>
+                  Substitution.fromJson(Map<String, dynamic>.from(item as Map)))
+              .toList(),
+      teamBSetSubstitutions:
+          (json['teamBSetSubstitutions'] as List<dynamic>? ?? const [])
+              .map((item) =>
+                  Substitution.fromJson(Map<String, dynamic>.from(item as Map)))
+              .toList(),
     );
   }
 
@@ -196,6 +273,14 @@ class MatchScore {
     Object? teamAOriginTeamId = _sentinel,
     Object? teamBOriginTeamId = _sentinel,
     List<WaitingPlayer>? waitingPlayersSnapshot,
+    List<TeamDrawPlayer>? teamAOnCourtPlayers,
+    List<TeamDrawPlayer>? teamBOnCourtPlayers,
+    List<TeamDrawPlayer>? teamABenchPlayers,
+    List<TeamDrawPlayer>? teamBBenchPlayers,
+    List<String>? teamASetStarterIds,
+    List<String>? teamBSetStarterIds,
+    List<Substitution>? teamASetSubstitutions,
+    List<Substitution>? teamBSetSubstitutions,
   }) {
     return MatchScore(
       id: id ?? this.id,
@@ -208,22 +293,38 @@ class MatchScore {
       servingTeam: servingTeam ?? this.servingTeam,
       matchStatus: matchStatus ?? this.matchStatus,
       sourceType: sourceType ?? this.sourceType,
-      winnerTeam: winnerTeam == _sentinel ? this.winnerTeam : winnerTeam as String?,
+      winnerTeam:
+          winnerTeam == _sentinel ? this.winnerTeam : winnerTeam as String?,
       createdAt: createdAt ?? this.createdAt,
-      finishedAt: finishedAt == _sentinel ? this.finishedAt : finishedAt as DateTime?,
+      finishedAt:
+          finishedAt == _sentinel ? this.finishedAt : finishedAt as DateTime?,
       sportMode: sportMode ?? this.sportMode,
-      savedTeamGroupId:
-          savedTeamGroupId == _sentinel ? this.savedTeamGroupId : savedTeamGroupId as String?,
+      savedTeamGroupId: savedTeamGroupId == _sentinel
+          ? this.savedTeamGroupId
+          : savedTeamGroupId as String?,
       savedTeamGroupTitle: savedTeamGroupTitle == _sentinel
           ? this.savedTeamGroupTitle
           : savedTeamGroupTitle as String?,
       teamAPlayers: teamAPlayers ?? this.teamAPlayers,
       teamBPlayers: teamBPlayers ?? this.teamBPlayers,
-      teamAOriginTeamId:
-          teamAOriginTeamId == _sentinel ? this.teamAOriginTeamId : teamAOriginTeamId as String?,
-      teamBOriginTeamId:
-          teamBOriginTeamId == _sentinel ? this.teamBOriginTeamId : teamBOriginTeamId as String?,
-      waitingPlayersSnapshot: waitingPlayersSnapshot ?? this.waitingPlayersSnapshot,
+      teamAOriginTeamId: teamAOriginTeamId == _sentinel
+          ? this.teamAOriginTeamId
+          : teamAOriginTeamId as String?,
+      teamBOriginTeamId: teamBOriginTeamId == _sentinel
+          ? this.teamBOriginTeamId
+          : teamBOriginTeamId as String?,
+      waitingPlayersSnapshot:
+          waitingPlayersSnapshot ?? this.waitingPlayersSnapshot,
+      teamAOnCourtPlayers: teamAOnCourtPlayers ?? this.teamAOnCourtPlayers,
+      teamBOnCourtPlayers: teamBOnCourtPlayers ?? this.teamBOnCourtPlayers,
+      teamABenchPlayers: teamABenchPlayers ?? this.teamABenchPlayers,
+      teamBBenchPlayers: teamBBenchPlayers ?? this.teamBBenchPlayers,
+      teamASetStarterIds: teamASetStarterIds ?? this.teamASetStarterIds,
+      teamBSetStarterIds: teamBSetStarterIds ?? this.teamBSetStarterIds,
+      teamASetSubstitutions:
+          teamASetSubstitutions ?? this.teamASetSubstitutions,
+      teamBSetSubstitutions:
+          teamBSetSubstitutions ?? this.teamBSetSubstitutions,
     );
   }
 }

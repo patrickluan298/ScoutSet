@@ -5,6 +5,7 @@ enum PointOrigin {
   block('block', 'Bloqueio', true),
   serve('serve', 'Saque', true),
   opponentError('opponent_error', 'Erro adversário', false),
+  rotationalFault('rotational_fault', 'Falha rotacional', false),
   other('other', 'Outro', false);
 
   const PointOrigin(this.value, this.label, this.requiresPlayer);
@@ -29,6 +30,8 @@ class SetPointEvent {
     required this.recordedAt,
     this.playerId,
     this.playerName,
+    this.serverPlayerId,
+    this.serverPlayerName,
   });
 
   final int sequence;
@@ -36,6 +39,8 @@ class SetPointEvent {
   final PointOrigin pointOrigin;
   final String? playerId;
   final String? playerName;
+  final String? serverPlayerId;
+  final String? serverPlayerName;
   final DateTime recordedAt;
 
   Map<String, dynamic> toJson() {
@@ -45,6 +50,8 @@ class SetPointEvent {
       'pointOrigin': pointOrigin.value,
       'playerId': playerId,
       'playerName': playerName,
+      'serverPlayerId': serverPlayerId,
+      'serverPlayerName': serverPlayerName,
       'recordedAt': recordedAt.toIso8601String(),
     };
   }
@@ -56,6 +63,8 @@ class SetPointEvent {
       pointOrigin: PointOrigin.fromValue(json['pointOrigin'] as String?),
       playerId: json['playerId'] as String?,
       playerName: json['playerName'] as String?,
+      serverPlayerId: json['serverPlayerId'] as String?,
+      serverPlayerName: json['serverPlayerName'] as String?,
       recordedAt: DateTime.tryParse(json['recordedAt'] as String? ?? '') ??
           DateTime.now(),
     );

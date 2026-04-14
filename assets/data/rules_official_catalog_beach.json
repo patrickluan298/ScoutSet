@@ -1,0 +1,936 @@
+{
+  "source": {
+    "title": "2025-2028"
+  },
+  "categories": [
+    {
+      "id": "fundamentals",
+      "title": "Fundamentos",
+      "description": "Quadra, rede, bolas, equipes e capitão."
+    },
+    {
+      "id": "system-points",
+      "title": "Sistema de Pontuação",
+      "description": "Pontuação, sets, vitória e equipe incompleta."
+    },
+    {
+      "id": "game-structure",
+      "title": "Estrutura do Jogo",
+      "description": "Sorteio, aquecimento, estados de jogo, interrupções e trocas de quadra."
+    },
+    {
+      "id": "rotation-positions",
+      "title": "Posições e Ordem de Saque",
+      "description": "Posicionamento livre em quadra e manutenção da ordem de serviço."
+    },
+    {
+      "id": "ball-contacts",
+      "title": "Toques na Bola",
+      "description": "Estados da bola, toques da equipe e faltas ao jogar a bola."
+    },
+    {
+      "id": "net-invasions",
+      "title": "Rede e Invasões",
+      "description": "Bola na rede, penetração e contato do jogador com a rede."
+    },
+    {
+      "id": "serve",
+      "title": "Saque",
+      "description": "Primeiro saque, autorização, execução, tela e faltas de saque."
+    },
+    {
+      "id": "attack",
+      "title": "Ataque",
+      "description": "Características e faltas do golpe de ataque."
+    },
+    {
+      "id": "block",
+      "title": "Bloqueio",
+      "description": "Ação de bloqueio, toques da equipe e faltas de bloqueio."
+    },
+    {
+      "id": "penalties",
+      "title": "Faltas e Penalidades",
+      "description": "Conduta, atraso e escala de sanções."
+    },
+    {
+      "id": "arbitration",
+      "title": "Arbitragem",
+      "description": "Equipe de arbitragem, funções e sinais oficiais."
+    },
+    {
+      "id": "annexes",
+      "title": "Anexos e Referências",
+      "description": "Características do jogo, filosofia, diagramas e definições."
+    }
+  ],
+  "chapters": [
+    {
+      "id": "chapter-1",
+      "officialNumber": "1",
+      "officialTitle": "ÁREA DE JOGO",
+      "categoryId": "fundamentals",
+      "sections": [
+        {
+          "id": "section-1-1",
+          "officialNumber": "1.1",
+          "officialTitle": "DIMENSÕES",
+          "content": "1.1.1 A quadra de jogo é um retângulo de 16 x 8 m, cercado por uma zona livre com largura mínima de 3 m em todos os lados.\nO espaço livre de jogo é o espaço acima da área de jogo, livre de quaisquer obstruções.\nO espaço livre de jogo deve ter uma altura mínima de 7 m a partir da superfície de jogo.\n\n1.1.2 Para competições da FIVB, Mundiais e Oficiais, a zona livre deve ter uma distância mínima de 5 m e máxima de 6 m das linhas de fundo e laterais. O espaço livre de jogo deve ter uma altura mínima de 12,5 m a partir da superfície de jogo.",
+          "media": {
+            "imageAsset": "assets/images/rules/beach/diagram-48.png",
+            "caption": "Diagrama 1. Área de jogo do vôlei de praia",
+            "alt": "Diagrama oficial da área de jogo do vôlei de praia"
+          }
+        },
+        {
+          "id": "section-1-2",
+          "officialNumber": "1.2",
+          "officialTitle": "SUPERFÍCIE DE JOGO",
+          "content": "1.2.1 A superfície deve ser composta de areia nivelada, o mais plana e uniforme possível, livre de pedras, conchas e qualquer outra coisa que possa representar riscos de cortes ou lesões aos jogadores.\n1.2.2 Para competições da FIVB, Mundiais e Oficiais, a areia deve ter pelo menos 40 cm de profundidade e ser composta de grãos finos e pouco compactados.\n1.2.3 A superfície de jogo não deve apresentar qualquer perigo de lesão para os jogadores.\n1.2.4 Para competições da FIVB, Mundiais e Oficiais, a areia também deve ser peneirada até atingir um tamanho aceitável, não muito grossa e livre de pedras e partículas perigosas. Não deve ser muito fina para não causar poeira e grudar na pele.\n\n1.2.5 Para competições da FIVB, Mundiais e Oficiais, recomenda-se o uso de uma lona para cobrir a quadra central em caso de chuva."
+        },
+        {
+          "id": "section-1-3",
+          "officialNumber": "1.3",
+          "officialTitle": "LINHAS NA QUADRA",
+          "content": "1.3.1\n\nTodas as linhas têm 5 cm de largura. As linhas devem ser de uma cor que contraste fortemente com a cor da areia.\n\n1.3.2 Linhas de fronteira A quadra de jogo é delimitada por duas linhas laterais e duas linhas de fundo. Não há linha central. Tanto as linhas laterais quanto as linhas de fundo estão localizadas dentro das dimensões da quadra de jogo.\n\nAs linhas da quadra devem ser fitas feitas de um material resistente, e quaisquer âncoras expostas devem ser de um material macio e flexível.",
+          "media": {
+            "imageAsset": "assets/images/rules/beach/diagram-49.png",
+            "caption": "Diagrama 2. Quadra de jogo e linhas",
+            "alt": "Diagrama oficial da quadra de vôlei de praia"
+          }
+        },
+        {
+          "id": "section-1-4",
+          "officialNumber": "1.4",
+          "officialTitle": "ZONAS E ÁREAS",
+          "content": "Existe apenas a quadra de jogo, a zona de serviço e a zona livre que circunda a quadra de jogo.\n1.4.1 A zona de serviço é uma área de 8 m de largura atrás da linha de fundo, que se estende até a borda da zona livre."
+        },
+        {
+          "id": "section-1-5",
+          "officialNumber": "1.5",
+          "officialTitle": "CLIMA",
+          "content": "As condições meteorológicas não devem apresentar qualquer risco de lesão para os jogadores."
+        },
+        {
+          "id": "section-1-6",
+          "officialNumber": "1.6",
+          "officialTitle": "ILUMINAÇÃO",
+          "content": "Para competições da FIVB, Mundiais e Oficiais disputadas à noite, a iluminação da área de jogo deve ser de 1.000 a 1.500 lux, medida a 1 m acima da superfície da área de jogo."
+        }
+      ]
+    },
+    {
+      "id": "chapter-2",
+      "officialNumber": "2",
+      "officialTitle": "REDE E POSTES",
+      "categoryId": "fundamentals",
+      "sections": [
+        {
+          "id": "section-2-1",
+          "officialNumber": "2.1",
+          "officialTitle": "ALTURA DA REDE",
+          "content": "2.1.1\n\nColocada verticalmente no meio da quadra, há uma rede cujo topo está a uma altura de 2,43 m para homens e 2,24 m para mulheres.\nNota: A altura da rede pode variar para faixas etárias específicas, conforme descrito a seguir:\n\n2.1.2\n\nFaixas etárias:\n\nFêmeas\n\nHomens\n\n16 anos ou menos, 14\n\n2,24 m\n\n2,24 m\n\nanos ou menos, 12\n\n2,12 m\n\n2,12 m\n\nanos ou menos.\n\n2,00 m\n\n2,00 m\n\nA altura da rede é medida a partir do centro da quadra de jogo com uma régua de medição. A altura da rede (sobre as duas linhas laterais) deve ser exatamente a mesma e não deve exceder a altura oficial em mais de 2 cm.",
+          "media": {
+            "imageAsset": "assets/images/rules/beach/diagram-50.png",
+            "caption": "Diagrama 3. Projeto da rede",
+            "alt": "Diagrama oficial da rede do vôlei de praia"
+          }
+        },
+        {
+          "id": "section-2-2",
+          "officialNumber": "2.2",
+          "officialTitle": "ESTRUTURA",
+          "content": "A rede tem 8,5 m de comprimento e 1 m (+/- 3 cm) de largura quando está esticada,\n\ncolocada verticalmente sobre o eixo menor no meio da quadra de jogo.\nÉ feita de malha quadrada de 10 cm. Na parte superior e inferior, há duas faixas horizontais de 7 a 10 cm de largura, feitas de lona dupla, de preferência em azul escuro ou cores vivas, costuradas ao longo de todo o seu comprimento. Cada extremidade da faixa superior possui um orifício por onde passa um cordão que prende a faixa superior aos postes, mantendo a parte superior da rede esticada.\nDentro das faixas, há um cabo flexível na faixa superior e um cordão na faixa inferior para fixar a rede aos postes e manter suas extremidades esticadas. É permitido exibir publicidade nas faixas horizontais da rede.\n\nPara competições da FIVB, Mundiais e Oficiais, pode ser utilizada uma rede de\n8,0 m com malhas menores e marcas exibidas entre as extremidades da rede e os postes, desde que a visibilidade dos atletas e oficiais seja preservada. A publicidade pode ser impressa nos itens acima mencionados, conforme as normas da FIVB."
+        },
+        {
+          "id": "section-2-3",
+          "officialNumber": "2.3",
+          "officialTitle": "FAIXAS LATERAIS",
+          "content": "Duas faixas coloridas, com 5 cm de largura (mesma largura das linhas da quadra) e 1 m de comprimento, são fixadas verticalmente à rede e posicionadas diretamente acima de cada linha lateral. Elas são consideradas parte da rede.\nÉ permitida a publicidade nas faixas laterais."
+        },
+        {
+          "id": "section-2-4",
+          "officialNumber": "2.4",
+          "officialTitle": "ANTENAS",
+          "content": "Uma antena é uma haste flexível, com 1,80 m de comprimento e 10 mm de diâmetro, feita de fibra de vidro ou material similar.\nUma antena é fixada na borda externa de cada faixa lateral. As antenas são colocadas em lados opostos da rede.\nOs 80 cm superiores de cada antena se estendem acima da rede e são marcados com listras de 10 cm de cor contrastante, de preferência vermelha e branca.\nAs antenas são consideradas parte da rede e delimitam lateralmente o espaço de cruzamento."
+        },
+        {
+          "id": "section-2-5",
+          "officialNumber": "2.5",
+          "officialTitle": "POSTES",
+          "content": "2.5.1 Os postes que sustentam a rede são colocados a uma distância de 0,70 a 1,00 m de cada linha lateral. Eles têm 2,55 m de altura e são preferencialmente ajustáveis.\nPara competições da FIVB, Mundiais e Oficiais, os postes que sustentam a rede são colocados a uma distância de 1 m das linhas laterais.\n2.5.2 Os postes são arredondados e lisos, fixados ao solo sem fios.\nNão serão permitidos dispositivos perigosos ou que obstruam a passagem. Os postes devem ser acolchoados."
+        },
+        {
+          "id": "section-2-6",
+          "officialNumber": "2.6",
+          "officialTitle": "EQUIPAMENTO ADICIONAL",
+          "content": "Todos os equipamentos adicionais são determinados pelos regulamentos da FIVB."
+        }
+      ]
+    },
+    {
+      "id": "chapter-3",
+      "officialNumber": "3",
+      "officialTitle": "BOLAS",
+      "categoryId": "fundamentals",
+      "sections": [
+        {
+          "id": "section-3-1",
+          "officialNumber": "3.1",
+          "officialTitle": "NORMAS",
+          "content": "A bola deve ser esférica, feita de um material flexível (couro, couro sintético ou similar) que não absorva umidade, mais adequado para condições externas, já que as partidas podem ser disputadas mesmo com chuva. A bola possui uma câmara de ar interna feita de borracha ou material similar. A aprovação do material de couro sintético é determinada pelos regulamentos da FIVB.\nCor: cor clara e uniforme ou uma combinação de cores.\nCircunferência: 66 a 68 cm.\nPeso: 260 a 280 g.\nPressão interna: 0,175 a 0,225 kg/cm² (171 a 221 mbar ou hPa)."
+        },
+        {
+          "id": "section-3-2",
+          "officialNumber": "3.2",
+          "officialTitle": "UNIFORMIDADE DAS BOLAS",
+          "content": "Todas as bolas utilizadas em uma partida devem atender aos mesmos padrões em relação à circunferência, peso, pressão, tipo, cor e demais características.\nAs competições da FIVB, Mundiais e Oficiais devem ser disputadas com bolas aprovadas pela FIVB, salvo acordo em contrário com a própria FIVB."
+        },
+        {
+          "id": "section-3-3",
+          "officialNumber": "3.3",
+          "officialTitle": "SISTEMA DE QUATRO BOLAS",
+          "content": "Para competições da FIVB, Mundiais e Oficiais, serão utilizadas quatro bolas.\nNesse caso, seis apanhadores de bola serão posicionados, um em cada canto da zona livre e um atrás de cada árbitro."
+        }
+      ]
+    },
+    {
+      "id": "chapter-4",
+      "officialNumber": "4",
+      "officialTitle": "EQUIPES",
+      "categoryId": "fundamentals",
+      "sections": [
+        {
+          "id": "section-4-1",
+          "officialNumber": "4.1",
+          "officialTitle": "COMPOSIÇÃO DA EQUIPE",
+          "content": "4.1.1 Uma equipe é composta exclusivamente por dois jogadores.\n4.1.2 Somente os dois jogadores registrados na súmula têm o direito de participar da partida.\n\n4.1.3 Um dos jogadores é o capitão da equipe e deverá ser indicado na folha de pontuação.\n\n4.1.4 Para competições da FIVB, Mundiais e Oficiais, os jogadores não podem receber assistência ou treinamento externo durante uma partida (Exceções: consulte os Regulamentos Específicos para Competições por Idade e para as Fases 1 e 2 da Copa Continental)."
+        },
+        {
+          "id": "section-4-2",
+          "officialNumber": "4.2",
+          "officialTitle": "LOCALIZAÇÃO DA EQUIPE",
+          "content": "As áreas das equipes (incluindo duas cadeiras para cada uma) devem estar a 5 m da linha lateral e a no mínimo 3 m da mesa de marcação."
+        },
+        {
+          "id": "section-4-3",
+          "officialNumber": "4.3",
+          "officialTitle": "EQUIPAMENTO",
+          "content": "O equipamento de um jogador consiste em calções ou fato de banho. Uma camisola ou regata é opcional, exceto quando especificado no Regulamento do Torneio. Os jogadores podem usar chapéu ou cobertura para a cabeça.\n\n4.3.1 Para competições da FIVB, Mundiais e Oficiais, os jogadores de uma mesma equipe devem usar uniformes da mesma cor e modelo, de acordo com o regulamento do torneio. Os uniformes dos jogadores devem estar limpos.\n4.3.2 Os jogadores devem jogar descalços, exceto quando autorizados pelo primeiro árbitro.\n4.3.3 As camisas dos jogadores, ou os calções, caso seja permitido jogar sem camisa, devem ser numerados com os números 1 e 2.\n4.3.3.1 O número deve ser colocado no peito ou na frente do calção.\n4.3.3.2 O número deve contrastar com a cor da peça e ter no mínimo 10 cm de altura. A faixa que forma o número deve ter no mínimo 1,5 cm de largura."
+        },
+        {
+          "id": "section-4-4",
+          "officialNumber": "4.4",
+          "officialTitle": "TROCA DE EQUIPAMENTO",
+          "content": "Caso ambas as equipes cheguem a uma partida vestindo camisas da mesma cor, será realizado um sorteio para determinar qual equipe deverá trocar de uniforme.\nO primeiro árbitro pode autorizar um ou mais jogadores:\n4.4.1 a jogar com meias e/ou sapatos;\n4.4.2 a trocar os uniformes molhados entre os sets, desde que os novos também estejam de acordo com os regulamentos do torneio e da FIVB;\n4.4.3 a jogar com camiseta e calça de treino, caso o jogador solicite."
+        },
+        {
+          "id": "section-4-5",
+          "officialNumber": "4.5",
+          "officialTitle": "OBJETOS PROIBIDOS",
+          "content": "4.5.1 É proibido usar objetos que possam causar lesões ou dar vantagem artificial ao jogador.\n4.5.2 Os jogadores podem usar óculos ou lentes de contato por sua própria conta e risco.\n4.5.3 Almofadas de compressão, dispositivos acolchoados de proteção contra lesões, podem ser usadas para proteção ou suporte.\nPara competições da FIVB, Mundiais e Oficiais para seniores, esses dispositivos ou roupa íntima visível devem ser da mesma cor que o uniforme.\nCores como preto, branco ou neutras também podem ser usadas, desde que todos os jogadores que as utilizarem vistam a mesma cor."
+        }
+      ]
+    },
+    {
+      "id": "chapter-5",
+      "officialNumber": "5",
+      "officialTitle": "LÍDERES DE EQUIPE",
+      "categoryId": "fundamentals",
+      "sections": [
+        {
+          "id": "section-5-1",
+          "officialNumber": "5.1",
+          "officialTitle": "CAPITÃO",
+          "content": "5.1.1 Antes da partida, o capitão da equipe assina a folha de pontuação e representa sua equipe no sorteio.\n5.1.2 Durante a partida, somente o capitão está autorizado a falar com os árbitros enquanto a bola estiver fora de jogo, nos seguintes casos:\n5.1.2.1 solicitar uma explicação sobre a aplicação ou interpretação das regras; se a explicação não satisfizer o capitão, ele deverá informar imediatamente ao 1º árbitro sua intenção de apresentar protesto;\n5.1.2.2 solicitar autorização para trocar de uniforme ou equipamento, verificar o número do jogador que está sacando, verificar a rede, a bola e a superfície, ou realinhar uma linha da quadra;\n5.1.2.3 solicitar tempos.\nNota: os jogadores devem ter autorização dos árbitros para sair da área de jogo.\n5.1.3 Ao final da partida:\n5.1.3.1 ambos os jogadores agradecem aos árbitros e aos adversários, e o capitão assina a folha de pontuação para ratificar o resultado;\n5.1.3.2 se o capitão tiver solicitado previamente um Protocolo de Protesto por meio do primeiro árbitro e ele não tiver sido resolvido no momento da ocorrência, o capitão poderá confirmá-lo como protesto formal por escrito na folha de pontuação ao final da partida."
+        }
+      ]
+    },
+    {
+      "id": "chapter-6",
+      "officialNumber": "6",
+      "officialTitle": "PARA MARCAR UM PONTO, PARA GANHAR UM SET E A PARTIDA",
+      "categoryId": "system-points",
+      "sections": [
+        {
+          "id": "section-6-1",
+          "officialNumber": "6.1",
+          "officialTitle": "PARA MARCAR UM PONTO",
+          "content": "6.1.1 Uma equipe marca um ponto:\n6.1.1.1 ao fazer a bola tocar com sucesso a quadra adversária;\n6.1.1.2 quando a equipe adversária comete uma falta;\n6.1.1.3 quando a equipe adversária recebe uma penalidade.\n6.1.2 Falta.\nUma equipe comete uma falta ao realizar uma ação de jogo contrária às regras, ou ao violá-las de alguma outra forma. Os árbitros avaliam as faltas e determinam as consequências de acordo com as regras.\n6.1.2.1 Se duas ou mais faltas forem cometidas sucessivamente, apenas a primeira é considerada.\n6.1.2.2 Se dois ou mais adversários cometerem faltas simultaneamente, será marcada uma dupla falta e o ponto será repetido.\n6.1.3 Rally e rally concluído.\nUm rally é a sequência de ações de jogo desde o momento em que o saque é executado até a bola sair de jogo. Um rally concluído é a sequência de ações de jogo que resulta na atribuição de um ponto.\n6.1.3.1 Se a equipe que está sacando vencer um ponto, ela marca um ponto e continua sacando.\n6.1.3.2 Se a equipe que recebe vencer um ponto, ela marca um ponto e deve sacar em seguida."
+        },
+        {
+          "id": "section-6-2",
+          "officialNumber": "6.2",
+          "officialTitle": "PARA GANHAR UM SET",
+          "content": "Um set, exceto o terceiro e decisivo, é vencido pela equipe que primeiro marcar 21 pontos com uma vantagem mínima de dois pontos. Em caso de empate em 20 a 20, o jogo continua até que uma vantagem de dois pontos seja alcançada, por exemplo 22 a 20, 23 a 21 e assim por diante."
+        },
+        {
+          "id": "section-6-3",
+          "officialNumber": "6.3",
+          "officialTitle": "PARA VENCER A PARTIDA",
+          "content": "6.3.1 A partida é vencida pela equipe que ganhar dois sets.\n6.3.2 Em caso de empate em 1 a 1, o terceiro set decisivo é disputado até 15 pontos, com uma vantagem mínima de 2 pontos."
+        },
+        {
+          "id": "section-6-4",
+          "officialNumber": "6.4",
+          "officialTitle": "EQUIPE PADRÃO E INCOMPLETA",
+          "content": "6.4.1 Se uma equipe se recusar a jogar após ser convocada, será declarada em falta e perderá a partida por WO, com o resultado de 0 a 2 no jogo e 0 a 21 em cada set.\n6.4.2 Uma equipe que não comparecer à quadra de jogo no horário previsto será declarada perdedora por ausência.\n6.4.3 Uma equipe declarada incompleta para o set ou para a partida perde o set ou a partida. A equipe adversária recebe os pontos, ou os pontos e sets, necessários para vencer o set ou a partida. A equipe incompleta mantém seus pontos e sets.\nPara competições da FIVB, Mundiais e Oficiais, quando o formato de fase de grupos for implementado, a Regra 6.4 poderá estar sujeita a modificações, conforme os Regulamentos Específicos da Competição emitidos pela FIVB para tratamento de desistências e equipes incompletas."
+        }
+      ]
+    },
+    {
+      "id": "chapter-7",
+      "officialNumber": "7",
+      "officialTitle": "ESTRUTURA DO JOGO",
+      "categoryId": "game-structure",
+      "sections": [
+        {
+          "id": "section-7-1",
+          "officialNumber": "7.1",
+          "officialTitle": "O LANÇAMENTO",
+          "content": "Antes do aquecimento oficial, o primeiro árbitro realiza o sorteio para decidir o primeiro serviço e os lados da quadra no primeiro set.\n7.1.1 O sorteio é realizado na presença dos dois capitães das equipes, quando apropriado.\n7.1.2 O vencedor do sorteio escolhe:\n7.1.2.1 o direito de sacar ou receber o saque;\n7.1.2.2 ou o lado da quadra.\nO perdedor fica com a opção restante.\n7.1.2.3 No segundo set, o perdedor do sorteio do primeiro set terá a opção entre 7.1.2.1 e 7.1.2.2.\nUm novo sorteio será realizado para o set decisivo."
+        },
+        {
+          "id": "section-7-2",
+          "officialNumber": "7.2",
+          "officialTitle": "SESSÃO OFICIAL DE AQUECIMENTO",
+          "content": "Antes da partida, se as equipes já tiverem tido acesso a outra quadra, terão um período oficial de aquecimento de 3 minutos na rede; caso contrário, poderão ter 5 minutos."
+        },
+        {
+          "id": "section-7-3",
+          "officialNumber": "7.3",
+          "officialTitle": "ESCALAÇÃO DA EQUIPE",
+          "content": "7.3.1 Ambos os jogadores de cada equipe devem estar sempre em jogo."
+        },
+        {
+          "id": "section-7-4",
+          "officialNumber": "7.4",
+          "officialTitle": "POSIÇÕES",
+          "content": "No momento em que a bola é golpeada pelo sacador, cada equipe deve estar dentro de sua própria quadra (exceto o sacador).\n7.4.1 Os jogadores têm liberdade para se posicionarem. Não existem posições predeterminadas na quadra."
+        },
+        {
+          "id": "section-7-5",
+          "officialNumber": "7.5",
+          "officialTitle": "FALHA POSICIONAL",
+          "content": "7.5.1\n\nNão existem erros de ordem posicional."
+        },
+        {
+          "id": "section-7-6",
+          "officialNumber": "7.6",
+          "officialTitle": "ORDEM DE SERVIÇO",
+          "content": "7.6.1\n\nA ordem de serviço deve ser mantida durante todo o set (conforme determinado pelo capitão da equipe imediatamente após o lançamento da bola).\n\n7.6.2 Quando a equipe que recebe o saque conquista o direito de sacar, seus jogadores “rotacionam” uma posição."
+        },
+        {
+          "id": "section-7-7",
+          "officialNumber": "7.7",
+          "officialTitle": "FALHA NA ORDEM DE SERVIÇO",
+          "content": "7.7.1 Uma falta na ordem de serviço ocorre quando o saque não é realizado de acordo com a ordem estabelecida. A equipe é penalizada com um ponto e o serviço é concedido ao adversário.\n7.7.2 O anotador deve indicar corretamente a ordem de serviço e corrigir qualquer sacador incorreto antes do apito para o saque."
+        }
+      ]
+    },
+    {
+      "id": "chapter-8",
+      "officialNumber": "8",
+      "officialTitle": "ESTADOS DE JOGO",
+      "categoryId": "game-structure",
+      "sections": [
+        {
+          "id": "section-8-1",
+          "officialNumber": "8.1",
+          "officialTitle": "BOLA EM JOGO",
+          "content": "A bola entra em jogo a partir do momento em que o saque autorizado pelo primeiro árbitro é executado."
+        },
+        {
+          "id": "section-8-2",
+          "officialNumber": "8.2",
+          "officialTitle": "BOLA FORA DE JOGO",
+          "content": "A bola está fora de jogo no momento da falta, que é apitada por um dos árbitros; na ausência de falta, no momento do apito."
+        },
+        {
+          "id": "section-8-3",
+          "officialNumber": "8.3",
+          "officialTitle": "BOLA \"DENTRO\"",
+          "content": "A bola está \"dentro\" se, em qualquer momento do seu contato com a superfície de jogo, alguma parte da bola tocar a quadra, incluindo as linhas de demarcação."
+        },
+        {
+          "id": "section-8-4",
+          "officialNumber": "8.4",
+          "officialTitle": "BOLA \"OUT\"",
+          "content": "A bola está \"fora\" quando:\n8.4.1 cai no chão completamente fora das linhas de demarcação, sem tocá-las;\n8.4.2 toca um objeto fora da quadra ou uma pessoa fora de jogo;\n8.4.3 toca as antenas, cordas, postes ou a própria rede na parte externa das faixas laterais;\n8.4.4 cruza o plano vertical da rede parcial ou totalmente fora do espaço de cruzamento;\n8.4.5 atravessa completamente o espaço inferior sob a rede.\nA bola também será considerada fora quando cruzar a rede fora das condições permitidas durante o saque ou durante o segundo ou terceiro toque da equipe."
+        }
+      ]
+    },
+    {
+      "id": "chapter-9",
+      "officialNumber": "9",
+      "officialTitle": "JOGANDO A BOLA",
+      "categoryId": "ball-contacts",
+      "sections": [
+        {
+          "id": "section-9-1",
+          "officialNumber": "9.1",
+          "officialTitle": "TOQUES DA EQUIPE",
+          "content": "Um golpe é qualquer contato com a bola por um jogador durante o jogo.\nCada equipe tem direito a um máximo de três toques para devolver a bola por cima da rede. Se forem utilizados mais de três toques, a equipe comete a falta de \"quatro toques\".\nEssas jogadas coletivas incluem não apenas jogadas intencionais do jogador, mas também contatos não intencionais com a bola.\n9.1.1 Contatos consecutivos. Um jogador não pode bater na bola duas vezes consecutivamente, exceto nas situações previstas pelas regras.\n9.1.2 Contatos simultâneos. Dois jogadores podem tocar a bola ao mesmo tempo.\n9.1.2.1 Quando dois companheiros de equipe tocam a bola simultaneamente, isso é contabilizado como dois toques, com exceção do bloqueio. Se eles tentarem alcançar a bola, mas apenas um deles a tocar, conta-se um toque. Se os jogadores colidirem, nenhuma falta é atribuída.\n9.1.2.2 Quando dois adversários tocam a bola simultaneamente por cima da rede e a bola permanece em jogo, a equipe que recebe a bola tem direito a mais três toques. Se essa bola sair, a falta é da equipe adversária.\n9.1.2.3 Se golpes simultâneos de dois adversários por cima da rede resultarem em contato prolongado com a bola, o jogo continua.\n9.1.2.4 Se a bola atingir a antena após golpes simultâneos de dois adversários por cima da rede, o ponto deve ser repetido.\n9.1.3 Assistência. Dentro da área de jogo, um jogador não pode se apoiar em um companheiro de equipe nem em qualquer estrutura ou objeto para golpear a bola. No entanto, um jogador que esteja prestes a cometer uma falta pode ser impedido ou contido por um colega de equipe."
+        },
+        {
+          "id": "section-9-2",
+          "officialNumber": "9.2",
+          "officialTitle": "CARACTERÍSTICAS DO TOQUE",
+          "content": "9.2.1 A bola pode tocar qualquer parte do corpo.\n9.2.2 A bola não deve ser apanhada nem arremessada. Ela pode ricochetear em qualquer direção.\n9.2.2.1 Contatos simultâneos. A bola pode tocar várias partes do corpo, desde que os contatos ocorram simultaneamente.\n9.2.2.2 Contatos consecutivos. No primeiro toque da equipe, desde que não seja executado por cima com os dedos, são permitidos contatos consecutivos se ocorrerem em uma única ação. Se o primeiro toque da equipe for executado por cima com os dedos, a bola não poderá entrar em contato com os dedos ou mãos consecutivamente, mesmo em uma única ação.\n9.2.2.3 No bloqueio, contatos consecutivos podem ser feitos por um ou mais jogadores, desde que ocorram durante uma única ação.\n9.2.2.4 Contatos estendidos. Na defesa de uma bola rebatida com força, o contato com a bola pode ser prolongado momentaneamente, mesmo com movimento de dedos acima do ombro."
+        },
+        {
+          "id": "section-9-3",
+          "officialNumber": "9.3",
+          "officialTitle": "FALTAS AO JOGAR A BOLA",
+          "content": "9.3.1 Quatro rebatidas: uma equipe rebate a bola quatro vezes antes de devolvê-la.\n9.3.2 Ataque assistido: um jogador recebe apoio de um companheiro de equipe ou de qualquer estrutura ou objeto para acertar a bola dentro da área de jogo.\n9.3.3 Recepção: a bola é apanhada ou lançada; ela não rebate após o impacto, observadas as exceções previstas nas regras.\n9.3.4 Contato duplo: um jogador golpeia a bola duas vezes seguidas ou a bola entra em contato com várias partes do seu corpo em sequência."
+        }
+      ]
+    },
+    {
+      "id": "chapter-10",
+      "officialNumber": "10",
+      "officialTitle": "BOLA NA REDE",
+      "categoryId": "net-invasions",
+      "sections": [
+        {
+          "id": "section-10-1",
+          "officialNumber": "10.1",
+          "officialTitle": "A BOLA CRUZANDO A REDE",
+          "content": "10.1.1 A bola enviada para a quadra adversária deve passar por cima da rede dentro do espaço de cruzamento.\n10.1.1.1 O espaço de cruzamento é delimitado, abaixo, pela parte superior da rede;\n10.1.1.2 nas laterais, pelas antenas e sua extensão imaginária;\n10.1.1.3 acima, pelo teto ou estrutura, se houver.\n10.1.2 A bola proveniente do primeiro toque da equipe, que tenha cruzado o plano da rede para a zona livre do adversário total ou parcialmente pelo espaço externo, pode ser jogada de volta dentro dos toques da equipe, desde que:\n10.1.2.1 ao ser devolvida, cruze total ou parcialmente o plano da rede pelo espaço externo do mesmo lado da quadra; caso contrário, torna-se bola fora. A equipe adversária não pode impedir tal ação;\n10.1.2.2 a bola enviada para a zona livre do adversário total ou parcialmente através do espaço externo, quando tiver vindo do segundo ou terceiro toque da equipe, não pode ser jogada de volta e será considerada bola fora no momento em que cruzar o plano da rede.\n10.1.3 A bola que se dirige para a quadra adversária através do espaço inferior permanece em jogo até o momento em que cruza completamente o plano vertical da rede.\n10.1.4 Um jogador pode entrar na quadra adversária para jogar a bola antes que ela passe para fora do espaço de cruzamento ou antes que ela cruze completamente o espaço inferior."
+        },
+        {
+          "id": "section-10-2",
+          "officialNumber": "10.2",
+          "officialTitle": "A BOLA TOCA NA REDE",
+          "content": "Ao cruzar a rede, a bola pode tocá-la."
+        },
+        {
+          "id": "section-10-3",
+          "officialNumber": "10.3",
+          "officialTitle": "BOLA NA REDE",
+          "content": "10.3.1 Uma bola lançada na rede pode ser recuperada dentro do limite de três toques da equipe.\n10.3.2 Se a bola rasgar a malha da rede ou a derrubar, o ponto é cancelado e repetido."
+        }
+      ]
+    },
+    {
+      "id": "chapter-11",
+      "officialNumber": "11",
+      "officialTitle": "JOGADOR NA REDE",
+      "categoryId": "net-invasions",
+      "sections": [
+        {
+          "id": "section-11-1",
+          "officialNumber": "11.1",
+          "officialTitle": "ALÉM DA REDE",
+          "content": "11.1.1 No bloqueio, um jogador pode tocar a bola além da rede, desde que não interfira com o jogo do adversário antes do ataque deste.\n11.1.2 Durante um ataque, é permitido ao jogador passar a mão para além da rede, desde que o contato inicial tenha sido feito dentro do seu próprio espaço de jogo e a bola não seja agarrada nem lançada."
+        },
+        {
+          "id": "section-11-2",
+          "officialNumber": "11.2",
+          "officialTitle": "PENETRAÇÃO NO ESPAÇO, QUADRA E/OU ZONA LIVRE DO ADVERSÁRIO",
+          "content": "11.2.1 Um jogador pode entrar no espaço, quadra e/ou zona livre do adversário, desde que isso não interfira no jogo do adversário."
+        },
+        {
+          "id": "section-11-3",
+          "officialNumber": "11.3",
+          "officialTitle": "CONTATO COM A REDE",
+          "content": "11.3.1 O contato com a rede por um jogador entre as antenas, durante a ação de jogar a bola, constitui falta.\nA ação de jogar a bola inclui, entre outras coisas, a decolagem, o golpe, ou tentativa de golpe, e a aterrissagem em segurança, estando pronto para uma nova ação.\n11.3.2 Os jogadores podem tocar no poste, nas cordas ou em qualquer outro objeto fora das antenas, incluindo a própria rede, desde que isso não interfira com o jogo, exceto na situação prevista pela Regra 9.1.3.\n11.3.3 Quando a bola é impulsionada para dentro da rede e faz com que ela toque em um adversário, nenhuma falta é cometida."
+        },
+        {
+          "id": "section-11-4",
+          "officialNumber": "11.4",
+          "officialTitle": "FALTAS DO JOGADOR NA REDE",
+          "content": "11.4.1 Um jogador toca na bola ou em um adversário no espaço do adversário antes ou durante o ataque do oponente.\n11.4.2 Um jogador interfere no jogo do adversário ao penetrar no espaço do adversário sob a rede.\n11.4.3 Um jogador interfere no jogo, entre outros casos, ao tocar na rede entre as antenas ou na própria antena durante a ação de jogar a bola, ao usar a rede entre as antenas como apoio ou estabilização, ao criar vantagem injusta sobre o adversário ao tocar na rede, ao realizar ações que dificultem a tentativa legítima de um adversário de jogar a bola, ou ao agarrar e segurar a rede.\nQualquer jogador próximo da bola no momento da jogada, e que esteja tentando jogá-la, é considerado participante da ação de jogar a bola, mesmo que não haja contato com ela.\nNo entanto, tocar na parte externa da rede fora da antena não deve ser considerado falta, exceto pela Regra 9.1.3."
+        }
+      ]
+    },
+    {
+      "id": "chapter-12",
+      "officialNumber": "12",
+      "officialTitle": "SERVIÇO",
+      "categoryId": "serve",
+      "sections": [
+        {
+          "id": "section-12-1",
+          "officialNumber": "12.1",
+          "officialTitle": "PRIMEIRO SERVIÇO EM UM SET",
+          "content": "12.1.1 O primeiro saque de um set é executado pela equipe determinada pelo sorteio."
+        },
+        {
+          "id": "section-12-2",
+          "officialNumber": "12.2",
+          "officialTitle": "ORDEM DE SERVIÇO",
+          "content": "12.2.1 Os jogadores devem seguir a ordem de serviço registrada na folha de pontuação.\n12.2.2 Após o primeiro saque de um set, o jogador que irá sacar é determinado da seguinte forma:\n12.2.2.1 quando a equipe que está sacando vence o ponto, o mesmo jogador saca novamente;\n12.2.2.2 quando a equipe que recebe vence o ponto, ela ganha o direito de sacar e o jogador que não sacou na última vez será o próximo sacador."
+        },
+        {
+          "id": "section-12-3",
+          "officialNumber": "12.3",
+          "officialTitle": "AUTORIZAÇÃO DO SERVIÇO",
+          "content": "O primeiro árbitro autoriza o saque após verificar se ambas as equipes estão prontas para jogar e se o jogador que vai sacar está com a posse da bola."
+        },
+        {
+          "id": "section-12-4",
+          "officialNumber": "12.4",
+          "officialTitle": "EXECUÇÃO DO SAQUE",
+          "content": "12.4.1 A bola deve ser golpeada com uma das mãos ou qualquer parte do braço após ser lançada ou solta da mão ou das mãos.\n12.4.2 É permitido apenas um lançamento ou arremesso da bola. É permitido movimentar a bola com as mãos.\n12.4.3 O sacador pode se movimentar livremente dentro da zona de serviço. No momento do golpe no saque, ou da decolagem para um saque em salto, o sacador não deve tocar a quadra, incluindo a linha de fundo, nem o solo fora da zona de serviço. O pé não pode ultrapassar a linha de fundo. Após o golpe, o jogador pode pisar ou aterrissar fora da zona de serviço ou dentro da quadra. Se a linha se mover devido à areia empurrada pelo sacador, isso não é considerado falta.\n12.4.4 O sacador deve golpear a bola dentro de 5 segundos após o primeiro apito do árbitro para o saque.\n12.4.5 Um saque executado antes do apito do árbitro é cancelado e repetido.\n12.4.6 Se a bola, após ter sido lançada ou solta pelo sacador, cair sem ser tocada ou apanhada pelo sacador, considera-se que houve uma execução de saque.\n12.4.7 Não são permitidas novas tentativas de saque."
+        },
+        {
+          "id": "section-12-5",
+          "officialNumber": "12.5",
+          "officialTitle": "TELA",
+          "content": "12.5.1 Um jogador da equipe que está sacando não deve impedir o adversário, por meio de obstrução individual, de ver o saque e a trajetória da bola.\n12.5.2 Um jogador da equipe que está sacando comete tela ao acenar com os braços, saltar ou mover-se lateralmente durante a execução do saque, de forma que tanto o golpe no saque quanto a trajetória da bola fiquem ocultos até que a bola atinja o plano vertical da rede. Caso algum deles esteja visível para a equipe que está recebendo o saque, isso não configura tela.\n12.5.3 É proibido a qualquer jogador da equipe que está sacando levantar as mãos acima da cabeça durante o saque até que a bola tenha passado por cima da rede.\nO primeiro árbitro pode advertir, por meio do capitão da equipe, caso suspeite de obstrução deliberada."
+        },
+        {
+          "id": "section-12-6",
+          "officialNumber": "12.6",
+          "officialTitle": "FALTAS OCORRIDAS DURANTE O SAQUE",
+          "content": "12.6.1 Falhas no saque. As seguintes falhas levam à perda do saque:\n12.6.1.1 o sacador viola a ordem de serviço;\n12.6.1.2 o sacador não executa o saque corretamente.\n12.6.2 Falhas após a execução do saque. Após a bola ter sido golpeada corretamente, o saque torna-se falta se a bola:\n12.6.2.1 toca um jogador da equipe que está sacando ou não consegue cruzar completamente o plano vertical da rede através do espaço de cruzamento;\n12.6.2.2 sai;\n12.6.2.3 passa por uma tela."
+        }
+      ]
+    },
+    {
+      "id": "chapter-13",
+      "officialNumber": "13",
+      "officialTitle": "ATAQUE",
+      "categoryId": "attack",
+      "sections": [
+        {
+          "id": "section-13-1",
+          "officialNumber": "13.1",
+          "officialTitle": "CARACTERÍSTICAS DO GOLPE DE ATAQUE",
+          "content": "13.1.1 Todas as ações que direcionam a bola para o adversário, com exceção do saque e do bloqueio, são consideradas ataques.\n13.1.2 Um ataque é concluído no momento em que a bola cruza completamente o plano vertical da rede ou é tocada por um adversário.\n13.1.3 Qualquer jogador pode executar um ataque em qualquer altura, desde que o contato com a bola seja feito dentro do próprio espaço de jogo, observadas as exceções das Regras 13.2.4 e 13.2.5."
+        },
+        {
+          "id": "section-13-2",
+          "officialNumber": "13.2",
+          "officialTitle": "FALTAS NO ATAQUE",
+          "content": "13.2.1 Um jogador golpeia a bola dentro do espaço de jogo da equipe adversária.\n13.2.2 Um jogador rebate a bola para fora do campo.\n13.2.3 Um jogador completa um ataque usando movimento de dedos com a mão aberta ou usando as pontas dos dedos que não estejam rígidas e juntas.\n13.2.4 Um jogador completa um ataque no saque do adversário quando a bola está inteiramente acima da parte superior da rede.\n13.2.5 Um jogador completa um ataque usando um passe por cima com trajetória não perpendicular à linha dos ombros, salvo quando estiver tentando levantar a bola para um companheiro de equipe."
+        }
+      ]
+    },
+    {
+      "id": "chapter-14",
+      "officialNumber": "14",
+      "officialTitle": "BLOQUEIO",
+      "categoryId": "block",
+      "sections": [
+        {
+          "id": "section-14-1",
+          "officialNumber": "14.1",
+          "officialTitle": "BLOQUEIO",
+          "content": "14.1.1 O bloqueio é a ação dos jogadores próximos à rede para interceptar a bola vinda do adversário, estendendo o braço acima da altura da rede, independentemente da altura do contato com a bola. No momento do contato com a bola, alguma parte do corpo deve estar acima da altura da rede.\n14.1.2 Tentativa de bloqueio é a ação de bloquear sem tocar na bola.\n14.1.3 Um bloqueio é concluído sempre que a bola é tocada por um bloqueador.\n14.1.4 Um bloqueio coletivo é executado por dois jogadores próximos um do outro e é concluído quando um deles toca na bola."
+        },
+        {
+          "id": "section-14-2",
+          "officialNumber": "14.2",
+          "officialTitle": "CONTATO DE BLOQUEIO",
+          "content": "Contatos consecutivos, rápidos e contínuos, podem ocorrer por um ou mais bloqueadores, desde que sejam realizados durante a mesma ação. Esses contatos contam como apenas um toque da equipe e podem ocorrer com qualquer parte do corpo."
+        },
+        {
+          "id": "section-14-3",
+          "officialNumber": "14.3",
+          "officialTitle": "BLOQUEIO DENTRO DO ESPAÇO DO OPONENTE",
+          "content": "Ao bloquear, o jogador pode colocar as mãos e os braços além da rede, desde que essa ação não interfira na jogada do adversário. Portanto, não é permitido tocar a bola além da rede antes que o adversário execute um ataque."
+        },
+        {
+          "id": "section-14-4",
+          "officialNumber": "14.4",
+          "officialTitle": "BLOQUEIO E TOQUES DA EQUIPE",
+          "content": "14.4.1 Um contato de bloqueio conta como um toque da equipe. A equipe que está bloqueando terá apenas mais dois toques após um contato de bloqueio.\n14.4.2 O primeiro toque após o bloqueio pode ser executado por qualquer jogador, incluindo aquele que tocou na bola durante o bloqueio."
+        },
+        {
+          "id": "section-14-5",
+          "officialNumber": "14.5",
+          "officialTitle": "BLOQUEIO DO SAQUE",
+          "content": "Bloquear o saque do adversário é proibido."
+        },
+        {
+          "id": "section-14-6",
+          "officialNumber": "14.6",
+          "officialTitle": "FALTAS DE BLOQUEIO",
+          "content": "14.6.1 O bloqueador toca na bola no espaço do adversário antes do ataque do adversário.\n14.6.2 Bloquear a bola no espaço do adversário a partir de fora da antena.\n14.6.3 Um jogador bloqueia o saque do adversário.\n14.6.4 A bola é enviada para fora após o bloqueio."
+        }
+      ]
+    },
+    {
+      "id": "chapter-15",
+      "officialNumber": "15",
+      "officialTitle": "INTERRUPÇÕES",
+      "categoryId": "game-structure",
+      "sections": [
+        {
+          "id": "section-15-1",
+          "officialNumber": "15.1",
+          "officialTitle": "NÚMERO DE INTERRUPÇÕES REGULARES DE JOGO",
+          "content": "Cada equipe pode solicitar, no máximo, um tempo técnico por set."
+        },
+        {
+          "id": "section-15-2",
+          "officialNumber": "15.2",
+          "officialTitle": "SEQUÊNCIA DE INTERRUPÇÕES REGULARES DO JOGO",
+          "content": "15.2.1 Os pedidos de tempo de ambas as equipes podem ocorrer um após o outro, dentro da mesma interrupção.\n15.2.2 Não há substituições.\n15.2.3 Não é permitido solicitar interrupção regular do jogo após ter tido uma solicitação rejeitada e sancionada com advertência por atraso durante a mesma interrupção, isto é, antes do fim do próximo rally concluído."
+        },
+        {
+          "id": "section-15-3",
+          "officialNumber": "15.3",
+          "officialTitle": "SOLICITAÇÃO DE INTERRUPÇÕES REGULARES DE JOGO",
+          "content": "Interrupções regulares do jogo só podem ser solicitadas pelo capitão."
+        },
+        {
+          "id": "section-15-4",
+          "officialNumber": "15.4",
+          "officialTitle": "TEMPOS E TEMPOS TÉCNICOS",
+          "content": "15.4.1 Os pedidos de tempo devem ser feitos mostrando o sinal de mão correspondente, quando a bola estiver fora de jogo e antes do apito para o saque. Todos os tempos têm duração de 30 segundos.\n15.4.2 Para competições da FIVB, Mundiais e Oficiais, nos sets 1 e 2, um tempo técnico adicional de 30 segundos é aplicado automaticamente quando a soma dos pontos marcados pelas equipes atingir 21 pontos. A duração dos tempos e dos tempos técnicos pode ser ajustada se a FIVB aprovar tal solicitação, mediante requerimento do organizador.\n15.4.3 No set decisivo, o terceiro, não há tempo técnico automático; apenas um tempo de 30 segundos pode ser solicitado por cada equipe.\n15.4.4 Durante todas as interrupções regulares, incluindo pausas técnicas, e durante os intervalos, os jogadores devem dirigir-se à área designada para eles."
+        },
+        {
+          "id": "section-15-5",
+          "officialNumber": "15.5",
+          "officialTitle": "PEDIDOS IMPRÓPRIOS",
+          "content": "Entre outras coisas, é inadequado solicitar um tempo:\n15.5.1 durante um rally, no momento do apito ou após o apito para o saque;\n15.5.2 por um membro da equipe não autorizado;\n15.5.3 após terem sido esgotados os tempos autorizados.\n15.5.4 O primeiro pedido indevido de uma equipe durante a partida, que não afete nem atrase o jogo, será rejeitado, mas deverá ser registrado na súmula sem outras consequências.\n15.5.5 Qualquer outro pedido indevido da mesma equipe na mesma partida constitui atraso."
+        }
+      ]
+    },
+    {
+      "id": "chapter-16",
+      "officialNumber": "16",
+      "officialTitle": "ATRASOS DE JOGO",
+      "categoryId": "game-structure",
+      "sections": [
+        {
+          "id": "section-16-1",
+          "officialNumber": "16.1",
+          "officialTitle": "TIPOS DE ATRASOS",
+          "content": "Uma conduta inadequada de uma equipe que adia a retomada da partida é considerada atraso e inclui, entre outras:\n16.1.1 prolongar os tempos, depois de ter recebido instruções para retomar o jogo;\n16.1.2 repetir um pedido indevido;\n16.1.3 atraso do jogo, sendo 12 segundos o tempo máximo desde o fim de um rally até o apito para o saque em condições normais de jogo;\n16.1.4 atraso no jogo por um membro da equipe."
+        },
+        {
+          "id": "section-16-2",
+          "officialNumber": "16.2",
+          "officialTitle": "SANÇÕES POR ATRASO",
+          "content": "16.2.1 \"Aviso de atraso\" e \"penalidade por atraso\" são sanções aplicadas à equipe.\n16.2.1.1 As sanções por atraso permanecem em vigor durante toda a partida.\n16.2.1.2 Todas as sanções por atraso são registradas na folha de pontuação.\n16.2.2 O primeiro atraso na partida por parte de um membro da equipe será punido com advertência de atraso.\n16.2.3 O segundo atraso, e os subsequentes, de qualquer tipo por qualquer membro da mesma equipe na mesma partida constituem falta e são punidos com penalidade por atraso, isto é, um ponto e o saque para o adversário.\n16.2.4 As sanções por atraso impostas antes ou entre os sets são aplicadas no set seguinte."
+        }
+      ]
+    },
+    {
+      "id": "chapter-17",
+      "officialNumber": "17",
+      "officialTitle": "INTERRUPÇÕES EXCEPCIONAIS DE JOGO",
+      "categoryId": "game-structure",
+      "sections": [
+        {
+          "id": "section-17-1",
+          "officialNumber": "17.1",
+          "officialTitle": "LESÃO/DOENÇA",
+          "content": "17.1.1 Caso ocorra um acidente grave enquanto a bola estiver em jogo, o árbitro deverá interromper imediatamente a partida e permitir a entrada de assistência médica na quadra. O rally é então repetido.\n17.1.2 Um jogador lesionado ou doente tem um tempo máximo de recuperação de 5 minutos.\nO árbitro deve autorizar a entrada da equipe médica devidamente credenciada na quadra para atender o jogador. Somente o primeiro árbitro pode autorizar um jogador a deixar a área de jogo sem sofrer penalidade.\nQuando o atendimento for concluído, ou se nenhum atendimento puder ser fornecido, o jogo deverá ser retomado. O primeiro árbitro apitará e solicitará que o jogador continue. Nesse momento, somente o próprio jogador poderá avaliar se está apto para jogar.\nCaso o jogador não se recupere ou não retorne à área de jogo ao término do tempo de recuperação, sua equipe será considerada incompleta.\nEm casos extremos, o médico da competição pode se opor ao retorno de um jogador lesionado.\nNota: o tempo de recuperação começa a contar a partir do momento em que o membro, ou os membros, da equipe médica devidamente credenciada chegar à quadra para atender o jogador. Caso não haja equipe médica credenciada disponível, ou se o jogador optar por ser atendido por sua própria equipe médica, o tempo começará a contar a partir do momento em que o atendimento for autorizado pelo árbitro."
+        },
+        {
+          "id": "section-17-2",
+          "officialNumber": "17.2",
+          "officialTitle": "INTERFERÊNCIA EXTERNA",
+          "content": "Caso ocorra qualquer interferência externa durante o jogo, a partida deve ser interrompida e o ponto repetido."
+        },
+        {
+          "id": "section-17-3",
+          "officialNumber": "17.3",
+          "officialTitle": "INTERRUPÇÕES PROLONGADAS",
+          "content": "17.3.1 Caso circunstâncias imprevistas interrompam a partida, o primeiro árbitro, o organizador e a Comissão de Controle, se houver, decidirão as medidas a serem tomadas para restabelecer as condições normais.\n17.3.2 Caso ocorra uma ou mais interrupções que não excedam 4 horas no total, a partida será retomada com o placar obtido, independentemente de continuar na mesma quadra ou em outra.\n17.3.3 Caso ocorra uma ou mais interrupções que excedam 4 horas no total, a partida inteira será repetida."
+        }
+      ]
+    },
+    {
+      "id": "chapter-18",
+      "officialNumber": "18",
+      "officialTitle": "INTERVALOS E TROCA DE QUADRA",
+      "categoryId": "game-structure",
+      "sections": [
+        {
+          "id": "section-18-1",
+          "officialNumber": "18.1",
+          "officialTitle": "INTERVALOS",
+          "content": "18.1.1 Um intervalo é o tempo entre os sets. Todos os intervalos duram um minuto.\nDurante esse período, são feitas as trocas de quadra, quando cabíveis, e a ordem de serviço das equipes é registrada na súmula.\nDurante o intervalo que antecede o set decisivo, os árbitros realizam um sorteio de acordo com a Regra 7.1."
+        },
+        {
+          "id": "section-18-2",
+          "officialNumber": "18.2",
+          "officialTitle": "TROCA DE QUADRA",
+          "content": "18.2.1 As equipes trocam de lado a cada 7 pontos disputados nos 1º e 2º sets, e a cada 5 pontos no 3º set.\n18.2.2 Durante as trocas de quadra, as equipes devem trocar imediatamente, sem atraso.\nCaso a troca de quadra não seja feita no momento adequado, ela ocorrerá assim que o erro for detectado.\nO placar no momento da troca de quadra permanece o mesmo."
+        }
+      ]
+    },
+    {
+      "id": "chapter-19",
+      "officialNumber": "19",
+      "officialTitle": "REQUISITOS DE CONDUTA",
+      "categoryId": "penalties",
+      "sections": [
+        {
+          "id": "section-19-1",
+          "officialNumber": "19.1",
+          "officialTitle": "CONDUTA ESPORTIVA",
+          "content": "19.1.1 Os participantes devem conhecer as Regras Oficiais de Voleibol de Praia e cumpri-las.\n19.1.2 Os participantes devem aceitar as decisões dos árbitros com conduta esportiva, sem contestá-las. Em caso de dúvida, esclarecimentos podem ser solicitados apenas pelo capitão.\n19.1.3 Os participantes devem abster-se de ações ou atitudes que visem influenciar as decisões dos árbitros ou encobrir faltas cometidas por sua equipe."
+        },
+        {
+          "id": "section-19-2",
+          "officialNumber": "19.2",
+          "officialTitle": "JOGO LIMPO",
+          "content": "19.2.1 Os participantes devem comportar-se de forma respeitosa e cortês, no espírito do fair play, não só em relação aos árbitros, mas também em relação aos outros oficiais, ao adversário, aos colegas de equipe e aos espectadores.\n19.2.2 A comunicação entre os membros da equipe durante a partida é permitida."
+        }
+      ]
+    },
+    {
+      "id": "chapter-20",
+      "officialNumber": "20",
+      "officialTitle": "CONDUTA INADEQUADA E SUAS SANÇÕES",
+      "categoryId": "penalties",
+      "sections": [
+        {
+          "id": "section-20-1",
+          "officialNumber": "20.1",
+          "officialTitle": "CONDUTA INADEQUADA LEVE",
+          "content": "Infrações disciplinares leves não estão sujeitas a sanções. É dever do árbitro impedir que as equipes se aproximem do nível passível de sanção.\nIsso é feito em duas etapas: etapa 1, advertência verbal por meio do capitão; etapa 2, aplicação de cartão amarelo a um membro da equipe. Essa advertência formal não constitui, por si só, uma sanção, mas indica que o membro da equipe, e por extensão a equipe, atingiu o nível de conduta passível de sanção na partida. A advertência é registrada na súmula, mas não tem consequências imediatas."
+        },
+        {
+          "id": "section-20-2",
+          "officialNumber": "20.2",
+          "officialTitle": "CONDUTA INADEQUADA QUE LEVA A SANÇÕES",
+          "content": "A conduta inadequada de um membro da equipe em relação a árbitros, adversários, colegas de equipe ou espectadores é classificada em três categorias, de acordo com a gravidade da infração.\n20.2.1 Conduta rude: agir contrariamente aos bons costumes ou aos princípios morais.\n20.2.2 Conduta ofensiva: palavras ou gestos difamatórios ou insultuosos, incluindo qualquer ação que expresse desprezo.\n20.2.3 Agressão: ataque físico real, ou comportamento agressivo ou ameaçador."
+        },
+        {
+          "id": "section-20-3",
+          "officialNumber": "20.3",
+          "officialTitle": "ESCALA DE SANÇÕES",
+          "content": "De acordo com o julgamento do primeiro árbitro e dependendo da gravidade da infração, as sanções a serem aplicadas e registradas na súmula são: penalidade, expulsão ou desqualificação.\n20.3.1 Penalidade. Por conduta rude, ou por uma única repetição de conduta rude no mesmo set pelo mesmo jogador. Nas duas primeiras ocorrências, a equipe é punida com um ponto e o saque é concedido ao adversário. Uma terceira conduta rude do mesmo jogador no mesmo set resulta em expulsão. Sanções por conduta rude podem ser aplicadas ao mesmo jogador em sets subsequentes.\n20.3.2 Expulsão. A primeira conduta ofensiva é punida com expulsão. O jogador expulso deve deixar a área de jogo e sua equipe é declarada incompleta para o set.\n20.3.3 Desqualificação. A primeira agressão física, implícita ou ameaçadora, será punida com desqualificação. O jogador deve deixar a área de jogo e sua equipe será considerada incompleta para a partida.\nA conduta inadequada é punida conforme indicado na escala de sanções."
+        },
+        {
+          "id": "section-20-4",
+          "officialNumber": "20.4",
+          "officialTitle": "CONDUTA ANTIDESPORTIVA ANTES E ENTRE OS SETS",
+          "content": "Qualquer conduta inadequada ocorrida antes ou entre os sets será punida de acordo com\n\na escala de sanções e a sanção será aplicada no set seguinte."
+        },
+        {
+          "id": "section-20-5",
+          "officialNumber": "20.5",
+          "officialTitle": "RESUMO DAS CONDUTAS INADEQUADAS E DOS CARTÕES UTILIZADOS",
+          "content": "Aviso, sem sanção: etapa 1, advertência verbal; etapa 2, cartão amarelo.\nPenalidade: sanção simbolizada por cartão vermelho.\nExpulsão: sanção simbolizada por cartões vermelho e amarelo juntos.\nDesqualificação: sanção simbolizada por cartão vermelho e cartão amarelo separadamente."
+        }
+      ]
+    },
+    {
+      "id": "chapter-21",
+      "officialNumber": "21",
+      "officialTitle": "EQUIPE DE ARBITRAGEM E PROCEDIMENTOS",
+      "categoryId": "arbitration",
+      "sections": [
+        {
+          "id": "section-21-1",
+          "officialNumber": "21.1",
+          "officialTitle": "COMPOSIÇÃO",
+          "content": "A equipe de arbitragem de uma partida é composta pelos seguintes oficiais: – o primeiro árbitro,\n– o segundo árbitro,\n– o árbitro de desafio (quando aplicável),\n– o árbitro reserva (quando aplicável),\n– o marcador,\n– quatro (dois) juízes de linha.\n\nSua localização é mostrada no Diagrama 8.\nPara competições da FIVB, mundiais e oficiais, um auxiliar de pontuação é\n\nobrigatório."
+        },
+        {
+          "id": "section-21-2",
+          "officialNumber": "21.2",
+          "officialTitle": "PROCEDIMENTOS",
+          "content": "21.2.1 Somente o 1º e o 2º árbitros podem apitar durante a partida.\n21.2.1.1 O primeiro árbitro dá o sinal para o saque que inicia o rally.\n21.2.1.2 O 1º ou o 2º árbitro sinaliza o fim do rally, desde que tenha certeza de que uma falta foi cometida e tenha identificado sua natureza.\n21.2.2 Eles podem apitar quando a bola estiver fora de jogo para indicar que autorizam ou rejeitam uma solicitação da equipe.\n21.2.3 Imediatamente após o árbitro apitar o fim da jogada, devem indicar com os sinais oficiais:\n21.2.3.1 Se a falta for apitada pelo primeiro árbitro, ele indicará, nesta ordem, a equipe a sacar, a natureza da falta e o jogador culpado, se necessário.\n21.2.3.2 Se a falta for apitada pelo segundo árbitro, ele indicará a natureza da falta, o jogador em falta, se necessário, e a equipe que deverá sacar, seguindo o sinal do primeiro árbitro.\nNesse caso, o primeiro árbitro não indica a natureza da falta nem o jogador que a cometeu, mas apenas a equipe que deve sacar.\n21.2.3.3 Em caso de dupla falta, ambos os árbitros indicam, nesta ordem, a natureza da falta e os jogadores culpados, se necessário. A equipe que irá sacar em seguida é então indicada pelo primeiro árbitro."
+        }
+      ]
+    },
+    {
+      "id": "chapter-22",
+      "officialNumber": "22",
+      "officialTitle": "1º ÁRBITRO",
+      "categoryId": "arbitration",
+      "sections": [
+        {
+          "id": "section-22-1",
+          "officialNumber": "22.1",
+          "officialTitle": "LOCALIZAÇÃO",
+          "content": "O primeiro árbitro exerce suas funções em uma plataforma de arbitragem localizada em uma das extremidades da rede, no lado oposto ao marcador. Seu campo de visão deve ser de aproximadamente 50 cm acima da rede."
+        },
+        {
+          "id": "section-22-2",
+          "officialNumber": "22.2",
+          "officialTitle": "AUTORIDADE",
+          "content": "22.2.1 O primeiro árbitro dirige a partida do início ao fim. Ele ou ela tem autoridade sobre todos os membros da equipe de arbitragem e os membros das equipes.\nDurante a partida, suas decisões são finais. Ele ou ela está autorizado a anular as decisões de outros membros da equipe de arbitragem, caso constate que estejam equivocadas. Também pode substituir um membro da equipe de arbitragem que não esteja desempenhando suas funções adequadamente.\n22.2.2 O primeiro árbitro também controla o trabalho dos apanhadores de bola e dos niveladores de areia.\n22.2.3 O primeiro árbitro tem o poder de decidir sobre quaisquer assuntos relacionados ao jogo, incluindo aqueles não previstos nas regras.\n22.2.4 O primeiro árbitro não deve permitir discussões sobre suas decisões. No entanto, a pedido do capitão, dará explicação sobre a aplicação ou interpretação das regras em que baseou sua decisão. Caso o capitão discorde da explicação e apresente protesto formal, o primeiro árbitro deverá autorizar o início de um Protocolo de Protesto.\n22.2.5 O primeiro árbitro é responsável por determinar, antes e durante a partida, se a área de jogo e as condições atendem aos requisitos para a prática do esporte.\n22.2.6 Dependendo das circunstâncias que levaram a eventual lesão ou doença de um jogador, o primeiro árbitro autoriza a assistência médica e inicia o período de recuperação."
+        },
+        {
+          "id": "section-22-3",
+          "officialNumber": "22.3",
+          "officialTitle": "RESPONSABILIDADES",
+          "content": "22.3.1 Antes da partida, o 1º árbitro inspeciona as condições da área de jogo, das bolas e dos demais equipamentos, realiza o sorteio com os capitães das equipes e controla o aquecimento.\n22.3.2 Durante a partida, o 1º árbitro está autorizado a emitir avisos às equipes, sancionar condutas impróprias e atrasos, e decidir sobre faltas do sacador e da tela da equipe que saca, faltas no jogo de bola, faltas acima da rede, contato incorreto do jogador com a rede, a bola atravessando completamente o espaço inferior sob a rede, e a bola sacada ou o segundo toque passando por cima ou fora da antena do seu lado da quadra.\n22.3.3 Ao final da partida, o 1º árbitro confere a súmula e a assina."
+        }
+      ]
+    },
+    {
+      "id": "chapter-23",
+      "officialNumber": "23",
+      "officialTitle": "2º ÁRBITRO",
+      "categoryId": "arbitration",
+      "sections": [
+        {
+          "id": "section-23-1",
+          "officialNumber": "23.1",
+          "officialTitle": "LOCALIZAÇÃO",
+          "content": "O segundo árbitro desempenha suas funções posicionado fora da quadra de jogo, próximo ao poste, no lado oposto e de frente para o primeiro árbitro."
+        },
+        {
+          "id": "section-23-2",
+          "officialNumber": "23.2",
+          "officialTitle": "AUTORIDADE",
+          "content": "23.2.1 O segundo árbitro é assistente do primeiro árbitro, mas também tem sua própria área de jurisdição. Caso o primeiro árbitro não possa continuar seu trabalho, o segundo árbitro poderá substituí-lo.\n23.2.2 O segundo árbitro pode, sem apitar, sinalizar faltas fora de sua jurisdição, mas não deve insistir nelas junto ao primeiro árbitro.\n23.2.3 O segundo árbitro controla o trabalho do anotador.\n23.2.4 O segundo árbitro reporta qualquer conduta inadequada ao primeiro árbitro.\n23.2.5 O segundo árbitro autoriza os intervalos e as trocas de quadra, controla sua duração e rejeita pedidos impróprios.\n23.2.6 O segundo árbitro verifica o número de tempos utilizados por cada equipe e informa ao primeiro árbitro e aos jogadores envolvidos após o término do tempo.\n23.2.7 No caso de o primeiro árbitro autorizar assistência médica a um jogador, o segundo árbitro auxilia no processo, inclusive no gerenciamento do tempo de recuperação.\n23.2.8 O segundo árbitro verifica durante a partida se as bolas ainda atendem aos requisitos regulamentares.\n23.2.9 O segundo árbitro realiza o sorteio entre os sets 2 e 3 caso o 1º árbitro não possa fazê-lo. Em seguida, deve passar todas as informações relevantes ao anotador."
+        },
+        {
+          "id": "section-23-3",
+          "officialNumber": "23.3",
+          "officialTitle": "RESPONSABILIDADES",
+          "content": "23.3.1 No início de cada set, e sempre que necessário, o segundo árbitro controla o trabalho do anotador e verifica se o sacador correto está com a bola.\n23.3.2 Durante a partida, o segundo árbitro decide, apita e sinaliza:\n23.3.2.1 a interferência devido à penetração na quadra adversária e no espaço sob a rede;\n23.3.2.2 o contato faltoso do jogador com a rede, principalmente, mas não exclusivamente, no lado do bloqueador, e o contato com a antena no seu lado da quadra;\n23.3.2.3 o contato da bola com um objeto externo;\n23.3.2.4 a bola que cruza a rede total ou parcialmente fora do espaço de cruzamento para a quadra adversária, ou toca a antena do seu lado da quadra, inclusive durante o saque;\n23.3.2.5 o contato da bola com a areia quando o primeiro árbitro não estiver em posição para visualizar o contato;\n23.3.2.6 a bola recuperada completamente pelo lado do adversário, por baixo da rede;\n23.3.2.7 a bola sacada e o segundo toque da equipe passando por cima ou por fora da antena do seu lado da quadra.\n23.3.3 Ao final da partida, o segundo árbitro confere e assina a súmula."
+        }
+      ]
+    },
+    {
+      "id": "chapter-24",
+      "officialNumber": "24",
+      "officialTitle": "ÁRBITRO DE DESAFIO",
+      "categoryId": "arbitration",
+      "sections": [
+        {
+          "id": "section-24-1",
+          "officialNumber": "24.1",
+          "officialTitle": "LOCALIZAÇÃO",
+          "content": "O árbitro de desafio exerce suas funções na cabine de desafio, estando localizado em uma posição separada, determinada pelo delegado técnico da FIVB."
+        },
+        {
+          "id": "section-24-2",
+          "officialNumber": "24.2",
+          "officialTitle": "RESPONSABILIDADES",
+          "content": "24.2.1 O árbitro de desafio supervisiona o processo de desafio e garante que este seja conduzido de acordo com o regulamento em vigor.\n24.2.2 O árbitro de desafio deve usar uniforme oficial de árbitro enquanto desempenha suas funções.\n24.2.3 Após o processo de desafio, o árbitro de desafio informa ao primeiro árbitro a natureza da falta.\n24.2.4 Ao final da partida, o árbitro de desafio assina a súmula."
+        }
+      ]
+    },
+    {
+      "id": "chapter-25",
+      "officialNumber": "25",
+      "officialTitle": "ÁRBITRO RESERVA",
+      "categoryId": "arbitration",
+      "sections": [
+        {
+          "id": "section-25-1",
+          "officialNumber": "25.1",
+          "officialTitle": "LOCALIZAÇÃO",
+          "content": "O árbitro reserva exerce suas funções ocupando uma posição separada, determinada pelo layout da quadra da FIVB."
+        },
+        {
+          "id": "section-25-2",
+          "officialNumber": "25.2",
+          "officialTitle": "RESPONSABILIDADES",
+          "content": "O árbitro reserva é responsável por:\n25.2.1 usar uniforme oficial de árbitro ao desempenhar suas funções;\n25.2.2 substituir o segundo árbitro em caso de ausência, caso este não possa continuar seu trabalho ou caso o segundo árbitro se torne o primeiro árbitro;\n25.2.3 auxiliar o segundo árbitro a manter a zona livre;\n25.2.4 entregar ao segundo árbitro quatro bolas de jogo imediatamente após a apresentação dos jogadores;\n25.2.5 entregar a bola de jogo ao segundo árbitro depois que ele terminar de verificar o jogador no saque;\n25.2.6 auxiliar o primeiro árbitro na orientação do trabalho dos niveladores de areia;\n25.2.7 caso o Sistema de Desafio por Vídeo esteja em uso, supervisionar o avaliador no preenchimento do processo do sistema de desafio na súmula eletrônica."
+        }
+      ]
+    },
+    {
+      "id": "chapter-26",
+      "officialNumber": "26",
+      "officialTitle": "MARCADOR",
+      "categoryId": "arbitration",
+      "sections": [
+        {
+          "id": "section-26-1",
+          "officialNumber": "26.1",
+          "officialTitle": "LOCALIZAÇÃO",
+          "content": "O anotador desempenha suas funções sentado à mesa de anotadores, no lado oposto da quadra em relação ao primeiro árbitro e de frente para ele."
+        },
+        {
+          "id": "section-26-2",
+          "officialNumber": "26.2",
+          "officialTitle": "RESPONSABILIDADES",
+          "content": "O anotador preenche a súmula de acordo com as regras, em colaboração com o segundo árbitro. Ele utiliza uma campainha ou outro dispositivo sonoro para notificar irregularidades ou dar sinais aos árbitros de acordo com suas responsabilidades.\n26.2.1 Antes da partida e de cada set, o anotador:\n26.2.1.1 registra os dados da partida e das equipes, de acordo com os procedimentos em vigor, e obtém as assinaturas dos capitães;\n26.2.1.2 registra a ordem de saque de cada equipe.\n26.2.2 Durante a partida, o anotador:\n26.2.2.1 registra os pontos marcados;\n26.2.2.2 controla a ordem de saque de cada equipe e indica qualquer erro antes de o saque ser executado;\n26.2.2.3 registra os tempos e tempos técnicos, verifica o número deles e informa o segundo árbitro;\n26.2.2.4 notifica os árbitros sobre um pedido impróprio de tempo;\n26.2.2.5 anuncia aos árbitros a mudança de quadra e o fim dos sets;\n26.2.2.6 registra quaisquer sanções e pedidos indevidos;\n26.2.2.7 registra todos os outros eventos conforme instruído pelo segundo árbitro, como tempo de recuperação, interrupções prolongadas e interferência externa;\n26.2.2.8 controla o intervalo entre os sets.\n26.2.3 Ao final da partida, o anotador:\n26.2.3.1 registra o resultado final;\n26.2.3.2 em caso de protesto, com autorização prévia do primeiro árbitro, redige ou permite que o capitão em questão redija na súmula uma declaração sobre o incidente contestado;\n26.2.3.3 assina a súmula, antes de obter as assinaturas dos capitães das equipes e, depois, as dos árbitros."
+        }
+      ]
+    },
+    {
+      "id": "chapter-27",
+      "officialNumber": "27",
+      "officialTitle": "ASSISTENTE DE MARCADOR",
+      "categoryId": "arbitration",
+      "sections": [
+        {
+          "id": "section-27-1",
+          "officialNumber": "27.1",
+          "officialTitle": "LOCALIZAÇÃO",
+          "content": "O auxiliar de pontuação desempenha suas funções sentado ao lado do anotador na mesa de anotadores."
+        },
+        {
+          "id": "section-27-2",
+          "officialNumber": "27.2",
+          "officialTitle": "RESPONSABILIDADES",
+          "content": "O anotador assistente auxilia nas tarefas administrativas do trabalho do anotador. Caso o anotador fique impossibilitado de continuar seu trabalho, o anotador assistente o substitui.\n27.2.1 Antes da partida e do set, o anotador assistente verifica se todas as informações exibidas no placar estão corretas.\n27.2.2 Durante a partida, o anotador assistente indica a ordem de saque de cada equipe exibindo uma placa numerada 1 ou 2, correspondente ao jogador que irá sacar, indica imediatamente aos árbitros qualquer erro por meio da campainha, opera o placar manual, verifica se os placares estão corretos, inicia e termina a contagem dos tempos técnicos e, se necessário, atualiza a folha de pontuação reserva e a entrega ao anotador.\n27.2.3 Ao final da partida, o anotador assistente assina a folha de pontuação."
+        }
+      ]
+    },
+    {
+      "id": "chapter-28",
+      "officialNumber": "28",
+      "officialTitle": "JUÍZES DE LINHA",
+      "categoryId": "arbitration",
+      "sections": [
+        {
+          "id": "section-28-1",
+          "officialNumber": "28.1",
+          "officialTitle": "LOCALIZAÇÃO",
+          "content": "Caso sejam utilizados apenas dois juízes de linha, eles se posicionam nos cantos da quadra mais próximos da mão direita de cada árbitro, diagonalmente a uma distância de 1 a 2 metros do canto. Cada um controla tanto a linha de fundo quanto a linha lateral do seu lado da quadra.\nPara competições da FIVB, Mundiais e Oficiais, se forem utilizados quatro juízes de linha, eles se posicionam na zona livre a uma distância de 1 a 3 metros de cada canto da quadra, na extensão imaginária da linha que controlam."
+        },
+        {
+          "id": "section-28-2",
+          "officialNumber": "28.2",
+          "officialTitle": "RESPONSABILIDADES",
+          "content": "28.2.1 Os juízes de linha desempenham suas funções utilizando bandeiras de 40 x 40 cm para sinalizar:\n28.2.1.1 a bola dentro e fora sempre que a bola cair perto de sua linha;\n28.2.1.2 os toques na bola antes de ela sair;\n28.2.1.3 a bola tocando a antena, a bola sacada e o segundo toque da equipe cruzando a rede fora do espaço de cruzamento e situações equivalentes;\n28.2.1.4 qualquer jogador, exceto o sacador, saindo da sua quadra no momento do golpe de saque;\n28.2.1.5 as faltas de pé do sacador;\n28.2.1.6 qualquer contato com os 80 cm superiores da antena do seu lado da quadra por qualquer jogador durante a ação de jogar a bola ou interferir no jogo;\n28.2.1.7 a bola cruzando a rede fora do espaço de cruzamento para a quadra adversária ou tocando a antena em seu lado da quadra;\n28.2.1.8 o toque de bloqueio durante o rally.\n28.2.2 A pedido do primeiro árbitro, o juiz de linha deve repetir o seu sinal."
+        }
+      ]
+    },
+    {
+      "id": "chapter-29",
+      "officialNumber": "29",
+      "officialTitle": "SINAIS OFICIAIS",
+      "categoryId": "arbitration",
+      "sections": [
+        {
+          "id": "section-29-1",
+          "officialNumber": "29.1",
+          "officialTitle": "SINAIS DE MÃO DOS ÁRBITROS",
+          "content": "Os árbitros indicarão com o sinal oficial de mão o motivo do apito (a natureza da falta apitada ou a finalidade da interrupção autorizada). O sinal deve ser mantido por um instante\n\ne, se for indicado com uma das mãos, essa mão corresponde ao lado da equipe que cometeu a falta ou solicitou a interrupção."
+        },
+        {
+          "id": "section-29-2",
+          "officialNumber": "29.2",
+          "officialTitle": "SINAIS DE BANDEIRA DOS JUÍZES DE LINHA",
+          "content": "Os juízes de linha devem indicar com o sinal oficial de bandeira a natureza da falta marcada e manter o sinal por um instante."
+        }
+      ]
+    }
+  ],
+  "documents": [
+    {
+      "id": "beach-characteristics",
+      "officialTitle": "CARACTERÍSTICAS DO JOGO",
+      "categoryId": "annexes",
+      "content": "O vôlei de praia é um esporte praticado por duas equipes em uma quadra de areia dividida por uma rede.\nA equipe tem três rebatidas para devolução de bola (incluindo o bloqueio).\n\nNo vôlei de praia, a equipe que vence um rally marca um ponto (Sistema de Pontos por Rally). Quando a equipe que recebe o saque vence um rally, ela ganha um ponto e o direito de sacar. O jogador que saca deve ser alternado a cada vez que isso ocorre."
+    },
+    {
+      "id": "beach-philosophy",
+      "officialTitle": "PARTE 1: FILOSOFIA DAS REGRAS E DA ARBITRAGEM",
+      "categoryId": "annexes",
+      "content": "INTRODUÇÃO\n\nEm todos os aspectos, o vôlei de praia é um dos esportes mais populares e bem-sucedidos do mundo, com altos índices de audiência, grande presença nas redes sociais, número crescente de praticantes e uma imagem dinâmica, limpa e colorida.\n\nEm resumo, é rápido, emocionante e explosivo. O voleibol de praia reúne elementos cruciais que se sobrepõem e se complementam, criando um charme especial que o diferencia de outras modalidades do esporte.\n\nO vôlei de praia da FIVB é um esporte competitivo. A competição desperta forças latentes e revela o melhor da habilidade, do espírito, da criatividade e da estética. As regras são estruturadas para permitir todas essas qualidades.\n\nTEXTO DAS REGRAS\nEste texto destina-se a um público amplo do vôlei de praia, incluindo jogadores, treinadores, árbitros, espectadores, comentaristas e outros, porque compreender as regras permite melhor desempenho e maior satisfação com o jogo.\n\nO ÁRBITRO DENTRO DESTE CONTEXTO\nA essência de um bom árbitro está na imparcialidade e na coerência. O árbitro deve ser facilitador, e não controlador; maestro, e não ditador; promotor eficiente do jogo, intervindo apenas quando necessário.\nAo compreender a razão de cada regra e o propósito dela dentro do espetáculo esportivo, o árbitro se torna parte importante da qualidade da competição.\n\nParticipe.\nContinue a bola voando.\nEntenda o jogo."
+    },
+    {
+      "id": "beach-diagrams",
+      "officialTitle": "PARTE 2 - SEÇÃO 3: DIAGRAMAS",
+      "categoryId": "annexes",
+      "content": "D1 ÁREA DE JOGO — Regras relevantes: 1, 22.1, 23.1, 26.1, 27.1 e 28.1.\n\nD2 A QUADRA DE JOGO — Regras relevantes: 1.1, 1.3 e 2.5.\n\nD3 PROJETO DA REDE — Regras relevantes: 2 e 8.4.3.\n\nD4a BOLA CRUZANDO O PLANO VERTICAL DA REDE EM DIREÇÃO À QUADRA ADVERSÁRIA — Regras relevantes: 8.4.3, 8.4.4, 8.4.5, 10.1.1, 10.1.3, 23.3.2.4, 28.2.1.3 e 28.2.1.7.\n\nD4b BOLA CRUZANDO O PLANO VERTICAL DA REDE EM DIREÇÃO À ZONA LIVRE DO ADVERSÁRIO — Regras relevantes: 10.1.2, 10.1.2.1 e 10.1.2.2.\n\nD5 TELA — Regras relevantes: 12.5.1, 12.5.2, 12.6.2.3 e 22.3.2.3.\n\nD6 BLOCO COMPLETO — Regra relevante: 14.1.3.\n\nD7 MEIOS DE DISSUASÃO E SANÇÕES — Regras relevantes: 20.3, 20.4, 20.5, 16.2.2 e 16.2.3.\n\nD8 LOCALIZAÇÃO DA EQUIPE DE ARBITRAGEM E SEUS ASSISTENTES — Regras relevantes: 3.3, 21.1, 22.1, 23.1, 26.1, 27.1 e 28.1.\n\nD9 SINAIS DE MÃO OFICIAIS DOS ÁRBITROS — Regras relevantes: seção 29.1.\n\nD10 SINAIS OFICIAIS DE BANDEIRA DOS JUÍZES DE LINHA — Regras relevantes: seção 29.2."
+    },
+    {
+      "id": "beach-definitions",
+      "officialTitle": "PARTE 3: DEFINIÇÕES",
+      "categoryId": "annexes",
+      "content": "PROTOCOLO A sequência de eventos que antecedem o início da partida, incluindo o sorteio, o aquecimento, a apresentação das equipes e dos árbitros, está descrita no Manual Específico da Competição.\nÁREA DE COMPETIÇÃO/CONTROLE\n\nA Área de Competição/Controle é um corredor ao redor da quadra de jogo e da zona livre, que inclui todos os espaços até as barreiras externas ou a cerca de delimitação. Veja o diagrama/figura 1a.\nZONAS Estas são seções dentro da área de jogo (ou seja, quadra de jogo e zona livre) definidas para um propósito específico (ou com restrições especiais) no texto das regras. Elas incluem: Zona de Serviço e Zona Livre.\nESPAÇO INFERIOR\n\nEste é o espaço definido em sua parte superior pela parte inferior da rede e pela corda que a une aos postes, nas laterais pelos postes e na parte inferior pela superfície de jogo.\nATRAVESSANDO O ESPAÇO\n\nO espaço de cruzamento é definido por: – A faixa horizontal na parte superior da rede – As antenas e sua extensão – O teto A bola deve cruzar para a quadra adversária através do espaço de cruzamento.\nESPAÇO EXTERNO\n\nO espaço externo situa-se no plano vertical da rede, fora do cruzamento e dos espaços inferiores.\nA MENOS QUE SEJA POR ACORDO DA FIVB\n\nEsta declaração reconhece que, embora existam regulamentos sobre os padrões e especificações de equipamentos e instalações, há ocasiões em que a FIVB pode fazer arranjos especiais para promover o voleibol de praia ou testar novas condições.\nNORMAS FIVB As especificações técnicas ou limites definidos pela FIVB aos fabricantes de equipamentos.\nFALTA a) Uma ação de jogo contrária às regras. b) Uma violação de regra que não seja uma ação de jogo.\nPRIMEIRO GOLPE DA EQUIPE Existem três casos em que a jogada é considerada o primeiro toque da equipe: – Recepção de serviço – Receber um ataque da equipe adversária – Jogar a bola após o rebote do bloqueio do adversário PONTO DE ENCONTRO\n\nEste é o sistema de pontuação para cada ponto ganho em um rally.\n\nPARTE 3: DEFINIÇÕES\n\nTEMPO TÉCNICO Este tempo técnico especial e obrigatório serve, além dos tempos técnicos regulares, para promover o vôlei de praia, analisar o jogo e proporcionar oportunidades comerciais adicionais. Os tempos técnicos são obrigatórios em competições da FIVB, Mundiais e Oficiais.\nINTERVALO O tempo entre os sets. A troca de quadras no terceiro set (decisivo) não deve ser considerada um intervalo.\n\nINTERFERINDO Qualquer ação que crie uma vantagem contra a equipe adversária ou qualquer ação que impeça um adversário de jogar a bola.\nOBJETO EXTERNO Um objeto ou pessoa que, estando fora da quadra de jogo ou próximo ao limite da área de jogo livre, obstrui a trajetória da bola. Por exemplo: refletores, cadeira do árbitro, equipamentos de TV, mesa de anotações e postes da rede. Objetos externos não incluem as antenas, pois estas são consideradas parte da rede.\n\nRECUPERADORES DE BOLA\n\nEsses são os funcionários cuja função é manter o fluxo do jogo, rolando a bola para o sacador entre os pontos.\n\nNIVELADORES DE AREIA (RASTINADORES)\n\nEsses auxiliares de quadra usam rastelos compridos ou varas longas com extremidades achatadas para alisar a areia, especialmente ao redor das linhas da quadra e ao longo do eixo central da quadra, entre as traves."
+    }
+  ]
+}

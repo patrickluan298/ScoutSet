@@ -57,6 +57,14 @@ void main() {
               pointOrigin: PointOrigin.opponentError,
               recordedAt: createdAt,
             ),
+            SetPointEvent(
+              sequence: 5,
+              scoringTeam: TeamSide.teamB,
+              pointOrigin: PointOrigin.rotationalFault,
+              serverPlayerId: 'patrick',
+              serverPlayerName: 'Patrick',
+              recordedAt: createdAt,
+            ),
           ],
         ),
         SetScore(
@@ -152,7 +160,10 @@ void main() {
     expect(text, contains('Consolidado da partida'));
     expect(text, contains('Ranking da partida'));
     expect(text, contains('MVP da partida: Patrick'));
+    expect(text, contains('Vôlei de Quadra'));
+    expect(text, contains('Melhor de 5'));
     expect(text, contains('Erro adv.'));
+    expect(text, contains('Falha rot.'));
     expect(text, contains('Patrick'));
     expect(text, contains('João'));
     expect(text, contains('Líbero'));

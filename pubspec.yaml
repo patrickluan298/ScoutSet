@@ -38,6 +38,8 @@ flutter:
     - assets/images/mode_selection/volei_quadra.png
     - assets/images/mode_selection/volei_praia.png
     - assets/data/rules_official_catalog.json
+    - assets/data/rules_official_catalog_beach.json
+    - assets/images/rules/beach/
 
 flutter_launcher_icons:
   android: true

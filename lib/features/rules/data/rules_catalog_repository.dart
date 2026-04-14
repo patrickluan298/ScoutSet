@@ -9,22 +9,20 @@ class RulesCatalogRepository {
   const RulesCatalogRepository();
 
   static const String assetPath = 'assets/data/rules_official_catalog.json';
+  static const String beachAssetPath =
+      'assets/data/rules_official_catalog_beach.json';
+
+  String assetPathForMode(SportMode sportMode) {
+    return sportMode == SportMode.beach ? beachAssetPath : assetPath;
+  }
 
   Future<RulesCatalog> load({
     required SportMode sportMode,
     AssetBundle? bundle,
   }) async {
-    if (sportMode == SportMode.beach) {
-      return const RulesCatalog(
-        sourceTitle: 'Praia',
-        categories: [],
-        chapters: [],
-        documents: [],
-      );
-    }
-
     final resolvedBundle = bundle ?? rootBundle;
-    final jsonString = await resolvedBundle.loadString(assetPath);
+    final jsonString =
+        await resolvedBundle.loadString(assetPathForMode(sportMode));
     return loadFromString(jsonString);
   }
 

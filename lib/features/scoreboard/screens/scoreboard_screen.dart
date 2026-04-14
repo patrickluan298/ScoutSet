@@ -69,7 +69,9 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
       return;
     }
 
-    final players = team == TeamSide.teamA ? match.teamAPlayers : match.teamBPlayers;
+    final players = team == TeamSide.teamA
+        ? match.teamAOnCourtPlayers
+        : match.teamBOnCourtPlayers;
 
     setState(() => _isSavingPoint = true);
     try {
@@ -86,12 +88,32 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
       if (selection == null) {
         return;
       }
+      final expectedServer = match.servingTeam == TeamSide.teamA
+          ? (match.teamAOnCourtPlayers.isEmpty
+              ? null
+              : match.teamAOnCourtPlayers.first)
+          : (match.teamBOnCourtPlayers.isEmpty
+              ? null
+              : match.teamBOnCourtPlayers.first);
+      final hasRotationalFault = expectedServer != null &&
+          selection.serverPlayer != null &&
+          selection.serverPlayer!.id != expectedServer.id;
 
       await _service.addPoint(
         team: team,
         pointOrigin: selection.pointOrigin,
         player: selection.player,
+        serverPlayer: selection.serverPlayer,
       );
+      if (hasRotationalFault && mounted) {
+        final beneficiary = match.servingTeam == TeamSide.teamA
+            ? match.teamBName
+            : match.teamAName;
+        showAppSnackBar(
+          context,
+          'Falha rotacional detectada. Ponto e saque para $beneficiary.',
+        );
+      }
     } finally {
       if (mounted) {
         setState(() => _isSavingPoint = false);
@@ -149,11 +171,72 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
     FocusScope.of(context).unfocus();
   }
 
+  Future<void> _openSubstitutionSheet(TeamSide team) async {
+    final match = _service.getState().activeMatch;
+    if (match == null || match.isFinished) {
+      return;
+    }
+
+    final eligiblePlayers = await _service.listEligibleSubstitutes(team);
+    if (!mounted) {
+      return;
+    }
+
+    final result = await showModalBottomSheet<_SubstitutionSelection>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (context) => _SubstitutionSheet(
+        teamName: team == TeamSide.teamA ? match.teamAName : match.teamBName,
+        onCourtPlayers: team == TeamSide.teamA
+            ? match.teamAOnCourtPlayers
+            : match.teamBOnCourtPlayers,
+        eligiblePlayers: eligiblePlayers,
+      ),
+    );
+
+    if (result == null || !mounted) {
+      return;
+    }
+
+    try {
+      await _service.applySubstitution(
+        team: team,
+        playerOutId: result.playerOutId,
+        playerInId: result.playerInId,
+        isLiberoExchange: result.isLiberoExchange,
+      );
+    } on ArgumentError catch (error) {
+      if (!mounted) {
+        return;
+      }
+      showAppSnackBar(
+        context,
+        error.message?.toString() ?? 'Nao foi possivel aplicar a substituicao.',
+      );
+      return;
+    }
+
+    if (!mounted) {
+      return;
+    }
+    showAppSnackBar(
+      context,
+      'Substituicao registrada para ${team == TeamSide.teamA ? match.teamAName : match.teamBName}.',
+    );
+  }
+
   Future<_PointSelection?> _selectPointForTeam({
     required TeamSide team,
     required MatchScore match,
   }) {
-    final players = team == TeamSide.teamA ? match.teamAPlayers : match.teamBPlayers;
+    final players = team == TeamSide.teamA
+        ? match.teamAOnCourtPlayers
+        : match.teamBOnCourtPlayers;
+    final servingPlayers = match.servingTeam == TeamSide.teamA
+        ? match.teamAOnCourtPlayers
+        : match.teamBOnCourtPlayers;
+    final expectedServer = servingPlayers.isEmpty ? null : servingPlayers.first;
     final canAssignPlayers = players.isNotEmpty;
     final availableOrigins = canAssignPlayers
         ? const [
@@ -197,11 +280,14 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
                     onTap: () async {
                       TeamDrawPlayer? selectedPlayer;
                       if (origin.requiresPlayer) {
-                        selectedPlayer = await showModalBottomSheet<TeamDrawPlayer>(
+                        selectedPlayer =
+                            await showModalBottomSheet<TeamDrawPlayer>(
                           context: context,
                           showDragHandle: true,
                           builder: (context) => _PlayerPickerSheet(
-                            teamName: team == TeamSide.teamA ? match.teamAName : match.teamBName,
+                            teamName: team == TeamSide.teamA
+                                ? match.teamAName
+                                : match.teamBName,
                             players: players,
                           ),
                         );
@@ -210,11 +296,34 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
                         }
                       }
 
+                      TeamDrawPlayer? selectedServer = expectedServer;
+                      if (servingPlayers.isNotEmpty) {
+                        selectedServer =
+                            await showModalBottomSheet<TeamDrawPlayer>(
+                          context: context,
+                          showDragHandle: true,
+                          builder: (context) => _ServerPickerSheet(
+                            servingTeamName: match.servingTeam == TeamSide.teamA
+                                ? match.teamAName
+                                : match.teamBName,
+                            expectedServer: expectedServer,
+                            players: servingPlayers,
+                          ),
+                        );
+                        if (selectedServer == null || !context.mounted) {
+                          return;
+                        }
+                      }
+
                       if (!context.mounted) {
                         return;
                       }
                       Navigator.of(context).pop(
-                        _PointSelection(pointOrigin: origin, player: selectedPlayer),
+                        _PointSelection(
+                          pointOrigin: origin,
+                          player: selectedPlayer,
+                          serverPlayer: selectedServer,
+                        ),
                       );
                     },
                   ),
@@ -236,7 +345,10 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
         return ListView(
           padding: AppSpacing.screen,
           children: [
-            if (!state.hasActiveMatch) _buildSetupView(state) else _buildLiveScoreboard(state),
+            if (!state.hasActiveMatch)
+              _buildSetupView(state)
+            else
+              _buildLiveScoreboard(state),
           ],
         );
       },
@@ -269,7 +381,8 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
               children: [
                 const SectionTitle(
                   title: 'Nova Partida',
-                  subtitle: 'Informe os nomes dos times manualmente ou use equipes salvas. Máximo de 10 caracteres.',
+                  subtitle:
+                      'Informe os nomes dos times manualmente ou use equipes salvas. Máximo de 10 caracteres.',
                 ),
                 const SizedBox(height: 20),
                 TextFormField(
@@ -320,7 +433,8 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Histórico Recente', style: Theme.of(context).textTheme.titleMedium),
+                Text('Histórico Recente',
+                    style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 8),
                 Text(
                   'Você já tem ${state.history.length} partida(s) registrada(s) nesta sessão.',
@@ -345,14 +459,17 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
     final isFinished = state.isMatchFinished;
     final winnerTeam = match.winnerTeam;
     final matchPointMessage = _buildMatchPointMessage(state);
-    final setPointMessage = matchPointMessage == null ? _buildSetPointMessage(state) : null;
+    final setPointMessage =
+        matchPointMessage == null ? _buildSetPointMessage(state) : null;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         ScoreboardHeader(
           title: '${match.teamAName} x ${match.teamBName}',
-          subtitle: isFinished ? 'Resultado final: ${match.teamASetsWon} x ${match.teamBSetsWon}' : '',
+          subtitle: isFinished
+              ? 'Resultado final: ${match.teamASetsWon} x ${match.teamBSetsWon}'
+              : '',
           statusLabel: isFinished ? 'Partida encerrada' : '',
         ),
         if (state.history.isNotEmpty) ...[
@@ -411,6 +528,10 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
           ],
         ),
         AppSpacing.gapMedium,
+        if (_hasSubstitutionManagement(match)) ...[
+          _buildSubstitutionCard(match),
+          AppSpacing.gapMedium,
+        ],
         AppCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -435,7 +556,7 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
                 },
                 onUndo: _service.undoLastPoint,
                 onReset: _service.resetCurrentMatch,
-                onFinish: () => _service.finishCurrentMatch(),
+                onFinish: null,
                 onNewMatch: _prepareNewMatch,
                 canScore: !isFinished && !_isSavingPoint,
                 canUndo: state.canUndo,
@@ -529,7 +650,8 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
     required int opponentScore,
     required int targetPoints,
   }) {
-    final setsWon = team == TeamSide.teamA ? match.teamASetsWon : match.teamBSetsWon;
+    final setsWon =
+        team == TeamSide.teamA ? match.teamASetsWon : match.teamBSetsWon;
     final rules = ScoreboardRules.forMode(match.sportMode);
     if (setsWon < (rules.setsToWin - 1)) {
       return false;
@@ -550,6 +672,65 @@ class _ScoreboardScreenState extends State<ScoreboardScreen> {
     final isAtSetPoint = teamScore >= (targetPoints - 1);
     final hasAdvantage = teamScore > opponentScore;
     return isAtSetPoint && hasAdvantage;
+  }
+
+  bool _hasSubstitutionManagement(MatchScore match) {
+    if (match.sportMode != SportMode.court) {
+      return false;
+    }
+
+    final hasTeamAConfig =
+        match.teamAOnCourtPlayers.isNotEmpty || match.teamAPlayers.isNotEmpty;
+    final hasTeamBConfig =
+        match.teamBOnCourtPlayers.isNotEmpty || match.teamBPlayers.isNotEmpty;
+    return hasTeamAConfig || hasTeamBConfig;
+  }
+
+  Widget _buildSubstitutionCard(MatchScore match) {
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Substituicoes FIVB',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Cada equipe pode fazer ate 6 substituicoes regulamentares por set. Trocas de libero nao entram nesse limite.',
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          const SizedBox(height: 16),
+          _TeamSubstitutionSection(
+            teamName: match.teamAName,
+            substitutionsUsed: match.teamASetSubstitutions
+                .where((item) => item.countsTowardLimit)
+                .length,
+            liberoChanges: match.teamASetSubstitutions
+                .where((item) => item.isLiberoExchange)
+                .length,
+            onCourtPlayers: match.teamAOnCourtPlayers,
+            onPressed: match.isFinished
+                ? null
+                : () => _openSubstitutionSheet(TeamSide.teamA),
+          ),
+          const SizedBox(height: 16),
+          _TeamSubstitutionSection(
+            teamName: match.teamBName,
+            substitutionsUsed: match.teamBSetSubstitutions
+                .where((item) => item.countsTowardLimit)
+                .length,
+            liberoChanges: match.teamBSetSubstitutions
+                .where((item) => item.isLiberoExchange)
+                .length,
+            onCourtPlayers: match.teamBOnCourtPlayers,
+            onPressed: match.isFinished
+                ? null
+                : () => _openSubstitutionSheet(TeamSide.teamB),
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -661,10 +842,227 @@ class _PointSelection {
   const _PointSelection({
     required this.pointOrigin,
     this.player,
+    this.serverPlayer,
   });
 
   final PointOrigin pointOrigin;
   final TeamDrawPlayer? player;
+  final TeamDrawPlayer? serverPlayer;
+}
+
+class _SubstitutionSelection {
+  const _SubstitutionSelection({
+    required this.playerOutId,
+    required this.playerInId,
+    required this.isLiberoExchange,
+  });
+
+  final String playerOutId;
+  final String playerInId;
+  final bool isLiberoExchange;
+}
+
+class _TeamSubstitutionSection extends StatelessWidget {
+  const _TeamSubstitutionSection({
+    required this.teamName,
+    required this.substitutionsUsed,
+    required this.liberoChanges,
+    required this.onCourtPlayers,
+    required this.onPressed,
+  });
+
+  final String teamName;
+  final int substitutionsUsed;
+  final int liberoChanges;
+  final List<TeamDrawPlayer> onCourtPlayers;
+  final VoidCallback? onPressed;
+
+  String _playerLabel(TeamDrawPlayer player) =>
+      '${player.name} (${player.position})';
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context)
+            .colorScheme
+            .surfaceContainerHighest
+            .withValues(alpha: 0.28),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  teamName,
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+              ),
+              Text(
+                '$substitutionsUsed/6 reg. | $liberoChanges libero',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'Quadra: ${onCourtPlayers.isEmpty ? 'Nao definido' : onCourtPlayers.map(_playerLabel).join(', ')}',
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'As entradas sao escolhidas entre os atletas cadastrados no modulo Equipes que nao estejam atuando na partida.',
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          const SizedBox(height: 12),
+          Align(
+            alignment: Alignment.centerRight,
+            child: OutlinedButton.icon(
+              onPressed: onPressed,
+              icon: const Icon(Icons.swap_horiz),
+              label: const Text('Aplicar substituicao'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SubstitutionSheet extends StatefulWidget {
+  const _SubstitutionSheet({
+    required this.teamName,
+    required this.onCourtPlayers,
+    required this.eligiblePlayers,
+  });
+
+  final String teamName;
+  final List<TeamDrawPlayer> onCourtPlayers;
+  final List<TeamDrawPlayer> eligiblePlayers;
+
+  @override
+  State<_SubstitutionSheet> createState() => _SubstitutionSheetState();
+}
+
+class _SubstitutionSheetState extends State<_SubstitutionSheet> {
+  static final RegExp _liberoPattern =
+      RegExp(r'libero|líbero', caseSensitive: false);
+
+  String? _selectedOutgoingPlayerId;
+  String? _selectedIncomingPlayerId;
+  bool _isLiberoExchange = false;
+
+  bool _isLibero(TeamDrawPlayer player) =>
+      _liberoPattern.hasMatch(player.position);
+
+  @override
+  Widget build(BuildContext context) {
+    final eligibleBenchPlayers = _isLiberoExchange
+        ? widget.eligiblePlayers
+        : widget.eligiblePlayers.where((player) => !_isLibero(player)).toList();
+
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(
+            20, 8, 20, 24 + MediaQuery.of(context).viewInsets.bottom),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Substituicao de ${widget.teamName}',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Escolha quem sai da quadra e quem entra entre os atletas cadastrados no modulo de equipes que nao estao atuando nesta partida.',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              const SizedBox(height: 16),
+              SwitchListTile.adaptive(
+                value: _isLiberoExchange,
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Troca de libero'),
+                subtitle: const Text(
+                    'Nao conta no limite de 6 substituicoes regulamentares.'),
+                onChanged: (value) {
+                  setState(() {
+                    _isLiberoExchange = value;
+                    _selectedIncomingPlayerId = null;
+                  });
+                },
+              ),
+              const SizedBox(height: 8),
+              DropdownButtonFormField<String>(
+                key: Key('scoreboard-sub-out-${widget.teamName}'),
+                initialValue: _selectedOutgoingPlayerId,
+                decoration: const InputDecoration(labelText: 'Jogador que sai'),
+                items: widget.onCourtPlayers
+                    .map(
+                      (player) => DropdownMenuItem<String>(
+                        value: player.id,
+                        child: Text('${player.name} - ${player.position}'),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (value) =>
+                    setState(() => _selectedOutgoingPlayerId = value),
+              ),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                key: Key('scoreboard-sub-in-${widget.teamName}'),
+                initialValue: eligibleBenchPlayers.any(
+                  (player) => player.id == _selectedIncomingPlayerId,
+                )
+                    ? _selectedIncomingPlayerId
+                    : null,
+                decoration:
+                    const InputDecoration(labelText: 'Jogador que entra'),
+                items: eligibleBenchPlayers
+                    .map(
+                      (player) => DropdownMenuItem<String>(
+                        value: player.id,
+                        child: Text('${player.name} - ${player.position}'),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (value) =>
+                    setState(() => _selectedIncomingPlayerId = value),
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: AppButton(
+                  label: 'Confirmar substituicao',
+                  icon: Icons.swap_horiz,
+                  onPressed: () {
+                    if (_selectedOutgoingPlayerId == null ||
+                        _selectedIncomingPlayerId == null) {
+                      Navigator.of(context).pop();
+                      return;
+                    }
+
+                    Navigator.of(context).pop(
+                      _SubstitutionSelection(
+                        playerOutId: _selectedOutgoingPlayerId!,
+                        playerInId: _selectedIncomingPlayerId!,
+                        isLiberoExchange: _isLiberoExchange,
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _PointOriginTile extends StatelessWidget {
@@ -688,7 +1086,8 @@ class _PointOriginTile extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppTheme.mediumGrayColor.withValues(alpha: 0.28)),
+          border: Border.all(
+              color: AppTheme.mediumGrayColor.withValues(alpha: 0.28)),
         ),
         child: Row(
           children: [
@@ -740,6 +1139,58 @@ class _PlayerPickerSheet extends StatelessWidget {
                 title: Text(player.name),
                 subtitle: Text(player.position),
                 trailing: const Icon(Icons.add_circle_outline),
+                onTap: () => Navigator.of(context).pop(player),
+              ),
+              const Divider(height: 1),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ServerPickerSheet extends StatelessWidget {
+  const _ServerPickerSheet({
+    required this.servingTeamName,
+    required this.expectedServer,
+    required this.players,
+  });
+
+  final String servingTeamName;
+  final TeamDrawPlayer? expectedServer;
+  final List<TeamDrawPlayer> players;
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Conferencia do saque',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              expectedServer == null
+                  ? 'Selecione quem realizou o saque por $servingTeamName.'
+                  : 'Sacador esperado: ${expectedServer!.name}. Se outro atleta realizou o saque, o placar aplicara a falha rotacional automaticamente.',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            const SizedBox(height: 16),
+            for (final player in players) ...[
+              ListTile(
+                key: Key('server-player-${player.id}'),
+                contentPadding: EdgeInsets.zero,
+                title: Text(player.name),
+                subtitle: Text(player.position),
+                trailing: player.id == expectedServer?.id
+                    ? const Icon(Icons.sports_volleyball)
+                    : const Icon(Icons.person_outline),
                 onTap: () => Navigator.of(context).pop(player),
               ),
               const Divider(height: 1),

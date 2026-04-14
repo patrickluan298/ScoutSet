@@ -9,6 +9,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:share_plus/share_plus.dart';
 
 import '../models/match_score.dart';
+import '../models/scoreboard_rules.dart';
 import '../models/set_point_event.dart';
 import '../models/set_score.dart';
 
@@ -149,6 +150,14 @@ class MatchPdfService {
           ),
           pw.SizedBox(height: 6),
           pw.Text(
+            '${match.sportMode.label} • ${_rulesLabel(match)}',
+            style: const pw.TextStyle(
+              color: PdfColors.white,
+              fontSize: 11,
+            ),
+          ),
+          pw.SizedBox(height: 4),
+          pw.Text(
             'Status: ${match.matchStatus.label} • Vencedor: ${_winnerLabel(match)}',
             style: const pw.TextStyle(
               color: PdfColors.white,
@@ -165,12 +174,16 @@ class MatchPdfService {
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
         _sectionTitle('Resumo geral'),
+        _buildSummaryMetrics(match),
+        pw.SizedBox(height: 14),
         _detailRow('Data de início', _formatDate(match.createdAt)),
         _detailRow(
           'Data de encerramento',
           match.finishedAt == null ? '-' : _formatDate(match.finishedAt!),
         ),
         _detailRow('Status', match.matchStatus.label),
+        _detailRow('Modalidade', match.sportMode.label),
+        _detailRow('Formato oficial', _rulesLabel(match)),
         _detailRow(
             'Origem',
             match.sourceType == MatchSourceType.manual
@@ -197,8 +210,10 @@ class MatchPdfService {
               decoration: const pw.BoxDecoration(color: PdfColors.grey200),
               children: [
                 _tableCell('Set', isHeader: true),
+                _tableCell('Meta', isHeader: true),
                 _tableCell(match.teamAName, isHeader: true),
                 _tableCell(match.teamBName, isHeader: true),
+                _tableCell('Troca de lado', isHeader: true),
                 _tableCell('Duração', isHeader: true),
               ],
             ),
@@ -206,8 +221,10 @@ class MatchPdfService {
               pw.TableRow(
                 children: [
                   _tableCell(set.setNumber.toString()),
+                  _tableCell('${set.targetPoints} pts'),
                   _tableCell(set.teamAScore.toString()),
                   _tableCell(set.teamBScore.toString()),
+                  _tableCell(_sideChangeSummary(match, set)),
                   _tableCell(_formatDuration(set.durationSeconds)),
                 ],
               ),
@@ -255,6 +272,14 @@ class MatchPdfService {
             ),
           ),
           pw.SizedBox(height: 10),
+          pw.Text(
+            'Controle regulamentar: meta ${set.targetPoints} pontos • ${_sideChangeSummary(match, set)} • falhas rotacionais ${_countRotationalFaults(set)}',
+            style: const pw.TextStyle(
+              fontSize: 10,
+              color: PdfColors.grey700,
+            ),
+          ),
+          pw.SizedBox(height: 8),
           _buildTeamCategorySummary(
             title: match.teamAName,
             totals: setStats.teamTotals[TeamSide.teamA]!,
@@ -395,6 +420,7 @@ class MatchPdfService {
           'Bloqueio ${totals.block} • '
           'Saque ${totals.serve} • '
           'Erro adv. ${totals.opponentError} • '
+          'Falha rot. ${totals.rotationalFault} • '
           'Outro ${totals.other}',
         ),
       ],
@@ -429,7 +455,8 @@ class MatchPdfService {
               3: pw.FixedColumnWidth(52),
               4: pw.FixedColumnWidth(42),
               5: pw.FixedColumnWidth(58),
-              6: pw.FixedColumnWidth(42),
+              6: pw.FixedColumnWidth(52),
+              7: pw.FixedColumnWidth(42),
             },
             children: [
               pw.TableRow(
@@ -441,6 +468,7 @@ class MatchPdfService {
                   _tableCell('Bloq.', isHeader: true),
                   _tableCell('Saq.', isHeader: true),
                   _tableCell('Erro adv.', isHeader: true),
+                  _tableCell('Falha rot.', isHeader: true),
                   _tableCell('Outro', isHeader: true),
                 ],
               ),
@@ -453,6 +481,7 @@ class MatchPdfService {
                     _tableCell('${row.block}'),
                     _tableCell('${row.serve}'),
                     _tableCell('${row.opponentError}'),
+                    _tableCell('${row.rotationalFault}'),
                     _tableCell('${row.other}'),
                   ],
                 ),
@@ -590,6 +619,28 @@ class MatchPdfService {
     return side == TeamSide.teamA ? match.teamAName : match.teamBName;
   }
 
+  pw.Widget _buildSummaryMetrics(MatchScore match) {
+    final rules = ScoreboardRules.forMode(match.sportMode);
+    final lastSet = match.sets.isEmpty ? null : match.sets.last;
+
+    return pw.Wrap(
+      spacing: 10,
+      runSpacing: 10,
+      children: [
+        _metricCard(
+            'Placar final', '${match.teamASetsWon} x ${match.teamBSetsWon}'),
+        _metricCard('Sets para vencer', '${rules.setsToWin}'),
+        _metricCard('Sets jogados', '${match.sets.length}/${rules.maxSets}'),
+        _metricCard(
+          'Último set',
+          lastSet == null
+              ? '-'
+              : '${lastSet.teamAScore} x ${lastSet.teamBScore}',
+        ),
+      ],
+    );
+  }
+
   pw.Widget _sectionTitle(String text) {
     return pw.Padding(
       padding: const pw.EdgeInsets.only(bottom: 8),
@@ -620,6 +671,38 @@ class MatchPdfService {
               value,
               textAlign: pw.TextAlign.right,
               style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  pw.Widget _metricCard(String label, String value) {
+    return pw.Container(
+      width: 128,
+      padding: const pw.EdgeInsets.all(10),
+      decoration: pw.BoxDecoration(
+        color: PdfColor.fromHex('#F4F7FB'),
+        borderRadius: pw.BorderRadius.circular(8),
+        border: pw.Border.all(color: PdfColor.fromHex('#D7E0EA')),
+      ),
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.Text(
+            label,
+            style: const pw.TextStyle(
+              fontSize: 9,
+              color: PdfColors.grey700,
+            ),
+          ),
+          pw.SizedBox(height: 4),
+          pw.Text(
+            value,
+            style: pw.TextStyle(
+              fontSize: 13,
+              fontWeight: pw.FontWeight.bold,
             ),
           ),
         ],
@@ -672,6 +755,42 @@ class MatchPdfService {
       return '${hours.toString().padLeft(2, '0')}:$minutes:$seconds';
     }
     return '${duration.inMinutes.toString().padLeft(2, '0')}:$seconds';
+  }
+
+  String _rulesLabel(MatchScore match) {
+    final rules = ScoreboardRules.forMode(match.sportMode);
+    final regularSets = List<String>.filled(
+        rules.maxSets - 1, '${rules.regularSetTargetPoints}');
+    return 'Melhor de ${rules.maxSets} • sets a ${[
+      ...regularSets,
+      '${rules.finalSetTargetPoints}'
+    ].join('/')}';
+  }
+
+  String _sideChangeSummary(MatchScore match, SetScore set) {
+    final rules = ScoreboardRules.forMode(match.sportMode);
+    final sideChangePoints = rules.sideChangePointsForSet(set.setNumber);
+    if (sideChangePoints == null) {
+      return 'Não se aplica';
+    }
+
+    final totalPoints = set.teamAScore + set.teamBScore;
+    final milestones = <String>[];
+    for (var total = sideChangePoints;
+        total <= totalPoints;
+        total += sideChangePoints) {
+      milestones.add(total.toString());
+    }
+    if (milestones.isEmpty) {
+      return 'Sem troca obrigatória';
+    }
+    return milestones.join(', ');
+  }
+
+  int _countRotationalFaults(SetScore set) {
+    return set.pointEvents
+        .where((event) => event.pointOrigin == PointOrigin.rotationalFault)
+        .length;
   }
 
   Future<Directory> _resolveSaveDirectory() async {
@@ -773,6 +892,7 @@ class _CategoryTotals {
   int block = 0;
   int serve = 0;
   int opponentError = 0;
+  int rotationalFault = 0;
   int other = 0;
 
   void add(PointOrigin origin) {
@@ -785,12 +905,15 @@ class _CategoryTotals {
         serve += 1;
       case PointOrigin.opponentError:
         opponentError += 1;
+      case PointOrigin.rotationalFault:
+        rotationalFault += 1;
       case PointOrigin.other:
         other += 1;
     }
   }
 
-  int get total => attack + block + serve + opponentError + other;
+  int get total =>
+      attack + block + serve + opponentError + rotationalFault + other;
 }
 
 class _PlayerCategoryTotals extends _CategoryTotals {

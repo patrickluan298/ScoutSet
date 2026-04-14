@@ -1,6 +1,7 @@
 import 'match_score.dart';
 import 'scoreboard_rules.dart';
 import 'set_point_event.dart';
+import '../../teams/models/team_draw_player.dart';
 
 class ScoreboardSnapshot {
   const ScoreboardSnapshot({
@@ -10,6 +11,8 @@ class ScoreboardSnapshot {
     required this.statusMessage,
     required this.currentSetStartedAt,
     required this.currentSetPointEvents,
+    required this.teamAOnCourtPlayers,
+    required this.teamBOnCourtPlayers,
   });
 
   final int teamAScore;
@@ -18,6 +21,8 @@ class ScoreboardSnapshot {
   final String statusMessage;
   final DateTime currentSetStartedAt;
   final List<SetPointEvent> currentSetPointEvents;
+  final List<TeamDrawPlayer> teamAOnCourtPlayers;
+  final List<TeamDrawPlayer> teamBOnCourtPlayers;
 }
 
 class ScoreboardState {
@@ -88,7 +93,9 @@ class ScoreboardState {
     Object? lastSnapshot = _sentinel,
   }) {
     return ScoreboardState(
-      activeMatch: activeMatch == _sentinel ? this.activeMatch : activeMatch as MatchScore?,
+      activeMatch: activeMatch == _sentinel
+          ? this.activeMatch
+          : activeMatch as MatchScore?,
       history: history ?? this.history,
       statusMessage: statusMessage ?? this.statusMessage,
       canUndo: canUndo ?? this.canUndo,
@@ -97,9 +104,11 @@ class ScoreboardState {
       currentSetStartedAt: currentSetStartedAt == _sentinel
           ? this.currentSetStartedAt
           : currentSetStartedAt as DateTime?,
-      currentSetPointEvents: currentSetPointEvents ?? this.currentSetPointEvents,
-      lastSnapshot:
-          lastSnapshot == _sentinel ? this.lastSnapshot : lastSnapshot as ScoreboardSnapshot?,
+      currentSetPointEvents:
+          currentSetPointEvents ?? this.currentSetPointEvents,
+      lastSnapshot: lastSnapshot == _sentinel
+          ? this.lastSnapshot
+          : lastSnapshot as ScoreboardSnapshot?,
     );
   }
 }

@@ -64,12 +64,14 @@ class ScoreControls extends StatelessWidget {
           icon: Icons.restart_alt,
           onTap: canReset ? onReset : null,
         ),
-        const SizedBox(height: 12),
-        _ActionButton(
-          label: 'Finalizar Partida',
-          icon: Icons.flag,
-          onTap: canScore ? onFinish : null,
-        ),
+        if (onFinish != null) ...[
+          const SizedBox(height: 12),
+          _ActionButton(
+            label: 'Finalizar Partida',
+            icon: Icons.flag,
+            onTap: canScore ? onFinish : null,
+          ),
+        ],
         const SizedBox(height: 12),
         _ActionButton(
           label: 'Nova Partida',

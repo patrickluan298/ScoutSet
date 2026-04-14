@@ -73,11 +73,18 @@ class _RulesScreenState extends State<RulesScreen> {
     'annexes': Icons.menu_book_outlined,
   };
 
+  static const Map<String, Set<String>> _specialCategoryChapterNumbers = {
+    'rotation-positions': {'7'},
+    'game-structure': {'7', '8', '15', '16', '17', '18'},
+  };
+
   @override
   void initState() {
     super.initState();
     _catalogFuture = widget.repository.load(
-      sportMode: widget.sportMode ?? SportModeService.instance.currentMode ?? SportMode.court,
+      sportMode: widget.sportMode ??
+          SportModeService.instance.currentMode ??
+          SportMode.court,
     );
     _searchTerm = widget.initialSearchTerm;
     if (_searchTerm.isNotEmpty) {
@@ -255,11 +262,8 @@ class _RulesScreenState extends State<RulesScreen> {
   }
 
   Widget _buildHeroHeader(
-    BuildContext context,
-    RulesCatalog catalog,
-    bool showSidebar,
-    {required bool isEmptyCatalog}
-  ) {
+      BuildContext context, RulesCatalog catalog, bool showSidebar,
+      {required bool isEmptyCatalog}) {
     final colors = AppTheme.colorsOf(context);
     final theme = Theme.of(context);
     final sportMode = _effectiveSportMode;
@@ -311,7 +315,9 @@ class _RulesScreenState extends State<RulesScreen> {
           ),
           const SizedBox(height: 18),
           Text(
-            isEmptyCatalog ? 'Regras de ${sportMode.shortLabel}' : 'Regras Oficiais',
+            isEmptyCatalog
+                ? 'Regras de ${sportMode.shortLabel}'
+                : 'Regras Oficiais',
             style: theme.textTheme.headlineMedium?.copyWith(
               color: colors.onSurface,
               fontSize: showSidebar ? 40 : 34,
@@ -397,25 +403,26 @@ class _RulesScreenState extends State<RulesScreen> {
     _VisibleContent display,
   ) {
     final colors = AppTheme.colorsOf(context);
-    final selectedChapter = display.chapters.isEmpty ? null : display.chapters.first;
+    final selectedChapter =
+        display.chapters.isEmpty ? null : display.chapters.first;
     final isShowingSelectedChapter =
         _searchTerm.trim().isEmpty && _selectedChapterId != null;
     final title = _isEmptyCatalog(catalog)
         ? 'Conteúdo em preparação'
         : _searchTerm.trim().isNotEmpty
-        ? 'Resultados da busca'
-        : isShowingSelectedChapter && selectedChapter != null
-            ? 'Capítulo ${selectedChapter.displayOfficialNumber}: '
-                '${selectedChapter.officialTitle}'
-            : _titleForCategory(catalog, _selectedCategoryId);
+            ? 'Resultados da busca'
+            : isShowingSelectedChapter && selectedChapter != null
+                ? 'Capítulo ${selectedChapter.displayOfficialNumber}: '
+                    '${selectedChapter.officialTitle}'
+                : _titleForCategory(catalog, _selectedCategoryId);
 
     final badge = _isEmptyCatalog(catalog)
         ? 'Em preparação'
         : _searchTerm.trim().isNotEmpty
-        ? '${display.chapters.length + display.documents.length} itens'
-        : _selectedChapterId != null
-            ? 'Leitura técnica'
-            : 'Índice oficial';
+            ? '${display.chapters.length + display.documents.length} itens'
+            : _selectedChapterId != null
+                ? 'Leitura técnica'
+                : 'Índice oficial';
 
     return Row(
       children: [
@@ -901,9 +908,7 @@ class _RulesScreenState extends State<RulesScreen> {
     for (final category in catalog.categories) {
       final items = <_SidebarMenuItemData>[];
 
-      if (category.id == 'rotation-positions') {
-        final chapter =
-            catalog.chapters.firstWhere((item) => item.officialNumber == '7');
+      for (final chapter in _chaptersForCategory(catalog, category.id)) {
         items.add(
           _SidebarMenuItemData(
             id: chapter.id,
@@ -911,34 +916,6 @@ class _RulesScreenState extends State<RulesScreen> {
             kind: _SidebarMenuItemKind.chapter,
           ),
         );
-      } else if (category.id == 'game-structure') {
-        for (final chapter in catalog.chapters.where(
-          (item) =>
-              item.officialNumber == '7' ||
-              item.officialNumber == '8' ||
-              const {'15', '16', '17', '18'}.contains(item.officialNumber),
-        )) {
-          items.add(
-            _SidebarMenuItemData(
-              id: chapter.id,
-              label:
-                  '${chapter.displayOfficialNumber} ${chapter.officialTitle}',
-              kind: _SidebarMenuItemKind.chapter,
-            ),
-          );
-        }
-      } else {
-        for (final chapter
-            in catalog.chapters.where((item) => item.categoryId == category.id)) {
-          items.add(
-            _SidebarMenuItemData(
-              id: chapter.id,
-              label:
-                  '${chapter.displayOfficialNumber} ${chapter.officialTitle}',
-              kind: _SidebarMenuItemKind.chapter,
-            ),
-          );
-        }
       }
 
       if (category.id == 'annexes') {
@@ -1045,70 +1022,10 @@ class _RulesScreenState extends State<RulesScreen> {
       RulesCatalog catalog, String categoryId) {
     final chapters = <_VisibleChapter>[];
     final documents = <RulesDocument>[];
-    final categoryChapters =
-        catalog.chapters.where((chapter) => chapter.categoryId == categoryId);
-
-    if (categoryId == 'rotation-positions') {
-      final chapter =
-          catalog.chapters.firstWhere((item) => item.officialNumber == '7');
-      chapters.add(
-        _VisibleChapter(
-          id: chapter.id,
-          officialNumber: chapter.displayOfficialNumber,
-          officialTitle: chapter.officialTitle,
-          sections: chapter.sections.where((section) {
-            return const {'7.4', '7.5', '7.6', '7.7'}
-                .contains(section.officialNumber);
-          }).toList(growable: false),
-        ),
-      );
-    } else if (categoryId == 'game-structure') {
-      final chapter7 =
-          catalog.chapters.firstWhere((item) => item.officialNumber == '7');
-      final chapter8 =
-          catalog.chapters.firstWhere((item) => item.officialNumber == '8');
-      chapters.add(
-        _VisibleChapter(
-          id: chapter7.id,
-          officialNumber: chapter7.displayOfficialNumber,
-          officialTitle: chapter7.officialTitle,
-          sections: chapter7.sections.where((section) {
-            return const {'7.1', '7.2', '7.3'}.contains(section.officialNumber);
-          }).toList(growable: false),
-        ),
-      );
-      chapters.add(
-        _VisibleChapter(
-          id: chapter8.id,
-          officialNumber: chapter8.displayOfficialNumber,
-          officialTitle: chapter8.officialTitle,
-          sections: chapter8.sections,
-        ),
-      );
-      for (final chapter in catalog.chapters.where((item) {
-        return const {'15', '16', '17', '18'}.contains(item.officialNumber);
-      })) {
-        chapters.add(
-          _VisibleChapter(
-            id: chapter.id,
-            officialNumber: chapter.displayOfficialNumber,
-            officialTitle: chapter.officialTitle,
-            sections: chapter.sections,
-          ),
-        );
-      }
-    } else {
-      chapters.addAll(
-        categoryChapters.map(
-          (chapter) => _VisibleChapter(
-            id: chapter.id,
-            officialNumber: chapter.displayOfficialNumber,
-            officialTitle: chapter.officialTitle,
-            sections: chapter.sections,
-          ),
-        ),
-      );
-    }
+    chapters.addAll(
+      _chaptersForCategory(catalog, categoryId)
+          .map((chapter) => _visibleChapterForCategory(categoryId, chapter)),
+    );
 
     if (categoryId == 'annexes') {
       documents.addAll(catalog.documents
@@ -1175,10 +1092,49 @@ class _RulesScreenState extends State<RulesScreen> {
   }
 
   SportMode get _effectiveSportMode =>
-      widget.sportMode ?? SportModeService.instance.currentMode ?? SportMode.court;
+      widget.sportMode ??
+      SportModeService.instance.currentMode ??
+      SportMode.court;
 
   String _titleForCategory(RulesCatalog catalog, String categoryId) {
     return catalog.categoryById(categoryId).title;
+  }
+
+  List<RulesChapter> _chaptersForCategory(
+      RulesCatalog catalog, String categoryId) {
+    final specialNumbers = _specialCategoryChapterNumbers[categoryId];
+    if (specialNumbers == null) {
+      return catalog.chapters
+          .where((chapter) => chapter.categoryId == categoryId)
+          .toList(growable: false);
+    }
+
+    return catalog.chapters
+        .where((chapter) => specialNumbers.contains(chapter.officialNumber))
+        .toList(growable: false);
+  }
+
+  _VisibleChapter _visibleChapterForCategory(
+    String categoryId,
+    RulesChapter chapter,
+  ) {
+    final sections = switch ((categoryId, chapter.officialNumber)) {
+      ('rotation-positions', '7') => chapter.sections.where((section) {
+          return const {'7.4', '7.5', '7.6', '7.7'}
+              .contains(section.officialNumber);
+        }).toList(growable: false),
+      ('game-structure', '7') => chapter.sections.where((section) {
+          return const {'7.1', '7.2', '7.3'}.contains(section.officialNumber);
+        }).toList(growable: false),
+      _ => chapter.sections,
+    };
+
+    return _VisibleChapter(
+      id: chapter.id,
+      officialNumber: chapter.displayOfficialNumber,
+      officialTitle: chapter.officialTitle,
+      sections: sections,
+    );
   }
 }
 

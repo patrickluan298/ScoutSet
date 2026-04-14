@@ -255,7 +255,8 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
-    await tester.enterText(find.byKey(const Key('rules-search-field')), 'árbitro');
+    await tester.enterText(
+        find.byKey(const Key('rules-search-field')), 'árbitro');
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
@@ -325,7 +326,7 @@ void main() {
     expect(find.text('Índice de Regras'), findsOneWidget);
   });
 
-  testWidgets('rules screen renders empty beach placeholder with shared layout',
+  testWidgets('rules screen renders beach catalog with official content',
       (tester) async {
     await tester.binding.setSurfaceSize(const Size(900, 1600));
     addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -333,8 +334,9 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: AppTheme.lightTheme,
-        home: const RulesScreen(
+        home: RulesScreen(
           showScaffold: false,
+          repository: _TestRulesCatalogRepository(),
           sportMode: SportMode.beach,
         ),
       ),
@@ -343,8 +345,46 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
 
     expect(find.text('Manual Técnico'), findsOneWidget);
-    expect(find.text('Regras de Praia'), findsOneWidget);
-    expect(find.text('Conteúdo em preparação'), findsWidgets);
+    expect(find.text('Regras Oficiais'), findsOneWidget);
+    expect(find.text('Índice de Regras'), findsOneWidget);
+    expect(find.text('Fundamentos'), findsWidgets);
+    expect(find.text('CAPÍTULO 4: EQUIPES'.toLowerCase()), findsNothing);
+    expect(find.text('Conteúdo em preparação'), findsNothing);
+
+    await tester.tap(find.text('DIMENSÕES'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(
+      find.textContaining('A quadra de jogo é um retângulo de 16 x 8 m'),
+      findsOneWidget,
+    );
+    expect(find.text('Diagrama 1. Área de jogo do vôlei de praia'),
+        findsOneWidget);
+  });
+
+  testWidgets('rules screen beach search finds service order and beach topics',
+      (tester) async {
+    await tester.binding.setSurfaceSize(const Size(1320, 2200));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.lightTheme,
+        home: RulesScreen(
+          showScaffold: false,
+          repository: _TestRulesCatalogRepository(),
+          sportMode: SportMode.beach,
+          initialSearchTerm: 'saque',
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.text('Resultados da busca'), findsOneWidget);
+    expect(find.textContaining('EXECUÇÃO DO SAQUE'), findsWidgets);
+    expect(find.textContaining('PRIMEIRO SERVIÇO EM UM SET'), findsWidgets);
   });
 }
 
@@ -354,8 +394,7 @@ class _TestRulesCatalogRepository extends RulesCatalogRepository {
     required SportMode sportMode,
     AssetBundle? bundle,
   }) async {
-    final jsonString =
-        File(RulesCatalogRepository.assetPath).readAsStringSync();
+    final jsonString = File(assetPathForMode(sportMode)).readAsStringSync();
     return loadFromString(jsonString);
   }
 }

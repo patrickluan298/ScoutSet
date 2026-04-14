@@ -4,6 +4,7 @@ import 'package:scoutset/features/scoreboard/models/match_score.dart';
 import 'package:scoutset/features/scoreboard/models/set_point_event.dart';
 import 'package:scoutset/features/scoreboard/services/scoreboard_service.dart';
 import 'package:scoutset/features/teams/models/team_draw_player.dart';
+import 'package:scoutset/features/teams/services/team_draw_service.dart';
 import 'package:scoutset/models/sport_mode.dart';
 import 'package:scoutset/services/sport_mode_service.dart';
 
@@ -35,7 +36,8 @@ void main() {
   }
 
   test('starts a match with default serving team A', () {
-    final match = service.startMatch(teamAName: 'ScoutSet', teamBName: 'Rivais');
+    final match =
+        service.startMatch(teamAName: 'ScoutSet', teamBName: 'Rivais');
 
     final state = service.getState();
     expect(match.teamAName, 'SCOUTSET');
@@ -100,7 +102,8 @@ void main() {
     expect(match?.sets.last.teamBScore, 16);
   });
 
-  test('does not finish match when the same team wins the first two sets', () async {
+  test('does not finish match when the same team wins the first two sets',
+      () async {
     service.startMatch(teamAName: 'A', teamBName: 'B');
     await addPoints(teamA: 25, teamB: 10);
     await addPoints(teamA: 25, teamB: 18);
@@ -136,7 +139,8 @@ void main() {
     expect(tiedMatch?.matchStatus, MatchStatus.inProgress);
   });
 
-  test('finishes match 3x0 when the same team wins the first three sets', () async {
+  test('finishes match 3x0 when the same team wins the first three sets',
+      () async {
     service.startMatch(teamAName: 'A', teamBName: 'B');
     await addPoints(teamA: 25, teamB: 10);
     await addPoints(teamA: 25, teamB: 18);
@@ -176,7 +180,8 @@ void main() {
     expect(after.currentTeamBScore, before.currentTeamBScore);
   });
 
-  test('opens fifth set with a 15-point target when match is tied 2x2', () async {
+  test('opens fifth set with a 15-point target when match is tied 2x2',
+      () async {
     service.startMatch(teamAName: 'A', teamBName: 'B');
     await addPoints(teamA: 25, teamB: 10);
     await addPoints(teamA: 18, teamB: 25);
@@ -189,13 +194,14 @@ void main() {
     expect(match?.matchStatus, MatchStatus.inProgress);
   });
 
-  test('beach mode finishes in two sets and limits match to three sets', () async {
+  test('beach mode finishes in two sets and limits match to three sets',
+      () async {
     SportModeService.instance.selectMode(SportMode.beach);
     service.startMatch(teamAName: 'A', teamBName: 'B');
-    await addPoints(teamA: 25, teamB: 15);
+    await addPoints(teamA: 21, teamB: 15);
     expect(service.getState().activeMatch?.currentSet, 2);
 
-    await addPoints(teamA: 25, teamB: 22);
+    await addPoints(teamA: 21, teamB: 19);
 
     final match = service.getState().activeMatch;
     expect(match?.sportMode, SportMode.beach);
@@ -207,8 +213,8 @@ void main() {
   test('persists beach sport mode in saved match history', () async {
     SportModeService.instance.selectMode(SportMode.beach);
     service.startMatch(teamAName: 'A', teamBName: 'B');
-    await addPoints(teamA: 25, teamB: 15);
-    await addPoints(teamA: 25, teamB: 19);
+    await addPoints(teamA: 21, teamB: 15);
+    await addPoints(teamA: 21, teamB: 19);
 
     final finished = service.listHistory().single;
     expect(finished.sportMode, SportMode.beach);
@@ -220,7 +226,47 @@ void main() {
     expect(reloaded.sportMode, SportMode.beach);
   });
 
-  test('undo never makes score negative and only affects current set', () async {
+  test('beach mode uses 21 points in regular sets', () async {
+    SportModeService.instance.selectMode(SportMode.beach);
+    service.startMatch(teamAName: 'A', teamBName: 'B');
+
+    await addPoints(teamA: 21, teamB: 19);
+
+    final state = service.getState();
+    expect(state.activeMatch?.sets, hasLength(1));
+    expect(state.activeMatch?.sets.single.targetPoints, 21);
+    expect(state.activeMatch?.currentSet, 2);
+  });
+
+  test('beach mode announces mandatory side change every 7 points', () async {
+    SportModeService.instance.selectMode(SportMode.beach);
+    service.startMatch(teamAName: 'A', teamBName: 'B');
+
+    await addPoints(teamA: 4, teamB: 3);
+
+    expect(
+      service.getState().statusMessage,
+      '1° set em andamento\nTroca de lado obrigatoria.',
+    );
+  });
+
+  test('beach deciding set announces mandatory side change every 5 points',
+      () async {
+    SportModeService.instance.selectMode(SportMode.beach);
+    service.startMatch(teamAName: 'A', teamBName: 'B');
+    await addPoints(teamA: 21, teamB: 19);
+    await addPoints(teamA: 18, teamB: 21);
+
+    await addPoints(teamA: 3, teamB: 2);
+
+    expect(
+      service.getState().statusMessage,
+      '3° set em andamento\nTroca de lado obrigatoria.',
+    );
+  });
+
+  test('undo never makes score negative and only affects current set',
+      () async {
     service.startMatch(teamAName: 'A', teamBName: 'B');
     service.undoLastPoint();
     expect(service.getState().currentTeamAScore, 0);
@@ -245,32 +291,15 @@ void main() {
     expect(state.statusMessage, '1° set em andamento');
   });
 
-
-  test('manual finish archives the current match in history', () async {
+  test('rejects manual finish before the match ends by rule', () async {
     service.startMatch(teamAName: 'A', teamBName: 'B');
     await addPoints(teamA: 12, teamB: 9);
-    await service.finishCurrentMatch();
 
-    final history = service.listHistory();
-    expect(history, hasLength(1));
-    expect(history.single.matchStatus, MatchStatus.finished);
-    expect(service.getMatchById(history.single.id), isNotNull);
-  });
-
-  test('manual finish with tied scoreboard ends in draw', () async {
-    service.startMatch(teamAName: 'A', teamBName: 'B');
-    await addPoints(teamA: 12, teamB: 12);
-    await service.finishCurrentMatch();
-
-    final match = service.getState().activeMatch;
-    expect(match?.matchStatus, MatchStatus.finished);
-    expect(match?.winnerTeam, isNull);
-    expect(match?.teamASetsWon, 0);
-    expect(match?.teamBSetsWon, 0);
-    expect(match?.sets.single.teamAScore, 12);
-    expect(match?.sets.single.teamBScore, 12);
-    expect(match?.sets.single.winnerTeamId, isEmpty);
-    expect(service.getState().statusMessage, 'Partida encerrada em empate por 0x0.');
+    await expectLater(
+      service.finishCurrentMatch(),
+      throwsA(isA<ArgumentError>()),
+    );
+    expect(service.listHistory(), isEmpty);
   });
 
   test('registers player point event for attack', () async {
@@ -291,11 +320,11 @@ void main() {
       pointOrigin: PointOrigin.attack,
       player: player,
     );
-    await service.finishCurrentMatch();
+    await addPoints(teamA: 24, teamB: 0);
 
     final set = service.getState().activeMatch?.sets.single;
-    expect(set?.pointEvents, hasLength(1));
-    expect(set?.pointEvents.single.playerName, 'Joao');
+    expect(set?.pointEvents, hasLength(25));
+    expect(set?.pointEvents.first.playerName, 'Joao');
     expect(set?.playerPointStats.single.points, 1);
     expect(set?.pointsByOrigin[PointOrigin.attack], 1);
   });
@@ -307,15 +336,340 @@ void main() {
       team: TeamSide.teamA,
       pointOrigin: PointOrigin.opponentError,
     );
-    await service.finishCurrentMatch();
+    await addPoints(teamA: 24, teamB: 0);
 
     final set = service.getState().activeMatch?.sets.single;
-    expect(set?.pointEvents.single.pointOrigin, PointOrigin.opponentError);
-    expect(set?.pointEvents.single.playerId, isNull);
+    expect(set?.pointEvents.first.pointOrigin, PointOrigin.opponentError);
+    expect(set?.pointEvents.first.playerId, isNull);
     expect(set?.pointsByOrigin[PointOrigin.opponentError], 1);
   });
 
-  test('requires player when origin is attributable and roster exists', () async {
+  test('receiving team rotates when it wins the rally and takes the serve',
+      () async {
+    final players = List.generate(
+      6,
+      (index) => TeamDrawPlayer(
+        id: 'p$index',
+        name: 'Jogador $index',
+        position: 'Posicao $index',
+        level: PlayerLevel.intermediario,
+      ),
+    );
+
+    service.startMatch(
+      teamAName: 'A',
+      teamBName: 'B',
+      teamAPlayers: players,
+    );
+
+    await service.addPointToTeamB();
+
+    final match = service.getState().activeMatch;
+    expect(match?.servingTeam, TeamSide.teamB);
+    expect(match?.teamAOnCourtPlayers.map((player) => player.id),
+        ['p0', 'p1', 'p2', 'p3', 'p4', 'p5']);
+    expect(match?.teamBOnCourtPlayers, isEmpty);
+  });
+
+  test(
+      'service order rotates inside the scoring team when it wins while receiving',
+      () async {
+    final teamBPlayers = List.generate(
+      6,
+      (index) => TeamDrawPlayer(
+        id: 'b$index',
+        name: 'B $index',
+        position: 'Posicao $index',
+        level: PlayerLevel.intermediario,
+      ),
+    );
+
+    service.startMatch(
+      teamAName: 'A',
+      teamBName: 'B',
+      teamBPlayers: teamBPlayers,
+    );
+
+    await service.addPointToTeamB();
+
+    final match = service.getState().activeMatch;
+    expect(match?.servingTeam, TeamSide.teamB);
+    expect(
+      match?.teamBOnCourtPlayers.map((player) => player.id),
+      ['b1', 'b2', 'b3', 'b4', 'b5', 'b0'],
+    );
+  });
+
+  test('serving team keeps the same service order when it wins the rally',
+      () async {
+    final teamAPlayers = List.generate(
+      6,
+      (index) => TeamDrawPlayer(
+        id: 'a$index',
+        name: 'A $index',
+        position: 'Posicao $index',
+        level: PlayerLevel.intermediario,
+      ),
+    );
+
+    service.startMatch(
+      teamAName: 'A',
+      teamBName: 'B',
+      teamAPlayers: teamAPlayers,
+    );
+
+    await service.addPointToTeamA();
+
+    final match = service.getState().activeMatch;
+    expect(match?.servingTeam, TeamSide.teamA);
+    expect(
+      match?.teamAOnCourtPlayers.map((player) => player.id),
+      ['a0', 'a1', 'a2', 'a3', 'a4', 'a5'],
+    );
+  });
+
+  test(
+      'detects indoor rotational fault and awards point plus serve to opponent',
+      () async {
+    final teamAPlayers = List.generate(
+      6,
+      (index) => TeamDrawPlayer(
+        id: 'a$index',
+        name: 'A $index',
+        position: 'Posicao $index',
+        level: PlayerLevel.intermediario,
+      ),
+    );
+    final teamBPlayers = List.generate(
+      6,
+      (index) => TeamDrawPlayer(
+        id: 'b$index',
+        name: 'B $index',
+        position: 'Posicao $index',
+        level: PlayerLevel.intermediario,
+      ),
+    );
+
+    service.startMatch(
+      teamAName: 'A',
+      teamBName: 'B',
+      teamAPlayers: teamAPlayers,
+      teamBPlayers: teamBPlayers,
+    );
+
+    await service.addPoint(
+      team: TeamSide.teamA,
+      pointOrigin: PointOrigin.serve,
+      player: teamAPlayers[1],
+      serverPlayer: teamAPlayers[1],
+    );
+
+    final state = service.getState();
+    final match = state.activeMatch;
+    expect(state.currentTeamAScore, 0);
+    expect(state.currentTeamBScore, 1);
+    expect(match?.servingTeam, TeamSide.teamB);
+    expect(
+      state.currentSetPointEvents.single.pointOrigin,
+      PointOrigin.rotationalFault,
+    );
+    expect(state.currentSetPointEvents.single.serverPlayerId, 'a1');
+    expect(
+      match?.teamBOnCourtPlayers.map((player) => player.id),
+      ['b1', 'b2', 'b3', 'b4', 'b5', 'b0'],
+    );
+  });
+
+  test('detects beach rotational fault and alternates the new server correctly',
+      () async {
+    SportModeService.instance.selectMode(SportMode.beach);
+    const teamAPlayers = [
+      TeamDrawPlayer(
+        id: 'a1',
+        name: 'A1',
+        position: 'Defensor',
+        level: PlayerLevel.intermediario,
+      ),
+      TeamDrawPlayer(
+        id: 'a2',
+        name: 'A2',
+        position: 'Bloqueador',
+        level: PlayerLevel.intermediario,
+      ),
+    ];
+    const teamBPlayers = [
+      TeamDrawPlayer(
+        id: 'b1',
+        name: 'B1',
+        position: 'Defensor',
+        level: PlayerLevel.intermediario,
+      ),
+      TeamDrawPlayer(
+        id: 'b2',
+        name: 'B2',
+        position: 'Bloqueador',
+        level: PlayerLevel.intermediario,
+      ),
+    ];
+
+    service.startMatch(
+      teamAName: 'A',
+      teamBName: 'B',
+      teamAPlayers: teamAPlayers,
+      teamBPlayers: teamBPlayers,
+    );
+
+    await service.addPoint(
+      team: TeamSide.teamA,
+      pointOrigin: PointOrigin.attack,
+      player: teamAPlayers[0],
+      serverPlayer: teamAPlayers[1],
+    );
+
+    final state = service.getState();
+    final match = state.activeMatch;
+    expect(state.currentTeamAScore, 0);
+    expect(state.currentTeamBScore, 1);
+    expect(match?.servingTeam, TeamSide.teamB);
+    expect(
+      state.currentSetPointEvents.single.pointOrigin,
+      PointOrigin.rotationalFault,
+    );
+    expect(
+      match?.teamBOnCourtPlayers.map((player) => player.id),
+      ['b2', 'b1'],
+    );
+  });
+
+  test(
+      'starts roster matches with first six players on court and no preset bench',
+      () {
+    final players = List.generate(
+      8,
+      (index) => TeamDrawPlayer(
+        id: 'p$index',
+        name: 'Jogador $index',
+        position: 'Posicao $index',
+        level: PlayerLevel.intermediario,
+      ),
+    );
+
+    final match = service.startMatch(
+      teamAName: 'A',
+      teamBName: 'B',
+      teamAPlayers: players,
+    );
+
+    expect(match.teamAOnCourtPlayers, hasLength(6));
+    expect(match.teamABenchPlayers, isEmpty);
+    expect(match.teamASetStarterIds, ['p0', 'p1', 'p2', 'p3', 'p4', 'p5']);
+  });
+
+  test(
+      'applies a legal regulation substitution and allows only the starter to return',
+      () async {
+    final starters = List.generate(
+      6,
+      (index) => TeamDrawPlayer(
+        id: 'p$index',
+        name: 'Jogador $index',
+        position: 'Posicao $index',
+        level: PlayerLevel.intermediario,
+      ),
+    );
+    await TeamDrawService.instance.savePlayer(
+      id: 'p6',
+      name: 'Reserva 6',
+      position: 'Posicao 6',
+      level: PlayerLevel.intermediario,
+    );
+
+    service.startMatch(
+      teamAName: 'A',
+      teamBName: 'B',
+      teamAPlayers: starters,
+    );
+
+    await service.applySubstitution(
+      team: TeamSide.teamA,
+      playerOutId: 'p0',
+      playerInId: 'p6',
+    );
+
+    final stateAfterEntry = service.getState();
+    expect(
+        stateAfterEntry.activeMatch?.teamAOnCourtPlayers
+            .map((player) => player.id),
+        contains('p6'));
+    expect(stateAfterEntry.activeMatch?.teamASetSubstitutions, hasLength(1));
+
+    await expectLater(
+      service.applySubstitution(
+        team: TeamSide.teamA,
+        playerOutId: 'p6',
+        playerInId: 'p5',
+      ),
+      throwsA(isA<ArgumentError>()),
+    );
+
+    await service.applySubstitution(
+      team: TeamSide.teamA,
+      playerOutId: 'p6',
+      playerInId: 'p0',
+    );
+
+    final stateAfterReturn = service.getState();
+    expect(
+        stateAfterReturn.activeMatch?.teamAOnCourtPlayers
+            .map((player) => player.id),
+        contains('p0'));
+    expect(
+      stateAfterReturn.activeMatch?.teamASetSubstitutions
+          .where((item) => item.countsTowardLimit),
+      hasLength(2),
+    );
+  });
+
+  test('resets substitution count and current starters when a new set starts',
+      () async {
+    final starters = List.generate(
+      6,
+      (index) => TeamDrawPlayer(
+        id: 'p$index',
+        name: 'Jogador $index',
+        position: 'Posicao $index',
+        level: PlayerLevel.intermediario,
+      ),
+    );
+    await TeamDrawService.instance.savePlayer(
+      id: 'p6',
+      name: 'Reserva 6',
+      position: 'Posicao 6',
+      level: PlayerLevel.intermediario,
+    );
+
+    service.startMatch(
+      teamAName: 'A',
+      teamBName: 'B',
+      teamAPlayers: starters,
+    );
+    await service.applySubstitution(
+      team: TeamSide.teamA,
+      playerOutId: 'p0',
+      playerInId: 'p6',
+    );
+
+    await addPoints(teamA: 25, teamB: 0);
+
+    final match = service.getState().activeMatch;
+    expect(match?.currentSet, 2);
+    expect(match?.teamASetSubstitutions, isEmpty);
+    expect(match?.teamASetStarterIds, contains('p6'));
+    expect(match?.teamASetStarterIds, isNot(contains('p0')));
+  });
+
+  test('requires player when origin is attributable and roster exists',
+      () async {
     const player = TeamDrawPlayer(
       id: 'p1',
       name: 'Joao',

@@ -10,6 +10,7 @@ import 'package:scoutset/features/scoreboard/screens/scoreboard_screen.dart';
 import 'package:scoutset/features/scoreboard/services/scoreboard_service.dart';
 import 'package:scoutset/features/scoreboard/widgets/set_score_table.dart';
 import 'package:scoutset/features/teams/models/team_draw_player.dart';
+import 'package:scoutset/features/teams/services/team_draw_service.dart';
 import 'package:scoutset/models/sport_mode.dart';
 import 'package:scoutset/services/sport_mode_service.dart';
 
@@ -35,7 +36,8 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  Future<void> addPoints(ScoreboardService service, {required int teamA, required int teamB}) async {
+  Future<void> addPoints(ScoreboardService service,
+      {required int teamA, required int teamB}) async {
     final sharedPoints = teamA < teamB ? teamA : teamB;
 
     for (var i = 0; i < sharedPoints; i++) {
@@ -68,11 +70,23 @@ void main() {
     expect(find.text('Placar Eletrônico de Praia'), findsOneWidget);
   });
 
+  testWidgets('beach mode shows 21-point target in the live set summary',
+      (tester) async {
+    SportModeService.instance.selectMode(SportMode.beach);
+    service.startMatch(teamAName: 'A', teamBName: 'B');
+
+    await pumpScoreboard(tester);
+
+    expect(find.text('21 pts'), findsWidgets);
+  });
+
   testWidgets('transitions from setup form to live scoreboard', (tester) async {
     await pumpScoreboard(tester);
 
-    await tester.enterText(find.byKey(const Key('scoreboard-team-a-field')), 'Time Azul');
-    await tester.enterText(find.byKey(const Key('scoreboard-team-b-field')), 'Time Ouro');
+    await tester.enterText(
+        find.byKey(const Key('scoreboard-team-a-field')), 'Time Azul');
+    await tester.enterText(
+        find.byKey(const Key('scoreboard-team-b-field')), 'Time Ouro');
     await tester.tap(find.byKey(const Key('scoreboard-start-button')));
     await tester.pumpAndSettle();
 
@@ -81,21 +95,27 @@ void main() {
     expect(find.text('1° set em andamento'), findsWidgets);
   });
 
-  testWidgets('prevents starting a match with duplicated team names', (tester) async {
+  testWidgets('prevents starting a match with duplicated team names',
+      (tester) async {
     await pumpScoreboard(tester);
 
-    await tester.enterText(find.byKey(const Key('scoreboard-team-a-field')), 'Time Azul');
-    await tester.enterText(find.byKey(const Key('scoreboard-team-b-field')), 'time azul');
+    await tester.enterText(
+        find.byKey(const Key('scoreboard-team-a-field')), 'Time Azul');
+    await tester.enterText(
+        find.byKey(const Key('scoreboard-team-b-field')), 'time azul');
     await tester.tap(find.byKey(const Key('scoreboard-start-button')));
     await tester.pumpAndSettle();
 
-    expect(find.text('Os times precisam ter nomes diferentes.'), findsOneWidget);
+    expect(
+        find.text('Os times precisam ter nomes diferentes.'), findsOneWidget);
     expect(find.text('Controles do Placar'), findsNothing);
   });
 
   testWidgets('clears team fields when preparing a new match', (tester) async {
     service.startMatch(teamAName: 'Azul', teamBName: 'Ouro');
-    await service.finishCurrentMatch();
+    await addPoints(service, teamA: 25, teamB: 0);
+    await addPoints(service, teamA: 25, teamB: 0);
+    await addPoints(service, teamA: 25, teamB: 0);
 
     await pumpScoreboard(tester);
     final newMatchButton = find.widgetWithText(ElevatedButton, 'Nova Partida');
@@ -117,7 +137,8 @@ void main() {
   testWidgets('limits team names to 10 characters', (tester) async {
     await pumpScoreboard(tester);
 
-    await tester.enterText(find.byKey(const Key('scoreboard-team-a-field')), '12345678901');
+    await tester.enterText(
+        find.byKey(const Key('scoreboard-team-a-field')), '12345678901');
     await tester.pump();
 
     final teamAField = tester.widget<TextFormField>(
@@ -130,7 +151,8 @@ void main() {
   testWidgets('blocks special characters in team names', (tester) async {
     await pumpScoreboard(tester);
 
-    await tester.enterText(find.byKey(const Key('scoreboard-team-a-field')), 'Time@A!');
+    await tester.enterText(
+        find.byKey(const Key('scoreboard-team-a-field')), 'Time@A!');
     await tester.pump();
 
     final teamAField = tester.widget<TextFormField>(
@@ -166,7 +188,8 @@ void main() {
 
     await pumpScoreboard(tester);
 
-    final pointButton = tester.widget<ElevatedButton>(find.widgetWithText(ElevatedButton, '+1 A').first);
+    final pointButton = tester.widget<ElevatedButton>(
+        find.widgetWithText(ElevatedButton, '+1 A').first);
     expect(pointButton.onPressed, isNull);
     expect(find.text('Nova Partida'), findsOneWidget);
     expect(find.textContaining('venceu a partida'), findsOneWidget);
@@ -174,13 +197,13 @@ void main() {
 
   testWidgets('navigates to history and detail screens', (tester) async {
     service.startMatch(teamAName: 'A', teamBName: 'B');
-    for (var i = 0; i < 12; i++) {
-      await service.addPointToTeamA();
-    }
-    await service.finishCurrentMatch();
+    await addPoints(service, teamA: 25, teamB: 0);
+    await addPoints(service, teamA: 25, teamB: 0);
+    await addPoints(service, teamA: 25, teamB: 0);
 
     await pumpScoreboard(tester);
-    await tester.tap(find.widgetWithText(OutlinedButton, 'Histórico de Partidas'));
+    await tester
+        .tap(find.widgetWithText(OutlinedButton, 'Histórico de Partidas'));
     await tester.pumpAndSettle();
 
     expect(find.text('Histórico de Partidas'), findsOneWidget);
@@ -193,7 +216,8 @@ void main() {
     expect(find.textContaining('Vencedor:'), findsWidgets);
   });
 
-  testWidgets('opens point origin sheet and player picker for roster matches', (tester) async {
+  testWidgets('opens point origin sheet and player picker for roster matches',
+      (tester) async {
     const player = TeamDrawPlayer(
       id: 'p1',
       name: 'Joao',
@@ -207,7 +231,10 @@ void main() {
     );
 
     await pumpScoreboard(tester);
-    await tester.tap(find.widgetWithText(ElevatedButton, '+1 A').first);
+    final addPointButton = tester.widget<ElevatedButton>(
+      find.widgetWithText(ElevatedButton, '+1 A').first,
+    );
+    addPointButton.onPressed?.call();
     await tester.pumpAndSettle();
 
     expect(find.text('Ataque'), findsOneWidget);
@@ -219,11 +246,16 @@ void main() {
     expect(find.text('Quem marcou por A?'), findsOneWidget);
     await tester.tap(find.byKey(const Key('point-player-p1')));
     await tester.pumpAndSettle();
+    expect(find.text('Conferencia do saque'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('server-player-p1')));
+    await tester.pumpAndSettle();
 
     expect(service.getState().currentTeamAScore, 1);
   });
 
-  testWidgets('manual match scores directly without opening point category sheet', (tester) async {
+  testWidgets(
+      'manual match scores directly without opening point category sheet',
+      (tester) async {
     service.startMatch(teamAName: 'A', teamBName: 'B');
 
     await pumpScoreboard(tester);
@@ -233,6 +265,112 @@ void main() {
     expect(find.text('Registrar ponto para A'), findsNothing);
     expect(find.text('Erro adversário'), findsNothing);
     expect(service.getState().currentTeamAScore, 1);
+  });
+
+  testWidgets(
+      'shows substitution controls and uses registered players outside the active teams',
+      (tester) async {
+    final starters = List.generate(
+      6,
+      (index) => TeamDrawPlayer(
+        id: 'p$index',
+        name: 'Titular $index',
+        position: 'Posicao $index',
+        level: PlayerLevel.intermediario,
+      ),
+    );
+    await TeamDrawService.instance.savePlayer(
+      id: 'p6',
+      name: 'Reserva 1',
+      position: 'Oposto',
+      level: PlayerLevel.avancado,
+    );
+
+    service.startMatch(
+      teamAName: 'A',
+      teamBName: 'B',
+      teamAPlayers: starters,
+    );
+
+    await pumpScoreboard(tester);
+
+    expect(find.text('Substituicoes FIVB'), findsOneWidget);
+    expect(
+      find.textContaining('modulo Equipes que nao estejam atuando na partida'),
+      findsWidgets,
+    );
+
+    final openSubstitutionButton = tester.widget<OutlinedButton>(
+      find.widgetWithText(OutlinedButton, 'Aplicar substituicao').first,
+    );
+    openSubstitutionButton.onPressed?.call();
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('scoreboard-sub-out-A')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Titular 0 - Posicao 0').last);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('scoreboard-sub-in-A')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Reserva 1 - Oposto').last);
+    await tester.pumpAndSettle();
+
+    await tester
+        .tap(find.widgetWithText(ElevatedButton, 'Confirmar substituicao'));
+    await tester.pumpAndSettle();
+
+    final match = service.getState().activeMatch;
+    expect(
+        match?.teamAOnCourtPlayers.map((player) => player.id), contains('p6'));
+    expect(find.textContaining('1/6 reg.'), findsOneWidget);
+  });
+
+  testWidgets('detects rotational fault from the selected server in the UI',
+      (tester) async {
+    final teamAPlayers = List.generate(
+      6,
+      (index) => TeamDrawPlayer(
+        id: 'a$index',
+        name: 'A $index',
+        position: 'Posicao $index',
+        level: PlayerLevel.intermediario,
+      ),
+    );
+    final teamBPlayers = List.generate(
+      6,
+      (index) => TeamDrawPlayer(
+        id: 'b$index',
+        name: 'B $index',
+        position: 'Posicao $index',
+        level: PlayerLevel.intermediario,
+      ),
+    );
+
+    service.startMatch(
+      teamAName: 'A',
+      teamBName: 'B',
+      teamAPlayers: teamAPlayers,
+      teamBPlayers: teamBPlayers,
+    );
+
+    await pumpScoreboard(tester);
+    final addPointButton = tester.widget<ElevatedButton>(
+      find.widgetWithText(ElevatedButton, '+1 A').first,
+    );
+    addPointButton.onPressed?.call();
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('point-origin-team_a-attack')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('point-player-a0')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('server-player-a1')));
+    await tester.pumpAndSettle();
+
+    expect(service.getState().currentTeamAScore, 0);
+    expect(service.getState().currentTeamBScore, 1);
+    expect(find.textContaining('Falha rotacional detectada'), findsOneWidget);
   });
 
   testWidgets('finished match keeps next set summary at zero', (tester) async {
@@ -262,7 +400,9 @@ void main() {
     expect(find.text('Set 2'), findsOneWidget);
   });
 
-  testWidgets('renders five sets in the summary table with a 15-point fifth set', (tester) async {
+  testWidgets(
+      'renders five sets in the summary table with a 15-point fifth set',
+      (tester) async {
     await tester.pumpWidget(
       buildTestable(
         const SetScoreTable(
@@ -280,7 +420,8 @@ void main() {
     expect(find.text('15 pts'), findsOneWidget);
   });
 
-  testWidgets('match details show 15-point target in the fifth set', (tester) async {
+  testWidgets('match details show 15-point target in the fifth set',
+      (tester) async {
     final match = MatchScore(
       id: 'match-detail-1',
       teamAName: 'A',
@@ -331,7 +472,8 @@ void main() {
     expect(find.text('15 pts'), findsOneWidget);
   });
 
-  testWidgets('shows red match point alert when next point can end the match', (tester) async {
+  testWidgets('shows red match point alert when next point can end the match',
+      (tester) async {
     service.startMatch(teamAName: 'A', teamBName: 'B');
     await addPoints(service, teamA: 25, teamB: 10);
     await addPoints(service, teamA: 25, teamB: 20);
@@ -343,7 +485,8 @@ void main() {
     expect(find.byIcon(Icons.warning_amber_rounded), findsOneWidget);
   });
 
-  testWidgets('shows red match point alert in the deciding set', (tester) async {
+  testWidgets('shows red match point alert in the deciding set',
+      (tester) async {
     service.startMatch(teamAName: 'A', teamBName: 'B');
     await addPoints(service, teamA: 25, teamB: 10);
     await addPoints(service, teamA: 20, teamB: 25);
@@ -367,7 +510,9 @@ void main() {
     expect(find.text('MATCH POINT PARA A'), findsNothing);
   });
 
-  testWidgets('keeps match point only for the fifth set after the game reaches 2x2', (tester) async {
+  testWidgets(
+      'keeps match point only for the fifth set after the game reaches 2x2',
+      (tester) async {
     service.startMatch(teamAName: 'A', teamBName: 'B');
     await addPoints(service, teamA: 25, teamB: 10);
     await addPoints(service, teamA: 20, teamB: 25);
